@@ -833,6 +833,13 @@ h1{font-size:1.5rem;line-height:1.2;margin:0;font-weight:700}
       '<ol class="ladder" style="margin-top:12px">'+(L.notesMode==='prefer'?'<li>مكان صريح في الملاحظات (ثلاجة / محطة / اسم من القاموس / «بيفوت 380 توشكا»).</li><li>اسم العميل المورد إن كان اسمًا حقيقيًا.</li><li>موقع الصادر(وارد) إن لم يكن عامًا.</li><li>استنتاج ضعيف من الملاحظات («وارد من X»).</li>':'<li>اسم العميل المورد إن كان حقيقيًا.</li><li>عميل عام ← موقع الصادر ثم الملاحظات.</li><li>مورد غير مفيد ← الملاحظات ثم موقع الصادر.</li>')+'<li>لم يتحقق شيء ← «تحتاج مراجعة».</li></ol></div>';
     h+='<div class="box"><h3>عدم المساواة مع مكان التفريغ</h3><div class="row">'+swt('loading.avoidSameAsUnload','لا يساوي مكان التحميل مكان التفريغ إلا إن لم يوجد بديل','عند التساوي يُجرَّب بديل من الملاحظات أو بقية المصادر، وإلا يبقى المكان مع تنبيه في «ملاحظات المعالجة».')+'</div></div>';
     h+='<div class="box"><h3>قوائم السلم</h3><div class="fld">عملاء عامون (نقرأ موقع الصادر بدلهم)'+tagEd('loading.genericSuppliers')+'</div><div class="fld" style="margin-top:10px">موردون غير مفيدون (نقرأ الملاحظات)'+tagEd('loading.notesSuppliers')+'</div><div class="fld" style="margin-top:10px">مواقع صادر عامة لا تحدد مكانًا'+tagEd('loading.genericOutLocs')+'</div><div class="fld" style="margin-top:10px">قيم تعني «لا يوجد مكان»'+tagEd('loading.noPlaceValues')+'</div></div>';
+    var OR=L.outLocRule, DS=A.S.destination;
+    h+='<div class="box'+(OR.enabled?'':' off')+'"><h3>قاعدة وارد في ميزان معيّن</h3><p class="sub">وارد، ولم يوجد مكان في الملاحظات ولا في العميل المورد، وموقع الصادر ضمن القائمة ← مكان ثابت. تعمل في آخر السلم فلا تغيّر أي حالة لها مكان من القواعد الأخرى.</p><div class="row">'+swt('loading.outLocRule.enabled','تفعيل القاعدة')+'</div>'+
+      '<div class="row" style="align-items:flex-end;margin-top:10px"><label class="fld" style="min-width:200px">اسم الميزان<input data-a="txt2" data-p="loading.outLocRule.scale" value="'+attr(OR.scale)+'"></label><label class="fld" style="min-width:260px">المكان الناتج<input data-a="txt2" data-p="loading.outLocRule.place" value="'+attr(OR.place)+'"></label></div>'+
+      '<div class="fld" style="margin-top:10px">مواقع الصادر المطابقة'+tagEd('loading.outLocRule.outLocs')+'</div></div>';
+    h+='<div class="box'+(DS.enabled?'':' off')+'"><h3>وجهة الرحلات الصادرة (عنوان فقط)</h3><p class="sub">رحلة ليست وارد ووجهتها محافظة أو «محافظة - مدينة» فقط (مثل «أسوان»): نأخذ اسم المكان من <b>ملاحظات المحطة</b> (مثل «مزرعة توشكا»، أو ما بعد «إلى»)، وإن لم يوجد فمن <b>العميل المورد</b> إلا لو كان من القائمة العامة، وإن لم يوجد تبقى الوجهة كما هي.</p><div class="row">'+swt('destination.enabled','تفعيل القاعدة')+'</div>'+
+      '<div class="fld" style="margin-top:10px">عملاء عامون (لا يُؤخذ منهم المكان)'+tagEd('destination.genericSuppliers')+'</div><div class="fld" style="margin-top:10px">المحافظات (ما يُعدّ عنوانًا فقط)'+tagEd('destination.governorates')+'</div></div>';
+    h+='<div class="box"><h3>النقلات الداخلية (تجهيز أرض)</h3><p class="sub">لو نوع الحمولة من القائمة، وبعد تطبيق كل القواعد بقي مكان التحميل مساويًا لمكان التفريغ ← تُصنَّف <b>نقلة داخلية</b>.</p><div class="fld">أنواع الحمولة'+tagEd('loading.dailyTypes')+'</div></div>';
     return h;
   }
 
@@ -937,6 +944,7 @@ h1{font-size:1.5rem;line-height:1.2;margin:0;font-weight:700}
     else if(a==='numsel'){ sp(t.dataset.p,+t.value); touch(); aRender(); }
     else if(a==='numint'){ sp(t.dataset.p,Math.max(7,Math.min(365,+t.value||60))); touch(); aRender(); }
     else if(a==='txt'){ sp(t.dataset.p,t.value.trim()||A.S.contractors.noContractorLabel); touch(); aRender(); }
+    else if(a==='txt2'){ sp(t.dataset.p,t.value.trim()); touch(); aRender(); }
     else if(a==='cust-en'){ A.S.layers.custom[+t.dataset.i].enabled=t.checked; touch(); aRender(); }
     else if(a==='pl-no'){ A.S.places.list[+t.dataset.i].noLoad=t.checked; touch(); aRender(); }
     else if(a==='dec-al'){ if(t.value===''){return;} var canon=A.S.contractors.approved[+t.value], al=(A.S.contractors.aliases[canon]=A.S.contractors.aliases[canon]||[]); if(al.indexOf(t.dataset.n)<0) al.push(t.dataset.n); touch(); aRender(); }
