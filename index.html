@@ -839,7 +839,25 @@ h1{font-size:1.5rem;line-height:1.2;margin:0;font-weight:700}
       '<div class="fld" style="margin-top:10px">مواقع الصادر المطابقة'+tagEd('loading.outLocRule.outLocs')+'</div></div>';
     h+='<div class="box'+(DS.enabled?'':' off')+'"><h3>وجهة الرحلات الصادرة (عنوان فقط)</h3><p class="sub">رحلة ليست وارد ووجهتها محافظة أو «محافظة - مدينة» فقط (مثل «أسوان»): نأخذ اسم المكان من <b>ملاحظات المحطة</b> (مثل «مزرعة توشكا»، أو ما بعد «إلى»)، وإن لم يوجد فمن <b>العميل المورد</b> إلا لو كان من القائمة العامة، وإن لم يوجد تبقى الوجهة كما هي.</p><div class="row">'+swt('destination.enabled','تفعيل القاعدة')+'</div>'+
       '<div class="fld" style="margin-top:10px">عملاء عامون (لا يُؤخذ منهم المكان)'+tagEd('destination.genericSuppliers')+'</div><div class="fld" style="margin-top:10px">المحافظات (ما يُعدّ عنوانًا فقط)'+tagEd('destination.governorates')+'</div></div>';
+    h+=rPlaceRules();
     h+='<div class="box"><h3>النقلات الداخلية (تجهيز أرض)</h3><p class="sub">لو نوع الحمولة من القائمة، وبعد تطبيق كل القواعد بقي مكان التحميل مساويًا لمكان التفريغ ← تُصنَّف <b>نقلة داخلية</b>.</p><div class="fld">أنواع الحمولة'+tagEd('loading.dailyTypes')+'</div></div>';
+    return h;
+  }
+
+  function fieldOpts(sel){ return Object.keys(D.fields||{}).map(function(k){return '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+esc(D.fields[k])+'</option>'}).join(''); }
+  function fromLabel(r){ return r.from==='fixed'?'نص ثابت «'+r.fixed+'»':r.from==='supplier+notes'?'العميل المورد + ملاحظات المحطة':(D.fields||{})[r.from]||r.from; }
+  function rPlaceRules(){
+    var R=A.S.placeRules||[], h='<div class="box"><h3>قواعد مكان مخصصة (تنشئها بنفسك)</h3><p class="sub">تُطبَّق في <b>آخر</b> السلم بعد كل القواعد الأخرى. اختر شروطًا (حقل + يحتوي/يساوي + قيمة، وكلها لازم تتحقق)، وحدّد أي مكان يتغيّر (التحميل أو التفريغ) ومن أين يُؤخذ اسمه. أول قاعدة تنطبق هي التي تُطبَّق.</p>';
+    if(R.length) h+='<div class="tblwrap" style="margin-bottom:10px"><table class="tbl"><thead><tr><th>الاسم</th><th>الشروط</th><th>النتيجة</th><th>مفعّلة</th><th></th></tr></thead><tbody>'+R.map(function(r,i){
+      var cond=r.when.map(function(c){return esc((D.fields||{})[c.field]||c.field)+' '+(c.op==='equals'?'يساوي':'يحتوي')+' «'+esc(c.value)+'»'}).join(' <b>و</b> ');
+      return '<tr><td>'+esc(r.label)+'</td><td>'+cond+(r.onlyWhenSame?'<div class="sub">فقط لو مكان التحميل = مكان التفريغ</div>':'')+'</td><td>'+(r.target==='unload'?'مكان التفريغ':'مكان التحميل')+' ← '+esc(fromLabel(r))+'</td><td><label class="sw2"><input type="checkbox" data-a="rule-en" data-i="'+i+'"'+(r.enabled?' checked':'')+'><i></i></label></td><td><button class="abtn sm bad" data-a="rule-del" data-i="'+i+'">حذف</button></td></tr>'}).join('')+'</tbody></table></div>';
+    var ops='<option value="contains">يحتوي</option><option value="equals">يساوي</option>';
+    h+='<div class="tester" style="align-items:flex-end"><label class="fld">الشرط ١ · الحقل<select id="prf1">'+fieldOpts('type')+'</select></label><label class="fld">الشرط<select id="pro1">'+ops+'</select></label><label class="fld">القيمة<input id="prv1" placeholder="مثال: سوبر ماركت"></label></div>'+
+      '<div class="tester" style="align-items:flex-end"><label class="fld">الشرط ٢ (اختياري)<select id="prf2">'+fieldOpts('supplier')+'</select></label><label class="fld">الشرط<select id="pro2">'+ops+'</select></label><label class="fld">القيمة<input id="prv2" placeholder="مثال: اوكازيون"></label></div>'+
+      '<div class="tester" style="align-items:flex-end"><label class="fld">المكان الذي يتغيّر<select id="prt"><option value="load">مكان التحميل</option><option value="unload">مكان التفريغ</option></select></label>'+
+      '<label class="fld">يُؤخذ اسمه من<select id="prfr"><option value="supplier+notes">العميل المورد + ملاحظات المحطة</option>'+fieldOpts('')+'<option value="fixed">نص ثابت (اكتبه هنا ←)</option></select></label>'+
+      '<label class="fld">النص الثابت<input id="prfx" placeholder="لو اخترت نص ثابت"></label></div>'+
+      '<div class="tester" style="align-items:flex-end"><label class="sw2"><input type="checkbox" id="prsame" checked><i></i><span>فقط لو مكان التحميل = مكان التفريغ</span></label><label class="fld">اسم القاعدة (اختياري)<input id="prl" placeholder="مثال: سوبر ماركت أوكازيون"></label><button class="abtn pri" data-a="rule-add">إضافة قاعدة</button></div></div>';
     return h;
   }
 
@@ -923,6 +941,16 @@ h1{font-size:1.5rem;line-height:1.2;margin:0;font-weight:700}
     if(a==='reset'){ if(confirm('استعادة كل الإعدادات والقواميس للقيم الافتراضية؟ (لن تُحفظ إلا بعد الضغط على حفظ)')){ A.S=clone(D.defaults); touch(); aRender(); } return; }
     if(a==='cust-add'){ var f=document.getElementById('cf').value, op=document.getElementById('co').value, v=document.getElementById('cv').value.trim(), lb=document.getElementById('cl').value.trim(); if(!v) return;
       S.layers.custom.push({label:lb||('رفض: '+(D.fields[f]||f)+' '+v),field:f,op:op,value:v,enabled:true}); touch(); aRender(); return; }
+    if(a==='rule-add'){
+      var gv=function(id){return document.getElementById(id).value.trim()}, when=[];
+      if(gv('prv1')) when.push({field:gv('prf1'),op:gv('pro1'),value:gv('prv1')});
+      if(gv('prv2')) when.push({field:gv('prf2'),op:gv('pro2'),value:gv('prv2')});
+      var from=gv('prfr'), fx=gv('prfx');
+      if(!when.length){ A.msg='أضف شرطًا واحدًا على الأقل (اكتب القيمة)'; aRender(); return; }
+      if(from==='fixed' && !fx){ A.msg='اكتب النص الثابت'; aRender(); return; }
+      (S.placeRules=S.placeRules||[]).push({label:gv('prl')||('قاعدة '+when[0].value),enabled:true,when:when,onlyWhenSame:document.getElementById('prsame').checked,target:gv('prt'),from:from,fixed:fx});
+      touch(); aRender(); return; }
+    if(a==='rule-del'){ S.placeRules.splice(+t.dataset.i,1); touch(); aRender(); return; }
     if(a==='cust-del'){ S.layers.custom.splice(+t.dataset.i,1); touch(); aRender(); return; }
     if(a==='dec-ok'){ S.contractors.approved.push(t.dataset.n); touch(); aRender(); return; }
     if(a==='dec-no'){ S.contractors.blocked.push(t.dataset.n); touch(); aRender(); return; }
@@ -945,6 +973,7 @@ h1{font-size:1.5rem;line-height:1.2;margin:0;font-weight:700}
     else if(a==='numint'){ sp(t.dataset.p,Math.max(7,Math.min(365,+t.value||60))); touch(); aRender(); }
     else if(a==='txt'){ sp(t.dataset.p,t.value.trim()||A.S.contractors.noContractorLabel); touch(); aRender(); }
     else if(a==='txt2'){ sp(t.dataset.p,t.value.trim()); touch(); aRender(); }
+    else if(a==='rule-en'){ A.S.placeRules[+t.dataset.i].enabled=t.checked; touch(); aRender(); }
     else if(a==='cust-en'){ A.S.layers.custom[+t.dataset.i].enabled=t.checked; touch(); aRender(); }
     else if(a==='pl-no'){ A.S.places.list[+t.dataset.i].noLoad=t.checked; touch(); aRender(); }
     else if(a==='dec-al'){ if(t.value===''){return;} var canon=A.S.contractors.approved[+t.value], al=(A.S.contractors.aliases[canon]=A.S.contractors.aliases[canon]||[]); if(al.indexOf(t.dataset.n)<0) al.push(t.dataset.n); touch(); aRender(); }
