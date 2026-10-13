@@ -261,6 +261,7 @@ h1{font-size:1.5rem;line-height:1.2;margin:0;font-weight:700}
 @media (max-width:860px){.adm{grid-template-columns:1fr}.anav{position:static;flex-direction:row;overflow-x:auto}.anav button{white-space:nowrap}}
 
 .abtn{white-space:nowrap}
+.abtn[hidden],[hidden]{display:none!important}
 </style>
 
 <div class="wrap" dir="rtl" lang="ar">
@@ -995,7 +996,7 @@ h1{font-size:1.5rem;line-height:1.2;margin:0;font-weight:700}
   function runSummary(r){
     var p=[];
     if(r.email){ p.push(r.email.skipped?r.email.stopped:r.email.error?'الإيميل: '+r.email.error:'الإيميل: جديد '+(r.email.found||0)+' · سُجّل '+(r.email.processed||0)+' · طلبات '+(r.email.requests||0)+(r.email.duplicates?' · مكررة (إيميل مشترك) '+r.email.duplicates:'')+(r.email.pending?' · بالطابور '+r.email.pending:'')+(r.email.stopped?' · توقف: '+r.email.stopped:'')); }
-    if(r.jde){ p.push(r.jde.error?'JDE: '+r.jde.error:r.jde.skipped&&r.jde.reason?'JDE: '+r.jde.reason:'JDE: '+(r.jde.files||0)+' ملف جديد · '+(r.jde.trips||0)+' رحلة'); }
+    if(r.jde){ p.push(r.jde.error?'JDE: '+r.jde.error:r.jde.skipped&&r.jde.reason?'JDE: '+r.jde.reason:(r.jde.files?'JDE: '+r.jde.files+' ملف جديد · '+(r.jde.trips||0)+' رحلة':'JDE: لا توجد ملفات جديدة في المجلد (كل الملفات مستوردة سابقًا)')); }
     return p.join(' | ')+(r.who?' — بحساب '+r.who:'');
   }
   document.addEventListener('click',function(e){
@@ -1062,7 +1063,7 @@ h1{font-size:1.5rem;line-height:1.2;margin:0;font-weight:700}
     var sel2=document.getElementById('fContractor'); Object.keys(cs).sort().forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c; sel2.appendChild(o); });
     document.getElementById('meta').innerHTML='<span>آخر نشاط: '+esc(dayLabel(maxd))+'</span><span>'+D.trips.length+' مكتملة الوزن · '+D.live.length+' جارية</span>';
     if(D.settings){ A.S=clone(D.settings); }
-    if(D.canScanEmail===false){ var be=document.getElementById('btnEmail'); if(be) be.hidden=true; }
+    if(D.canScanEmail===false){ var be=document.getElementById('btnEmail'); if(be){ be.hidden=true; var nt=document.createElement('span'); nt.className='runmsg'; nt.textContent='فحص الإيميل يتم تلقائيًا كل 10 دقائق من حساب فريق العمل'; be.parentNode.insertBefore(nt,be.nextSibling); } }
     buildIndex(); renderAll(); renderEmail(); renderStatus();
   });
 })();
