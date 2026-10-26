@@ -1479,7 +1479,7 @@ function ecApplyPatch(q, patch, S) {
 
   /* ================= لوحة التحكم ================= */
   var A={S:null,sec:'ladder',dirty:false,busy:false,msg:'',f:{co:'',pl:'',rej:'',rv:''},res:{},focus:null,sandbox:'',rv:{},rvMode:'review',pv:null,pvBusy:false,sch:null,schMsg:'',learn:true};
-  var SECGROUPS=[['نظرة عامة',[['ladder','سلم القواعد'],['rcenter','مركز القواعد'],['test','اختبار فوري']]],['١ · البيانات والربط',[['extlink','ملفات الربط الخارجية'],['extset','إعدادات محرك الربط']]],['٢–٣ · الرفض والمقاولون',[['layers','طبقات الرفض'],['contractors','المقاولون']]],['٤ · الأماكن والتحميل',[['places','الأماكن'],['loading','قواعد مكان التحميل']]],['٦ · المراجعة اليدوية',[['review','مراجعة وتعديل يدوي']]],['٨–٩ · الجارية والأسعار',[['live','الرحلات الجارية'],['pricing','الأسعار']]],['التشغيل',[['schedule','الجدولة'],['general','السائق والعام']]],['الإيميل',[['emview','العرض والحسابات'],['emmsg','الرسالة المولدة'],['emreply','الردود الجاهزة'],['emact','الإجراءات'],['eminfer','الاستنتاج والاقتراح']]],['شخصي',[['ui','المظهر واللغة']]]];
+  var SECGROUPS=[['نظرة عامة',[['insights','الرؤى والتنبيهات'],['ladder','سلم القواعد'],['rcenter','مركز القواعد'],['test','اختبار فوري']]],['١ · البيانات والربط',[['extlink','ملفات الربط الخارجية'],['extset','إعدادات محرك الربط']]],['٢–٣ · الرفض والمقاولون',[['layers','طبقات الرفض'],['contractors','المقاولون']]],['٤ · الأماكن والتحميل',[['places','الأماكن'],['loading','قواعد مكان التحميل']]],['٦ · المراجعة اليدوية',[['review','مراجعة وتعديل يدوي']]],['٨–٩ · الجارية والأسعار',[['live','الرحلات الجارية'],['pricing','الأسعار']]],['التشغيل',[['schedule','الجدولة'],['general','السائق والعام']]],['الإيميل',[['emview','العرض والحسابات'],['emmsg','الرسالة المولدة'],['emreply','الردود الجاهزة'],['emact','الإجراءات'],['eminfer','الاستنتاج والاقتراح']]],['شخصي',[['ui','المظهر واللغة']]]];
   var SECS=[]; SECGROUPS.forEach(function(g){ g[1].forEach(function(x){ SECS.push(x); }); });
   var LAYER_LABEL={cancelled:'ملغاة',blockedContractor:'مقاول خارج التشغيل',container:'حاوية/كونتينر'};
   function clone(o){return JSON.parse(JSON.stringify(o))}
@@ -1708,13 +1708,13 @@ function ecApplyPatch(q, patch, S) {
   function aRender(){
     if(!A.S) return;
     function navBtn(s){
-      var n=s[0]==='layers'?((D.status&&D.status.lastImport&&D.status.lastImport.stats&&D.status.lastImport.stats.rejected)||''):s[0]==='contractors'?((D.unmatched||[]).filter(function(u){return !decided(u.name)}).length||''):s[0]==='places'?A.S.places.list.length:s[0]==='extlink'?(D.extFileCount||''):s[0]==='extset'?((D.extUnknown||[]).length||''):s[0]==='live'?((D.live||[]).length||''):s[0]==='ladder'?((ladIssues(A.S).filter(function(x){return x.sev!=='info'}).length)||''):'';
+      var n=s[0]==='layers'?((D.status&&D.status.lastImport&&D.status.lastImport.stats&&D.status.lastImport.stats.rejected)||''):s[0]==='contractors'?((D.unmatched||[]).filter(function(u){return !decided(u.name)}).length||''):s[0]==='places'?A.S.places.list.length:s[0]==='extlink'?(D.extFileCount||''):s[0]==='extset'?((D.extUnknown||[]).length||''):s[0]==='live'?((D.live||[]).length||''):s[0]==='ladder'?((ladIssues(A.S).filter(function(x){return x.sev!=='info'}).length)||''):s[0]==='insights'?(insData().alerts.filter(function(x){return x.level!=='info'}).length||''):'';
       return '<button data-a="nav" data-s="'+s[0]+'" aria-current="'+(A.sec===s[0])+'"><span>'+s[1]+'</span><span class="n">'+n+'</span></button>';
     }
     var nq=nz(A.lad.navq);
     var nav='<input class="nvq" data-a="navq" value="'+attr(A.lad.navq)+'" placeholder="ابحث عن قسم…" aria-label="بحث في الأقسام">'+SECGROUPS.map(function(g){ var items=g[1].filter(function(x){ return !nq||nz(x[1]).indexOf(nq)>=0; }); return items.length?'<div class="ngrp">'+g[0]+'</div>'+items.map(navBtn).join(''):''; }).join('');
     document.getElementById('anav').innerHTML=nav;
-    fillLists(); var f={review:rReview,extlink:rExtLink,extset:rExtSet,layers:rLayers,contractors:rContractors,places:rPlaces,loading:rLoading,live:rLive,pricing:rPricing,schedule:rSchedule,general:rGeneral,test:rTest,emview:rEmView,emmsg:rEmMsg,emreply:rEmReply,emact:rEmAct,eminfer:rEmInfer,ui:rUiPanel,rcenter:rRulesCenter,ladder:rLadder}[A.sec];
+    fillLists(); var f={review:rReview,extlink:rExtLink,extset:rExtSet,layers:rLayers,contractors:rContractors,places:rPlaces,loading:rLoading,live:rLive,pricing:rPricing,schedule:rSchedule,general:rGeneral,test:rTest,emview:rEmView,emmsg:rEmMsg,emreply:rEmReply,emact:rEmAct,eminfer:rEmInfer,ui:rUiPanel,rcenter:rRulesCenter,ladder:rLadder,insights:rInsights}[A.sec];
     document.getElementById('asec').innerHTML=(A.sec==='ladder'?'':ladBanner(A.sec))+f();
     sbRender();
     if(A.focus){ var el=document.querySelector(A.focus.sel); if(el){ el.focus(); try{ var v=el.value; el.setSelectionRange(v.length,v.length);}catch(e){} } A.focus=null; }
@@ -1955,7 +1955,7 @@ function ecApplyPatch(q, patch, S) {
   }
   function applyBoot(r){
     if(r.settings){ D.settings=clone(r.settings); if(!A.dirty) A.S=clone(D.settings); }
-    if(r.overrides){ D.overrides=r.overrides; buildOvm(); }
+    if(r.overrides){ D.overrides=r.overrides; buildOvm(); } if(r.changeLog){ D.changeLog=r.changeLog; }
   }
   function ovSend(list,learnOverride,after){
     if(A.busy) return; if(needPin(function(m){ A.msg=m; aRender(); })) return;
@@ -2169,6 +2169,7 @@ function ecApplyPatch(q, patch, S) {
     if(t.dataset&&t.dataset.a==='rv-in'){ var c=t.dataset.c; (A.rv[c]=A.rv[c]||{})[t.dataset.k]=t.value; t.classList.toggle('filled',t.value.trim()!==''); var b=document.querySelector('[data-a="rv-save"]'); if(b){ var n=Object.keys(A.rv).filter(function(x){return A.rv[x]&&String(A.rv[x][t.dataset.k]||'').trim()!==''}).length; b.disabled=!n||A.busy; b.textContent='حفظ المكتوب وتطبيقه ('+n+')'; } return; }
     if(t.dataset&&t.dataset.a==='navq'){ A.lad.navq=t.value; A.focus={sel:'[data-a="navq"]'}; aRender(); return; }
     if(t.dataset&&t.dataset.a==='plx-q'){ A.pl.q=t.value; A.pl.page=1; A.focus={sel:'[data-a="plx-q"]'}; aRender(); return; }
+    if(t.dataset&&t.dataset.a==='ins-tol'){ var v=Math.max(5,Math.min(90,+t.value||25)); A.ins.tol=v; A.focus={sel:'[data-a="ins-tol"]'}; aRender(); return; }
     if(t.id==='rvName'){ saveName(t.value); return; }
     if(t.id==='rvLearn'){ A.learn=t.checked; return; }
     if(t.dataset&&t.dataset.a==='flt'){ A.f[t.dataset.k]=t.value; var p=t.selectionStart; A.focus={sel:'[data-a="flt"][data-k="'+t.dataset.k+'"]'}; aRender(); }
@@ -3230,6 +3231,158 @@ function geoFmt(p) { return p && geoValid(p.lat, p.lng) ? geoRound(p.lat) + ', '
     return false;
   }
 
+  /**
+ * ============================================================
+ * 20 · الرؤى والتنبيهات (دالة نقية بلا اعتماد على Apps Script)
+ *
+ * تعمل على نفس بيانات اللوحة (الرحلات + المرفوضات) فتُدمج داخل الواجهة وتعمل بلا طلبات إضافية للسيرفر.
+ * مستوحاة من: تنبيهات الاستثناءات (project44) · لوحة نسبة المطابقة (Trax) · بطاقة أداء الناقل (أنظمة الأساطيل)
+ * · حد سماح الوزن ووزن العربية الفارغ (أنظمة الميزان) · تكلفة الطن (أنظمة النقل الزراعي).
+ * لا تغيّر أي رحلة: تقرأ وتقترح فقط.
+ * ============================================================
+ */
+
+/** وسيط الأعداد (الوسيط أقوى من المتوسط ضد القيم الشاذة) */
+function insMedian_(arr) {
+  var a = arr.slice().sort(function (x, y) { return x - y; }), n = a.length;
+  if (!n) return 0;
+  return n % 2 ? a[(n - 1) / 2] : (a[n / 2 - 1] + a[n / 2]) / 2;
+}
+function insNum_(v) { var n = Number(v); return v !== '' && v !== null && v !== undefined && isFinite(n) ? n : null; }
+function insPct_(a, b) { return b ? Math.round(a * 1000 / b) / 10 : 0; }
+function insR2_(n) { return Math.round(n * 100) / 100; }
+
+/**
+ * opts: { now: ms, review: 'تحتاج مراجعة', tolPct: 25, minPerPlate: 5, staleHours: 36, lastImportAt: 'yyyy-MM-dd HH:mm',
+ *         unmatched: عدد المقاولين غير المحسومين, rejMinRows: 10, rejAlertPct: 30 }
+ */
+function computeInsights_(trips, rejected, opts) {
+  opts = opts || {};
+  var REV = opts.review || 'تحتاج مراجعة', tol = opts.tolPct || 25, minP = opts.minPerPlate || 5;
+  var list = (trips || []).filter(function (t) { return t && t.kind !== 'ملغاة' && t.kind !== 'مرفوضة'; });
+  var rej = rejected || [];
+
+  /* ---- جودة المعالجة ---- */
+  var total = list.length, review = 0, unpriced = 0, noWeight = 0;
+  list.forEach(function (t) {
+    if (t.loadPlace === REV || t.unloadPlace === REV) review++;
+    if (insNum_(t.price) === null) unpriced++;
+    if (!(insNum_(t.weight) > 0)) noWeight++;
+  });
+  var quality = { total: total, review: review, reviewPct: insPct_(review, total), unpriced: unpriced, unpricedPct: insPct_(unpriced, total), noWeight: noWeight, rejected: rej.length, rejectedPct: insPct_(rej.length, total + rej.length) };
+
+  /* ---- شذوذ الوزن لكل سيارة: وزن الرحلة مقابل وسيط وزن نفس السيارة (عدد كافٍ فقط) ---- */
+  var byPlate = {};
+  list.forEach(function (t) {
+    var w = insNum_(t.weight), p = String(t.plate || '').replace(/\s+/g, '');
+    if (w > 0 && p) (byPlate[p] = byPlate[p] || []).push(w);
+  });
+  var med = {};
+  Object.keys(byPlate).forEach(function (p) { if (byPlate[p].length >= minP) med[p] = insMedian_(byPlate[p]); });
+  var anomalies = [], anomByContractor = {};
+  list.forEach(function (t) {
+    var w = insNum_(t.weight), p = String(t.plate || '').replace(/\s+/g, '');
+    if (!(w > 0) || med[p] === undefined) return;
+    var dev = (w - med[p]) * 100 / med[p];
+    if (Math.abs(dev) >= tol) {
+      anomalies.push({ card: t.card, plate: t.plate, contractor: t.contractor, weight: w, median: insR2_(med[p]), devPct: Math.round(dev) });
+      anomByContractor[t.contractor] = (anomByContractor[t.contractor] || 0) + 1;
+    }
+  });
+  anomalies.sort(function (a, b) { return Math.abs(b.devPct) - Math.abs(a.devPct); });
+
+  /* ---- بطاقة أداء المقاول ---- */
+  var rejBy = {}; rej.forEach(function (r) { var k = r.contractor || '—'; rejBy[k] = (rejBy[k] || 0) + 1; });
+  var cm = {};
+  list.forEach(function (t) {
+    var k = t.contractor || '—', c = cm[k] = cm[k] || { name: k, trips: 0, tons: 0, review: 0, cost: 0, priced: 0, pricedTons: 0 };
+    c.trips++;
+    var w = insNum_(t.weight) || 0, p = insNum_(t.price);
+    c.tons += w;
+    if (t.loadPlace === REV || t.unloadPlace === REV) c.review++;
+    if (p !== null) { c.cost += p; c.priced++; c.pricedTons += w; }
+  });
+  Object.keys(rejBy).forEach(function (k) { if (!cm[k]) cm[k] = { name: k, trips: 0, tons: 0, review: 0, cost: 0, priced: 0, pricedTons: 0 }; });
+  var contractors = Object.keys(cm).map(function (k) {
+    var c = cm[k], r = rejBy[k] || 0, an = anomByContractor[k] || 0;
+    return { name: c.name, trips: c.trips, tons: insR2_(c.tons), avgTons: c.trips ? insR2_(c.tons / c.trips) : 0, review: c.review, reviewPct: insPct_(c.review, c.trips),
+      rejected: r, rejectedPct: insPct_(r, c.trips + r), anomalies: an, anomalyPct: insPct_(an, c.trips),
+      cost: insR2_(c.cost), costPerTon: c.pricedTons > 0 ? insR2_(c.cost / c.pricedTons) : '' };
+  }).sort(function (a, b) { return b.trips - a.trips; });
+
+  /* ---- تكلفة الطن: بالمحصول وبالمسار ---- */
+  function group(keyFn) {
+    var m = {};
+    list.forEach(function (t) {
+      var p = insNum_(t.price), w = insNum_(t.weight);
+      if (p === null || !(w > 0)) return;
+      var k = keyFn(t); if (!k) return;
+      var g = m[k] = m[k] || { key: k, trips: 0, tons: 0, cost: 0 };
+      g.trips++; g.tons += w; g.cost += p;
+    });
+    return Object.keys(m).map(function (k) { var g = m[k]; return { key: g.key, trips: g.trips, tons: insR2_(g.tons), cost: insR2_(g.cost), perTon: insR2_(g.cost / g.tons) }; })
+      .sort(function (a, b) { return b.cost - a.cost; });
+  }
+  var costByCrop = group(function (t) { return t.cropVar; }).slice(0, 15);
+  var costByRoute = group(function (t) { return (t.loadPlace && t.unloadPlace && t.loadPlace !== REV && t.unloadPlace !== REV) ? t.loadPlace + ' ← ' + t.unloadPlace : ''; }).slice(0, 15);
+
+  /* ---- التنبيهات: كل تنبيه = ما المشكلة + كم + أين يُعالج (sec = قسم اللوحة) ---- */
+  var alerts = [];
+  function add(level, sec, text, n) { alerts.push({ level: level, sec: sec, text: text, n: n || 0 }); }
+  if (opts.lastImportAt && opts.now) {
+    var t0 = Date.parse(String(opts.lastImportAt).replace(' ', 'T') + '+03:00');
+    if (isFinite(t0)) {
+      var hrs = Math.floor((opts.now - t0) / 36e5);
+      if (hrs >= (opts.staleHours || 36)) add('err', 'schedule', 'مفيش ملف JDE جديد من ' + hrs + ' ساعة — تأكد من الرفع أو من المشغّل التلقائي', hrs);
+    }
+  } else if (!opts.lastImportAt) add('err', 'schedule', 'لم يتم أي استيراد JDE بعد', 0);
+  if (opts.unmatched > 0) add('warn', 'contractors', opts.unmatched + ' مقاول غير محسوم (لا معتمد ولا خارج التشغيل)', opts.unmatched);
+  if (review > 0) add('warn', 'review', review + ' رحلة تحتاج مراجعة مكان (' + quality.reviewPct + '٪ من الرحلات)', review);
+  if (unpriced > 0) add(quality.unpricedPct >= 50 ? 'err' : 'warn', 'pricing', unpriced + ' رحلة بلا سعر (' + quality.unpricedPct + '٪) — دفتر الأسعار ناقص', unpriced);
+  if (anomalies.length) add('warn', 'insights', anomalies.length + ' رحلة وزنها بعيد ≥ ' + tol + '٪ عن المعتاد لنفس السيارة', anomalies.length);
+  if (noWeight > 0) add('info', 'review', noWeight + ' رحلة بلا وزن', noWeight);
+  contractors.forEach(function (c) {
+    if (c.trips + c.rejected >= (opts.rejMinRows || 10) && c.rejectedPct >= (opts.rejAlertPct || 30) && c.name !== '—')
+      add('info', 'layers', 'المقاول «' + c.name + '»: ' + c.rejectedPct + '٪ من كارتاته مرفوضة (' + c.rejected + ' من ' + (c.trips + c.rejected) + ')', c.rejected);
+  });
+  var rank = { err: 0, warn: 1, info: 2 };
+  alerts.sort(function (a, b) { return rank[a.level] - rank[b.level] || b.n - a.n; });
+
+  return { quality: quality, contractors: contractors, anomalies: anomalies.slice(0, 60), anomalyCount: anomalies.length, costByCrop: costByCrop, costByRoute: costByRoute, alerts: alerts, tolPct: tol };
+}
+
+    /* ================= الرؤى والتنبيهات: لوحة قراءة فقط تعمل على بيانات الصفحة (computeInsights_) ================= */
+  A.ins={tol:25,cache:null,key:''};
+  function insData(){
+    var key=(D.trips||[]).length+'|'+(D.rejected||[]).length+'|'+A.ins.tol+'|'+((D.status&&D.status.lastImport&&D.status.lastImport.at)||'');
+    if(A.ins.key===key&&A.ins.cache) return A.ins.cache;
+    var un=(D.unmatched||[]).filter(function(u){return !decided(u.name)}).length;
+    var li=D.status&&D.status.lastImport&&D.status.lastImport.at||'';
+    A.ins.cache=computeInsights_((D.trips||[]).concat(D.live||[]),D.rejected||[],{now:Date.now(),review:NEEDS_REVIEW_UI,tolPct:A.ins.tol,lastImportAt:li,unmatched:un});
+    A.ins.key=key; return A.ins.cache;
+  }
+  var NEEDS_REVIEW_UI='تحتاج مراجعة';
+  function insTbl(head,rows){ return rows.length?'<div class="tblwrap"><table class="tbl"><thead><tr>'+head.map(function(x){return '<th>'+x+'</th>'}).join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>':'<div class="empty">لا توجد بيانات كافية.</div>'; }
+  function insFmt(n){ return n===''||n===null||n===undefined?'—':Number(n).toLocaleString('en-US'); }
+  function rInsights(){
+    var I=insData(), q=I.quality, h='<h2>الرؤى والتنبيهات</h2><p class="lead">قراءة فقط: لا تغيّر أي رحلة. تُحسب من الرحلات والمرفوضات المحمّلة في الصفحة.</p>';
+    h+='<div class="box"><h3>تنبيهات تحتاج تدخل ('+I.alerts.length+')</h3>';
+    if(!I.alerts.length) h+='<div class="lint info"><span class="grow">✓ لا توجد تنبيهات حاليًا.</span></div>';
+    I.alerts.forEach(function(x){ h+='<div class="lint '+x.level+'"><span>'+(x.level==='err'?'⛔':x.level==='warn'?'⚠':'ℹ')+'</span><span class="grow">'+esc(x.text)+'</span>'+(x.sec&&x.sec!=='insights'?'<button class="abtn sm" data-a="nav" data-s="'+x.sec+'">فتح</button>':'')+'</div>'; });
+    h+='</div>';
+    h+='<div class="box"><h3>جودة المعالجة</h3><div class="kvg"><div><small>رحلات</small><b>'+insFmt(q.total)+'</b></div><div><small>تحتاج مراجعة</small><b>'+q.reviewPct+'٪</b></div><div><small>بلا سعر</small><b>'+q.unpricedPct+'٪</b></div><div><small>بلا وزن</small><b>'+insFmt(q.noWeight)+'</b></div><div><small>كارتات مرفوضة</small><b>'+insFmt(q.rejected)+' ('+q.rejectedPct+'٪)</b></div></div></div>';
+    h+='<div class="box"><h3>بطاقة أداء المقاولين</h3><p class="sub">كل رقم محسوب من بياناتك: نسبة المراجعة والمرفوضات وشذوذ الوزن، وتكلفة الطن للرحلات المسعّرة فقط.</p>'+
+      insTbl(['المقاول','رحلات','أطنان','متوسط الحمولة','مراجعة','مرفوضة','وزن شاذ','تكلفة الطن'],I.contractors.slice(0,40).map(function(c){ return '<tr><td>'+esc(c.name)+'</td><td>'+c.trips+'</td><td>'+insFmt(c.tons)+'</td><td>'+c.avgTons+'</td><td>'+c.reviewPct+'٪</td><td>'+c.rejected+' ('+c.rejectedPct+'٪)</td><td>'+c.anomalies+'</td><td>'+insFmt(c.costPerTon)+'</td></tr>'; }))+'</div>';
+    h+='<div class="box"><h3>رحلات وزنها بعيد عن المعتاد لنفس السيارة ('+I.anomalyCount+')</h3><p class="sub">المقارنة بوسيط وزن نفس السيارة (٥ رحلات فأكثر). حد الانحراف: <input class="fld" type="number" min="5" max="90" step="5" style="width:70px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg)" data-a="ins-tol" value="'+A.ins.tol+'" aria-label="حد الانحراف">٪</p>'+
+      insTbl(['كارتة','السيارة','المقاول','الوزن','المعتاد','الانحراف'],I.anomalies.slice(0,40).map(function(a){ return '<tr><td class="ph">'+esc(a.card)+'</td><td>'+esc(a.plate||'—')+'</td><td>'+esc(a.contractor||'—')+'</td><td>'+a.weight+'</td><td>'+a.median+'</td><td><span class="chip2 bad">'+(a.devPct>0?'+':'')+a.devPct+'٪</span></td></tr>'; }))+'</div>';
+    h+='<div class="box"><h3>تكلفة الطن بالمحصول</h3>'+insTbl(['المحصول','رحلات','أطنان','التكلفة','تكلفة الطن'],I.costByCrop.map(function(g){ return '<tr><td>'+esc(g.key)+'</td><td>'+g.trips+'</td><td>'+insFmt(g.tons)+'</td><td>'+insFmt(g.cost)+'</td><td><b>'+g.perTon+'</b></td></tr>'; }))+'</div>';
+    h+='<div class="box"><h3>تكلفة الطن بالمسار</h3>'+insTbl(['المسار','رحلات','أطنان','التكلفة','تكلفة الطن'],I.costByRoute.map(function(g){ return '<tr><td>'+esc(g.key)+'</td><td>'+g.trips+'</td><td>'+insFmt(g.tons)+'</td><td>'+insFmt(g.cost)+'</td><td><b>'+g.perTon+'</b></td></tr>'; }))+'</div>';
+    var cl=D.changeLog||[];
+    h+='<div class="box"><h3>سجل التعديلات اليدوية ('+cl.length+')</h3><p class="sub">كل تعديل من «مراجعة وتعديل يدوي»: القيمة القديمة والجديدة ومن عدّل.</p>'+
+      insTbl(['الوقت','بواسطة','كارتة','الحقل','من','إلى','السبب'],cl.slice(0,60).map(function(c){ return '<tr><td class="ph">'+esc(c.at)+'</td><td>'+esc(c.by||'—')+'</td><td class="ph">'+esc(c.card)+'</td><td>'+esc(c.field)+'</td><td>'+esc(c.oldV||'—')+'</td><td>'+esc(c.newV||'—')+'</td><td>'+esc(String(c.reason||'').slice(0,80))+'</td></tr>'; }))+'</div>';
+    return h;
+  }
+
     /* ================= سلم القواعد: خريطة مراحل الاستخراج بالترتيب الفعلي + فاحص التضارب =================
      كل درجة = مرحلة حقيقية في الكود بنفس ترتيبها (ما بعدها لا يغيّر ما قبلها إلا إن ذُكر).
      الفاحص يعمل على الإعدادات المفتوحة في اللوحة (حتى قبل الحفظ) ولا يغيّر أي شيء. */
@@ -4002,7 +4155,7 @@ function geoFmt(p) { return p && geoValid(p.lat, p.lng) ? geoRound(p.lat) + ', '
   document.getElementById('fContractor').addEventListener('change',function(e){contractor=e.target.value;shown=400;renderAll()});
   document.getElementById('fRange').addEventListener('change',function(e){range=+e.target.value;shown=400;renderAll()});
 
-  function reload(){ load(function(data){ if(data){ NOW=ts(data.nowIso)||NOW; D.trips=data.trips||[]; D.live=data.live||[]; D.status=data.status||D.status; D.rejected=data.rejected||[]; D.unmatched=data.unmatched||[]; if(data.overrides){ D.overrides=data.overrides; buildOvm(); } if(data.schedule){ D.schedule=data.schedule; if(!A.sch||!A.busy) A.sch=clone(data.schedule.schedule); } if(data.settings&&!A.dirty){ D.settings=clone(data.settings); A.S=clone(D.settings); } D.trips.forEach(prep); D.live.forEach(prep); buildIndex(); renderAll(); renderStatus(); renderMeta(); renderRules(); if(curTab==='admin') aRender(); } }); }
+  function reload(){ load(function(data){ if(data){ NOW=ts(data.nowIso)||NOW; D.trips=data.trips||[]; D.live=data.live||[]; D.status=data.status||D.status; D.rejected=data.rejected||[]; D.unmatched=data.unmatched||[]; if(data.overrides){ D.overrides=data.overrides; buildOvm(); } D.changeLog=data.changeLog||D.changeLog||[]; if(data.schedule){ D.schedule=data.schedule; if(!A.sch||!A.busy) A.sch=clone(data.schedule.schedule); } if(data.settings&&!A.dirty){ D.settings=clone(data.settings); A.S=clone(D.settings); } D.trips.forEach(prep); D.live.forEach(prep); buildIndex(); renderAll(); renderStatus(); renderMeta(); renderRules(); if(curTab==='admin') aRender(); } }); }
   uiStyle();
   load(function(data){
     D=data||D; D.trips=D.trips||[]; D.live=D.live||[];
