@@ -1380,6 +1380,7 @@ function ecApplyPatch(q, patch, S) {
         '<div><b>ملاحظات المحطة</b>'+esc(t.stationNotes||'—')+'</div>'+
         (t.extSrc?'<div><b>مصدر الإكمال</b>'+esc(t.extSrc)+'</div>':'')+
         (t.manual?'<div><b>تعديل يدوي</b>'+esc(t.manual)+'</div>':'')+
+        '<div><button class="abtn sm" data-stmsg="'+attr(t.card)+'">نسخ رسالة حالة</button></div>'+
         (IN_GAS?'<div><button class="abtn sm edit-btn" data-edit="'+attr(t.card)+'">✎ تعديل يدوي / إدخال بيانات</button></div>':'')+
       '</div></div>';
   }
@@ -1479,7 +1480,7 @@ function ecApplyPatch(q, patch, S) {
 
   /* ================= لوحة التحكم ================= */
   var A={S:null,sec:'ladder',dirty:false,busy:false,msg:'',f:{co:'',pl:'',rej:'',rv:''},res:{},focus:null,sandbox:'',rv:{},rvMode:'review',pv:null,pvBusy:false,sch:null,schMsg:'',learn:true};
-  var SECGROUPS=[['نظرة عامة',[['insights','الرؤى والتنبيهات'],['ladder','سلم القواعد'],['rcenter','مركز القواعد'],['test','اختبار فوري']]],['١ · البيانات والربط',[['extlink','ملفات الربط الخارجية'],['extset','إعدادات محرك الربط']]],['٢–٣ · الرفض والمقاولون',[['layers','طبقات الرفض'],['contractors','المقاولون']]],['٤ · الأماكن والتحميل',[['places','الأماكن'],['loading','قواعد مكان التحميل']]],['٦ · المراجعة اليدوية',[['review','مراجعة وتعديل يدوي']]],['٨–٩ · الجارية والأسعار',[['live','الرحلات الجارية'],['pricing','الأسعار']]],['التشغيل',[['schedule','الجدولة'],['general','السائق والعام']]],['الإيميل',[['emview','العرض والحسابات'],['emmsg','الرسالة المولدة'],['emreply','الردود الجاهزة'],['emact','الإجراءات'],['eminfer','الاستنتاج والاقتراح']]],['شخصي',[['ui','المظهر واللغة']]]];
+  var SECGROUPS=[['نظرة عامة',[['insights','الرؤى والتنبيهات'],['ladder','سلم القواعد'],['rcenter','مركز القواعد'],['test','اختبار فوري'],['settle','مستخلص المقاول'],['docs','قراءة صور المستندات'],['expenses','مصروفات وغرامات']]],['١ · البيانات والربط',[['extlink','ملفات الربط الخارجية'],['extset','إعدادات محرك الربط']]],['٢–٣ · الرفض والمقاولون',[['layers','طبقات الرفض'],['contractors','المقاولون']]],['٤ · الأماكن والتحميل',[['places','الأماكن'],['loading','قواعد مكان التحميل']]],['٦ · المراجعة اليدوية',[['review','مراجعة وتعديل يدوي']]],['٨–٩ · الجارية والأسعار',[['live','الرحلات الجارية'],['pricing','الأسعار'],['book','دفتر الأسعار']]],['التشغيل',[['schedule','الجدولة'],['general','السائق والعام']]],['الإيميل',[['emview','العرض والحسابات'],['emmsg','الرسالة المولدة'],['emreply','الردود الجاهزة'],['emact','الإجراءات'],['eminfer','الاستنتاج والاقتراح']]],['شخصي',[['ui','المظهر واللغة']]]];
   var SECS=[]; SECGROUPS.forEach(function(g){ g[1].forEach(function(x){ SECS.push(x); }); });
   var LAYER_LABEL={cancelled:'ملغاة',blockedContractor:'مقاول خارج التشغيل',container:'حاوية/كونتينر'};
   function clone(o){return JSON.parse(JSON.stringify(o))}
@@ -1692,6 +1693,8 @@ function ecApplyPatch(q, patch, S) {
   function rGeneral(){
     var S=A.S, h='<h2>السائق والإعدادات العامة</h2>';
     h+='<div class="box"><h3>اسم السائق</h3><p class="sub">يظهر الاسم مختصرًا، والاسم الكامل محفوظ في عمود التفاصيل ويُبحث به.</p><div class="row" style="align-items:flex-end"><label class="fld">عدد أجزاء الاسم<select data-a="numsel" data-p="driver.words">'+[1,2,3,4].map(function(n){return '<option value="'+n+'"'+(S.driver.words===n?' selected':'')+'>'+n+(n===2?' (ثنائي)':'')+'</option>'}).join('')+'</select></label></div><div class="fld" style="margin-top:10px">بادئات تُدمج مع الكلمة التالية (عبد العزيز، أبو بكر…)'+tagEd('driver.compoundPrefixes')+'</div></div>';
+    var cn=D.counts||{}, dp=S.display||{maxTrips:2500,maxLive:600,maxRejected:6000};
+    h+='<div class="box"><h3>حدود العرض في الصفحة</h3><p class="sub">أقصى عدد يُحمَّل ويُعرض في الصفحة (الشيت نفسه يحتفظ بكل الرحلات). الأحدث أولًا. رفع الأرقام كثيرًا يبطّئ تحميل الصفحة. بعد التغيير اضغط «حفظ» ثم حدّث الصفحة.</p><div class="row" style="align-items:flex-end;gap:14px;flex-wrap:wrap"><label class="fld" style="max-width:200px">الرحلات المعروضة<input type="number" min="100" max="30000" step="100" data-a="numdisp" data-k="maxTrips" value="'+dp.maxTrips+'"></label><label class="fld" style="max-width:200px">الرحلات الجارية<input type="number" min="50" max="5000" step="50" data-a="numdisp" data-k="maxLive" value="'+dp.maxLive+'"></label><label class="fld" style="max-width:200px">الكارتات المرفوضة<input type="number" min="100" max="30000" step="100" data-a="numdisp" data-k="maxRejected" value="'+dp.maxRejected+'"></label></div><p class="sub" style="margin-top:8px">الموجود فعليًا في الشيت: رحلات <b>'+(cn.trips||0)+'</b> · جارية <b>'+(cn.live||0)+'</b> · مرفوضة <b>'+(cn.rejected||0)+'</b>'+(cn.trips>(D.trips||[]).length?' — معروض الآن <b>'+(D.trips||[]).length+'</b> من الرحلات فقط':'')+'</p></div>';
     h+='<div class="box"><h3>الاحتفاظ بالبيانات</h3><label class="fld" style="max-width:240px">أيام الاحتفاظ بصفوف JDE في المخزن<input type="number" min="7" max="365" data-a="numint" data-p="retentionDays" value="'+S.retentionDays+'"></label></div>';
     return h;
   }
@@ -1714,7 +1717,7 @@ function ecApplyPatch(q, patch, S) {
     var nq=nz(A.lad.navq);
     var nav='<input class="nvq" data-a="navq" value="'+attr(A.lad.navq)+'" placeholder="ابحث عن قسم…" aria-label="بحث في الأقسام">'+SECGROUPS.map(function(g){ var items=g[1].filter(function(x){ return !nq||nz(x[1]).indexOf(nq)>=0; }); return items.length?'<div class="ngrp">'+g[0]+'</div>'+items.map(navBtn).join(''):''; }).join('');
     document.getElementById('anav').innerHTML=nav;
-    fillLists(); var f={review:rReview,extlink:rExtLink,extset:rExtSet,layers:rLayers,contractors:rContractors,places:rPlaces,loading:rLoading,live:rLive,pricing:rPricing,schedule:rSchedule,general:rGeneral,test:rTest,emview:rEmView,emmsg:rEmMsg,emreply:rEmReply,emact:rEmAct,eminfer:rEmInfer,ui:rUiPanel,rcenter:rRulesCenter,ladder:rLadder,insights:rInsights}[A.sec];
+    fillLists(); var f={review:rReview,extlink:rExtLink,extset:rExtSet,layers:rLayers,contractors:rContractors,places:rPlaces,loading:rLoading,live:rLive,pricing:rPricing,schedule:rSchedule,general:rGeneral,test:rTest,emview:rEmView,emmsg:rEmMsg,emreply:rEmReply,emact:rEmAct,eminfer:rEmInfer,ui:rUiPanel,rcenter:rRulesCenter,ladder:rLadder,insights:rInsights,book:rBook,settle:rSettle,docs:rDocs,expenses:rExpenses}[A.sec];
     document.getElementById('asec').innerHTML=(A.sec==='ladder'?'':ladBanner(A.sec))+f();
     sbRender();
     if(A.focus){ var el=document.querySelector(A.focus.sel); if(el){ el.focus(); try{ var v=el.value; el.setSelectionRange(v.length,v.length);}catch(e){} } A.focus=null; }
@@ -2097,6 +2100,7 @@ function ecApplyPatch(q, patch, S) {
     if(a==='saveRebuild'){ aSave(true); return; }
     if(a==='revert'){ A.S=clone(D.settings); A.dirty=false; A.msg=''; aRender(); return; }
     if(a==='reset'){ if(confirm('استعادة كل الإعدادات والقواميس للقيم الافتراضية؟ (لن تُحفظ إلا بعد الضغط على حفظ)')){ A.S=clone(D.defaults); touch(); aRender(); } return; }
+    if(bookAct(a)||stAct(a,t)||dcAct(a,t)||xpAct(a,t)) return;
     if(a==='ext-refresh'){ A.ext.msg=''; A.ext.loaded=false; extLoad(true); return; }
     if(a==='ext-folder'){ extCall('api_extSetFolder',[(document.getElementById('extFolder')||{}).value||'',pinVal()],function(r){ return r.folderId?'✓ تم حفظ المجلد: '+r.folderName:'✓ أُزيل مجلد الربط المنفصل'; }); setTimeout(function(){ A.ext.loaded=false; extLoad(true); },600); return; }
     if(a==='ext-scan'||a==='ext-scan-force'){ extCall('api_extScan',[a==='ext-scan-force',pinVal()],function(r){ var s=r.summary||{}; return '✓ تم الفحص: '+(s.files||0)+' ملف JDE جديد، '+((s.ext&&s.ext.files)||0)+' ملف خارجي ('+((s.ext&&s.ext.records)||0)+' سجل)، وأُعيد بناء '+(s.trips||0)+' رحلة'+((s.errors&&s.errors.length)?' — تنبيهات: '+s.errors.join(' ؛ '):''); }); return; }
@@ -2152,6 +2156,11 @@ function ecApplyPatch(q, patch, S) {
     else if(a==='pk-label'){ A.pk.label=t.value; }
     else if(a==='pk-co'){ A.pk.contractor=t.value.trim(); }
     else if(a==='numhrs'){ sp(t.dataset.p,Math.max(0,Math.min(2160,+t.value||0))); touch(); aRender(); }
+    else if(a==='dc-file'){ var fl=t.files; dcFiles(fl); }
+    else if(a==='book-on'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; A.S.book.enabled=t.checked; touch(); aRender(); }
+    else if(a==='book-comb'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; A.S.book.combine=t.value; touch(); aRender(); }
+    else if(a==='book-sheet'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; var dl=A.S.book.disabled=A.S.book.disabled||[], n=t.dataset.n, ix=dl.indexOf(n); if(t.checked&&ix>=0) dl.splice(ix,1); if(!t.checked&&ix<0) dl.push(n); touch(); aRender(); }
+    else if(a==='numdisp'){ var lim={maxTrips:[100,30000],maxLive:[50,5000],maxRejected:[100,30000]}[t.dataset.k]; A.S.display=A.S.display||{}; A.S.display[t.dataset.k]=Math.max(lim[0],Math.min(lim[1],+t.value||lim[0])); touch(); aRender(); }
     else if(a==='numint'){ sp(t.dataset.p,Math.max(7,Math.min(365,+t.value||60))); touch(); aRender(); }
     else if(a==='txt'){ sp(t.dataset.p,t.value.trim()||A.S.contractors.noContractorLabel); touch(); aRender(); }
     else if(a==='txt2'){ sp(t.dataset.p,t.value.trim()); touch(); aRender(); }
@@ -2169,6 +2178,7 @@ function ecApplyPatch(q, patch, S) {
     if(t.dataset&&t.dataset.a==='rv-in'){ var c=t.dataset.c; (A.rv[c]=A.rv[c]||{})[t.dataset.k]=t.value; t.classList.toggle('filled',t.value.trim()!==''); var b=document.querySelector('[data-a="rv-save"]'); if(b){ var n=Object.keys(A.rv).filter(function(x){return A.rv[x]&&String(A.rv[x][t.dataset.k]||'').trim()!==''}).length; b.disabled=!n||A.busy; b.textContent='حفظ المكتوب وتطبيقه ('+n+')'; } return; }
     if(t.dataset&&t.dataset.a==='navq'){ A.lad.navq=t.value; A.focus={sel:'[data-a="navq"]'}; aRender(); return; }
     if(t.dataset&&t.dataset.a==='plx-q'){ A.pl.q=t.value; A.pl.page=1; A.focus={sel:'[data-a="plx-q"]'}; aRender(); return; }
+    if(t.dataset&&(t.dataset.a==='st-from'||t.dataset.a==='st-to')){ var iso=t.value.trim(); if(iso&&!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return; if(t.dataset.a==='st-from') A.st.from=iso; else A.st.to=iso; A.focus={sel:'[data-a="'+t.dataset.a+'"]'}; aRender(); return; }
     if(t.dataset&&t.dataset.a==='ins-tol'){ var v=Math.max(5,Math.min(90,+t.value||25)); A.ins.tol=v; A.focus={sel:'[data-a="ins-tol"]'}; aRender(); return; }
     if(t.id==='rvName'){ saveName(t.value); return; }
     if(t.id==='rvLearn'){ A.learn=t.checked; return; }
@@ -3351,6 +3361,287 @@ function computeInsights_(trips, rejected, opts) {
   return { quality: quality, contractors: contractors, anomalies: anomalies.slice(0, 60), anomalyCount: anomalies.length, costByCrop: costByCrop, costByRoute: costByRoute, alerts: alerts, tolPct: tol };
 }
 
+/**
+ * التعلّم من التصحيحات اليدوية: نفس التصحيح (حقل + قيمة قديمة ← جديدة) لأكثر من كارتة = على الأرجح يلزم قاعدة دائمة.
+ * log = سجل التعديلات [{card, field, oldV, newV, at}]. يرجع [{field, oldV, newV, count, cards, last, sec}] الأكثر تكرارًا أولًا.
+ */
+function computeLearned_(log, minCount) {
+  var min = minCount || 2, FIELDS = { 'مكان التحميل': 'places', 'مكان التفريغ': 'places', 'المقاول': 'contractors', 'المحصول': 'review' }, g = {};
+  (log || []).forEach(function (e) {
+    if (!e || !FIELDS[e.field] || !e.oldV || !e.newV || e.oldV === e.newV) return;
+    var k = e.field + '¦' + e.oldV + '¦' + e.newV, x = g[k] = g[k] || { field: e.field, oldV: e.oldV, newV: e.newV, cards: {}, last: '', sec: FIELDS[e.field] };
+    x.cards[e.card] = 1; if (String(e.at || '') > x.last) x.last = String(e.at || '');
+  });
+  return Object.keys(g).map(function (k) { var x = g[k]; x.count = Object.keys(x.cards).length; x.cards = Object.keys(x.cards).slice(0, 8); return x; })
+    .filter(function (x) { return x.count >= min; }).sort(function (a, b) { return b.count - a.count || (a.last < b.last ? 1 : -1); });
+}
+
+  /**
+ * 23 · رسالة حالة رحلة جاهزة للنسخ (دالة نقية). لا إرسال ولا ربط واتساب: الموظف ينسخها ويبعتها بنفسه.
+ */
+function tripStatusMsg_(t) {
+  if (!t) return '';
+  function has(v) { return v !== '' && v !== null && v !== undefined && String(v).trim() !== ''; }
+  function tn(v) { var n = Number(v); return has(v) && isFinite(n) && n > 0 ? String(Math.round(n * 1000) / 1000) : ''; }
+  var L = [];
+  L.push('🚛 حالة الرحلة — كارتة ' + t.card);
+  var who = [t.contractor && t.contractor !== '—' ? 'المقاول: ' + t.contractor : '', has(t.driver) ? 'السائق: ' + t.driver : '', has(t.plate) ? 'السيارة: ' + t.plate : ''].filter(Boolean);
+  if (who.length) L.push(who.join(' · '));
+  if (has(t.cropVar) || has(t.pack)) L.push('الصنف: ' + [t.cropVar, t.pack].filter(has).join(' — '));
+  if (has(t.loadPlace) || has(t.unloadPlace)) L.push('المسار: ' + (t.loadPlace || '—') + ' ← ' + (t.unloadPlace || '—'));
+  L.push('الحالة: ' + (t.live && t.stage ? t.stage : (t.kind === 'ملغاة' ? 'ملغاة' : (t.statusName || 'تمت'))));
+  var w = tn(t.weight);
+  if (w) { var x = 'الوزن: ' + w + ' طن'; if (tn(t.loadWeight) && tn(t.unloadWeight)) x += ' (تحميل ' + tn(t.loadWeight) + ' / تفريغ ' + tn(t.unloadWeight) + ')'; L.push(x); }
+  else L.push('الوزن: لم يُوزن بعد');
+  if (has(t.lastAt)) L.push('آخر نشاط: ' + String(t.lastAt).slice(0, 16));
+  return L.join('\n');
+}
+
+  /**
+ * ============================================================
+ * 22 · مستخلص المقاول (دالة نقية) — كل مقاول لفترة: رحلات، أطنان، مستحقات، وما ينقصه سعر
+ * الرحلات الملغاة والمرفوضة والجارية لا تدخل. المبلغ = مجموع أسعار الرحلات المسعّرة فقط؛ غير المسعّرة تُعدّ وتُعرض ولا تُقدَّر.
+ * opts: { from:'yyyy-MM-dd', to:'yyyy-MM-dd', contractor:'اسم' }
+ * ============================================================
+ */
+function stNum_(v) { var n = Number(v); return v !== '' && v !== null && v !== undefined && isFinite(n) ? n : null; }
+function stR2_(n) { return Math.round(n * 100) / 100; }
+
+function computeSettlement_(trips, opts) {
+  opts = opts || {};
+  var from = opts.from || '', to = opts.to || '', only = opts.contractor || '';
+  var groups = {}, order = [], total = { trips: 0, tons: 0, amount: 0, unpriced: 0, manual: 0 };
+  (trips || []).forEach(function (t) {
+    if (!t || t.live || t.kind === 'ملغاة' || t.kind === 'مرفوضة') return;
+    var d = String(t.lastAt || t.loadAt || t.unloadAt || '').slice(0, 10);
+    if (from && d < from) return;
+    if (to && d > to) return;
+    var name = t.contractor || '—';
+    var g = groups[name];
+    if (!g) { g = groups[name] = { name: name, trips: 0, tons: 0, amount: 0, unpriced: 0, manual: 0, routes: {}, lines: [] }; order.push(name); }
+    var w = stNum_(t.weight), p = stNum_(t.price), isManual = t.priceRule === 'سعر يدوي';
+    g.trips++; g.tons += w || 0;
+    if (p !== null && p > 0) g.amount += p; else g.unpriced++;
+    if (isManual) g.manual++;
+    var rk = (t.loadPlace || '—') + ' ← ' + (t.unloadPlace || '—'), r = g.routes[rk] = g.routes[rk] || { route: rk, trips: 0, tons: 0, amount: 0, unpriced: 0 };
+    r.trips++; r.tons += w || 0; if (p !== null && p > 0) r.amount += p; else r.unpriced++;
+    g.lines.push({ date: d, card: t.card, plate: t.plate || '', route: rk, crop: t.cropVar || '', weight: w === null ? '' : w, price: p === null ? '' : p, rule: t.priceRule || '' });
+  });
+  var rows = order.map(function (n) {
+    var g = groups[n];
+    g.tons = Math.round(g.tons * 1000) / 1000; g.amount = stR2_(g.amount);
+    g.routeList = Object.keys(g.routes).map(function (k) { var r = g.routes[k]; r.tons = Math.round(r.tons * 1000) / 1000; r.amount = stR2_(r.amount); return r; }).sort(function (a, b) { return b.amount - a.amount; });
+    delete g.routes;
+    g.lines.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    total.trips += g.trips; total.tons += g.tons; total.amount += g.amount; total.unpriced += g.unpriced; total.manual += g.manual;
+    return g;
+  }).sort(function (a, b) { return b.amount - a.amount || b.trips - a.trips; });
+  total.tons = Math.round(total.tons * 1000) / 1000; total.amount = stR2_(total.amount);
+  var sel = only ? rows.filter(function (g) { return g.name === only; })[0] || null : null;
+  return { contractors: rows, total: total, selected: sel, from: from, to: to };
+}
+
+/** CSV لمستخلص مقاول (سطر لكل رحلة + إجمالي) */
+function settlementCsv_(g) {
+  function q(v) { v = String(v === null || v === undefined ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  var rows = [['التاريخ', 'الكارتة', 'السيارة', 'المسار', 'المحصول', 'الوزن (طن)', 'السعر', 'مصدر السعر']];
+  g.lines.forEach(function (l) { rows.push([l.date, l.card, l.plate, l.route, l.crop, l.weight, l.price, l.rule]); });
+  rows.push(['', '', '', '', 'الإجمالي', g.tons, g.amount, g.unpriced ? g.unpriced + ' رحلة بلا سعر' : '']);
+  return rows.map(function (r) { return r.map(q).join(','); }).join('\r\n');
+}
+
+  /**
+ * ============================================================
+ * 24 · قراءة صور المستندات (بطاقة ميزان دالتكس · كارتة شحن ورقية · تذكرة ميزان خارجي · غرامة/إيصال طريق)
+ * Gemini يستخرج الحقول من الصورة، ثم docNormalize_ (دالة نقية) تنظّفها وتتحقق منها حسابيًا،
+ * وdocMatchTrips_ (نقية) تربط المستند برحلة. لا يُكتب شيء بدون ضغطة «تطبيق» من المستخدم.
+ * ============================================================
+ */
+var DOC_KINDS_ = { weighcard: 'بطاقة ميزان دالتكس', paper: 'كارتة شحن ورقية', ext_scale: 'تذكرة ميزان خارجي', fine: 'غرامة / إيصال طريق', other: 'مستند آخر' };
+
+var DOC_SYSTEM_ = 'أنت تقرأ صورة مستند نقل زراعي مصري (عربي، بعضه مكتوب بخط اليد، وقد تكون الصورة مقلوبة أو مائلة). ' +
+  'أنواع المستندات: weighcard = بطاقة كارتة شحن مطبوعة من ميزان دالتكس (فيها رقم كارتة الشحن، بيانات وزن الدخول والخروج، اجمالي الوزن، صافي الوزن، بيانات الاصناف)؛ ' +
+  'paper = كارتة شحن ورقية مكتوبة باليد (رقمها بالأحمر، جهة الشحن، رقم السيارة، الصنف والعدد والوزن)؛ ' +
+  'ext_scale = تذكرة ميزان خارجي (إجمالي الوزن الأول والثاني وصافي الوزن)؛ fine = غرامة ميزان أو إيصال طريق أو بون تحصيل بمبلغ؛ other = غير ذلك. ' +
+  'أعد JSON فقط بهذه المفاتيح (قيمة فارغة "" لما لا يظهر بوضوح، ولا تخمّن): ' +
+  '{"kind","card" (رقم كارتة الشحن),"paper" (رقم الكارتة الورقية),"op" (رقم العملية/كارتة الصادر),"plate","trailer","driver","contractor","from","to","crop","variety","itemType","pack","count" (عدد العبوات),' +
+  '"grossKg","tareKg","netKg","deductionKg","date" (yyyy-MM-dd),"time","amount" (للغرامات بالجنيه),"issuer","confidence" (0-1),"notes"}. ' +
+  'الأوزان بالكيلوجرام كأرقام. لا تضف أي نص خارج JSON.';
+
+function docNum_(v) {
+  if (v === null || v === undefined || v === '') return '';
+  var s = toAsciiDigits_(String(v)).replace(/[,\s٬]/g, '').replace(/٫/g, '.'), n = Number(s);
+  return isFinite(n) ? n : '';
+}
+function docText_(v) { return v === null || v === undefined ? '' : toAsciiDigits_(String(v)).replace(/\s+/g, ' ').trim(); }
+function docDate_(v) {
+  var s = docText_(v), m = s.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  if (m) return m[1] + '-' + (m[2].length < 2 ? '0' : '') + m[2] + '-' + (m[3].length < 2 ? '0' : '') + m[3];
+  m = s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+  return m ? m[3] + '-' + (m[2].length < 2 ? '0' : '') + m[2] + '-' + (m[1].length < 2 ? '0' : '') + m[1] : '';
+}
+
+/** ينظّف ما رجّعه النموذج ويتحقق: صافي = إجمالي − فارغ (سماح 20 كجم)، تاريخ معقول، وزن في نطاق منطقي */
+function docNormalize_(raw) {
+  raw = raw || {};
+  var d = { kind: DOC_KINDS_[raw.kind] ? raw.kind : 'other' };
+  ['card', 'paper', 'op', 'plate', 'trailer', 'driver', 'contractor', 'from', 'to', 'crop', 'variety', 'itemType', 'pack', 'time', 'issuer', 'notes'].forEach(function (k) { d[k] = docText_(raw[k]); });
+  ['grossKg', 'tareKg', 'netKg', 'deductionKg', 'count', 'amount'].forEach(function (k) { d[k] = docNum_(raw[k]); });
+  d.date = docDate_(raw.date);
+  var conf = Number(raw.confidence); d.confidence = isFinite(conf) ? Math.max(0, Math.min(1, conf)) : '';
+  var flags = [];
+  if (d.grossKg !== '' && d.tareKg !== '' && d.netKg !== '' && Math.abs(d.grossKg - d.tareKg - d.netKg) > 20) flags.push('الإجمالي − الفارغ لا يساوي الصافي (' + (d.grossKg - d.tareKg) + ' ≠ ' + d.netKg + ') — راجع الأرقام على الصورة');
+  if (d.netKg !== '' && (d.netKg < 1000 || d.netKg > 60000)) flags.push('الصافي خارج المعتاد (' + d.netKg + ' كجم)');
+  if (d.kind === 'fine' && d.amount === '') flags.push('لم أقرأ مبلغ الغرامة');
+  if (d.kind !== 'fine' && d.kind !== 'other' && d.netKg === '' && d.grossKg === '') flags.push('لم أقرأ أي وزن');
+  if (d.confidence !== '' && d.confidence < 0.6) flags.push('ثقة القراءة منخفضة');
+  d.flags = flags;
+  d.netTons = d.netKg === '' ? '' : Math.round(d.netKg) / 1000;
+  return d;
+}
+
+function docDigits_(s) { return toAsciiDigits_(String(s || '')).replace(/\D/g, ''); }
+
+/** ربط المستند برحلات: الكارتة/الورقية/العملية بالأولوية، ثم السيارة + التاريخ (±يوم). يرجع [{card, by, trip}] */
+function docMatchTrips_(doc, trips) {
+  var out = [], seen = {};
+  function add(t, by) { if (!seen[t.card]) { seen[t.card] = 1; out.push({ card: t.card, by: by, trip: t }); } }
+  var ids = [[doc.card, 'رقم الكارتة'], [doc.paper, 'الكارتة الورقية'], [doc.op, 'رقم العملية']].filter(function (x) { return x[0]; });
+  (trips || []).forEach(function (t) {
+    ids.forEach(function (p) {
+      var v = docDigits_(p[0]);
+      if (v && (docDigits_(t.card) === v || docDigits_(t.paper) === v)) add(t, p[1]);
+    });
+  });
+  var pl = docDigits_(doc.plate), dt = doc.date;
+  if (!out.length && pl.length >= 3 && dt) {
+    var base = Date.parse(dt + 'T00:00:00Z');
+    (trips || []).forEach(function (t) {
+      var tp = docDigits_(t.plate), td = String(t.lastAt || t.loadAt || '').slice(0, 10);
+      if (!tp || !td || tp.indexOf(pl) < 0 && pl.indexOf(tp) < 0) return;
+      if (Math.abs((Date.parse(td + 'T00:00:00Z') - base) / 864e5) <= 1) add(t, 'السيارة + التاريخ');
+    });
+  }
+  return out.slice(0, 5);
+}
+
+/* ---------------- الجزء الذي يستخدم خدمات جوجل ---------------- */
+
+function callVisionOnce_(p, b64, mime) {
+  var resp = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(p.model) + ':generateContent', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { 'x-goog-api-key': p.key },
+    payload: JSON.stringify({
+      systemInstruction: { parts: [{ text: DOC_SYSTEM_ }] },
+      contents: [{ role: 'user', parts: [{ inlineData: { mimeType: mime, data: b64 } }, { text: 'اقرأ هذا المستند.' }] }],
+      generationConfig: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 2048 }
+    })
+  });
+  var code = resp.getResponseCode(), body = resp.getContentText();
+  if (code < 200 || code >= 300) return { ok: false, code: code, body: body };
+  try {
+    var j = JSON.parse(body), parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
+    return { ok: true, text: parts.map(function (x) { return x.text || ''; }).join('') };
+  } catch (e) { return { ok: false, code: 200, body: 'bad response json' }; }
+}
+
+/** صورة (base64 بدون البادئة) ← حقول مستخرجة ومنظّفة. محرّر أو إدارة. */
+function api_docRead(b64, mime, pin) {
+  requireEditor_(pin);
+  b64 = String(b64 || ''); mime = /^image\/(jpeg|png|webp)$/.test(String(mime)) ? String(mime) : 'image/jpeg';
+  if (b64.length < 200) throw new Error('الصورة فارغة أو غير مقروءة.');
+  if (b64.length > 4500000) throw new Error('الصورة كبيرة جدًا — صغّرها وأعد المحاولة.');
+  var prov = aiProviders_().filter(function (p) { return p.type === 'gemini'; });
+  if (!prov.length) throw new Error('قراءة الصور تحتاج GEMINI_API_KEY في Script Properties.');
+  var last = '';
+  for (var i = 0; i < prov.length; i++) {
+    var r = callVisionOnce_(prov[i], b64, mime);
+    if (!r.ok) { last = 'HTTP ' + r.code; continue; }
+    var j; try { j = JSON.parse(String(r.text).replace(/^```json|```$/g, '').trim()); } catch (e) { last = 'ردّ غير مفهوم'; continue; }
+    if (Array.isArray(j)) j = j[0] || {};
+    return { ok: true, doc: docNormalize_(j), model: prov[i].label };
+  }
+  throw new Error('تعذرت قراءة الصورة (' + last + '). جرّب صورة أوضح.');
+}
+
+  /**
+ * ============================================================
+ * 25 · مصروفات وغرامات الرحلات (غرامة ميزان، رسوم طريق، أخرى) — تُسجَّل على كارتة، وتظهر في المستخلص منفصلة عن الأجر
+ * expNormalize_ و expSummary_ دوال نقية. التخزين في شيت Trip_Expenses.
+ * ============================================================
+ */
+var EXP_TYPES_ = ['غرامة ميزان', 'رسوم طريق', 'غرامة أخرى', 'مصروف آخر'];
+var EXP_COLUMNS = [['id', 'المعرّف'], ['at', 'سُجّل في'], ['by', 'بواسطة'], ['card', 'كارتة الشحن'], ['type', 'النوع'], ['amount', 'المبلغ'], ['plate', 'السيارة'], ['date', 'تاريخ المستند'], ['issuer', 'الجهة'], ['note', 'ملاحظة'], ['chargeTo', 'تُحمَّل على']];
+
+function expNormalize_(raw) {
+  raw = raw || {};
+  function tx(v, n) { return String(v === null || v === undefined ? '' : toAsciiDigits_(String(v))).replace(/\s+/g, ' ').trim().slice(0, n || 120); }
+  var amt = Number(toAsciiDigits_(String(raw.amount === undefined ? '' : raw.amount)).replace(/[,\s]/g, ''));
+  var type = EXP_TYPES_.indexOf(raw.type) >= 0 ? raw.type : 'مصروف آخر';
+  var ct = raw.chargeTo === 'contractor' || raw.chargeTo === 'company' ? raw.chargeTo : 'contractor';
+  return { card: tx(raw.card, 30), type: type, amount: isFinite(amt) ? Math.round(amt * 100) / 100 : 0, plate: tx(raw.plate, 40), date: /^\d{4}-\d{2}-\d{2}$/.test(String(raw.date || '')) ? raw.date : '', issuer: tx(raw.issuer, 80), note: tx(raw.note, 200), chargeTo: ct };
+}
+
+/** ملخص: لكل مقاول (من رحلات الكارتات) مجموع المصروفات المحمّلة عليه والمحمّلة على الشركة، وإجمالي حسب النوع */
+function expSummary_(expenses, trips) {
+  var byCard = {}; (trips || []).forEach(function (t) { if (t && t.card) byCard[String(t.card)] = t; });
+  var res = { total: 0, byType: {}, byContractor: {}, unlinked: 0 };
+  (expenses || []).forEach(function (e) {
+    var a = Number(e.amount); if (!isFinite(a) || a <= 0) return;
+    res.total += a; res.byType[e.type] = (res.byType[e.type] || 0) + a;
+    var t = byCard[String(e.card)], who = t ? (t.contractor || '—') : '';
+    if (!t) { res.unlinked++; return; }
+    var g = res.byContractor[who] = res.byContractor[who] || { contractor: who, onContractor: 0, onCompany: 0, count: 0 };
+    if (e.chargeTo === 'company') g.onCompany += a; else g.onContractor += a;
+    g.count++;
+  });
+  res.total = Math.round(res.total * 100) / 100;
+  res.list = Object.keys(res.byContractor).map(function (k) { var g = res.byContractor[k]; g.onContractor = Math.round(g.onContractor * 100) / 100; g.onCompany = Math.round(g.onCompany * 100) / 100; return g; }).sort(function (a, b) { return b.onContractor - a.onContractor; });
+  return res;
+}
+
+/* ---------------- الجزء الذي يستخدم Sheets ---------------- */
+function readExpenses_(limit) {
+  try {
+    var sh = ss_().getSheetByName(TMS.SHEET.EXPENSES);
+    if (!sh) return [];
+    return readObjects_(sh, EXP_COLUMNS).map(function (o) { o.amount = Number(o.amount) || 0; return o; }).slice(-(limit || 500)).reverse();
+  } catch (e) { return []; }
+}
+
+/** list = [{card,type,amount,plate,date,issuer,note,chargeTo}] — محرّر أو إدارة */
+function api_expenseSave(list, by, pin) {
+  requireEditor_(pin);
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) throw new Error('تشغيل آخر جارٍ الآن، حاول بعد دقيقة.');
+  try {
+    var now = Utilities.formatDate(new Date(), TMS.TZ, 'yyyy-MM-dd HH:mm'), rows = [];
+    (list || []).slice(0, 50).forEach(function (raw, i) {
+      var e = expNormalize_(raw);
+      if (!e.card) throw new Error('الكارتة مطلوبة لكل مصروف.');
+      if (!(e.amount > 0)) throw new Error('المبلغ لازم يكون أكبر من صفر.');
+      e.id = 'X' + Date.now().toString(36) + i; e.at = now; e.by = cleanText_(by).slice(0, 60); rows.push(e);
+    });
+    var sh = ensureSheet_(TMS.SHEET.EXPENSES, EXP_COLUMNS);
+    appendObjects_(sh, EXP_COLUMNS, rows);
+    return { ok: true, count: rows.length, expenses: readExpenses_(500) };
+  } finally { lock.releaseLock(); }
+}
+
+function api_expenseDelete(id, pin) {
+  requireAdmin_(pin);
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) throw new Error('تشغيل آخر جارٍ الآن، حاول بعد دقيقة.');
+  try {
+    var sh = ss_().getSheetByName(TMS.SHEET.EXPENSES), n = 0;
+    if (sh && sh.getLastRow() > 1) {
+      var ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues();
+      for (var i = ids.length - 1; i >= 0; i--) if (String(ids[i][0]) === String(id)) { sh.deleteRows(i + 2, 1); n++; }
+    }
+    return { ok: true, deleted: n, expenses: readExpenses_(500) };
+  } finally { lock.releaseLock(); }
+}
+
     /* ================= الرؤى والتنبيهات: لوحة قراءة فقط تعمل على بيانات الصفحة (computeInsights_) ================= */
   A.ins={tol:25,cache:null,key:''};
   function insData(){
@@ -3377,9 +3668,175 @@ function computeInsights_(trips, rejected, opts) {
       insTbl(['كارتة','السيارة','المقاول','الوزن','المعتاد','الانحراف'],I.anomalies.slice(0,40).map(function(a){ return '<tr><td class="ph">'+esc(a.card)+'</td><td>'+esc(a.plate||'—')+'</td><td>'+esc(a.contractor||'—')+'</td><td>'+a.weight+'</td><td>'+a.median+'</td><td><span class="chip2 bad">'+(a.devPct>0?'+':'')+a.devPct+'٪</span></td></tr>'; }))+'</div>';
     h+='<div class="box"><h3>تكلفة الطن بالمحصول</h3>'+insTbl(['المحصول','رحلات','أطنان','التكلفة','تكلفة الطن'],I.costByCrop.map(function(g){ return '<tr><td>'+esc(g.key)+'</td><td>'+g.trips+'</td><td>'+insFmt(g.tons)+'</td><td>'+insFmt(g.cost)+'</td><td><b>'+g.perTon+'</b></td></tr>'; }))+'</div>';
     h+='<div class="box"><h3>تكلفة الطن بالمسار</h3>'+insTbl(['المسار','رحلات','أطنان','التكلفة','تكلفة الطن'],I.costByRoute.map(function(g){ return '<tr><td>'+esc(g.key)+'</td><td>'+g.trips+'</td><td>'+insFmt(g.tons)+'</td><td>'+insFmt(g.cost)+'</td><td><b>'+g.perTon+'</b></td></tr>'; }))+'</div>';
+    var LN=computeLearned_(D.changeLog||[],2);
+    h+='<div class="box"><h3>تصحيحات بتتكرر — تستاهل قاعدة دائمة ('+LN.length+')</h3><p class="sub">نفس التصحيح اليدوي اتعمل على أكتر من كارتة. بدل ما تصحّحه كل مرة، ضيف قاعدة أو اسم بديل في القسم المناسب.</p>'+
+      insTbl(['الحقل','من','إلى','مرات','أمثلة كارتة',''],LN.slice(0,30).map(function(x){ return '<tr><td>'+esc(x.field)+'</td><td>'+esc(x.oldV)+'</td><td>'+esc(x.newV)+'</td><td><b>'+x.count+'</b></td><td class="ph">'+esc(x.cards.slice(0,3).join(' · '))+'</td><td><button class="abtn sm" data-a="nav" data-s="'+x.sec+'">افتح القسم</button></td></tr>'; }))+'</div>';
     var cl=D.changeLog||[];
     h+='<div class="box"><h3>سجل التعديلات اليدوية ('+cl.length+')</h3><p class="sub">كل تعديل من «مراجعة وتعديل يدوي»: القيمة القديمة والجديدة ومن عدّل.</p>'+
       insTbl(['الوقت','بواسطة','كارتة','الحقل','من','إلى','السبب'],cl.slice(0,60).map(function(c){ return '<tr><td class="ph">'+esc(c.at)+'</td><td>'+esc(c.by||'—')+'</td><td class="ph">'+esc(c.card)+'</td><td>'+esc(c.field)+'</td><td>'+esc(c.oldV||'—')+'</td><td>'+esc(c.newV||'—')+'</td><td>'+esc(String(c.reason||'').slice(0,80))+'</td></tr>'; }))+'</div>';
+    return h;
+  }
+
+    /* ================= دفتر الأسعار: استيراد ملف الأسعار من درايف + تحذيرات + تجربة سعر ================= */
+  A.book={busy:false,msg:'',test:null};
+  function bookSt(){ return D.book||null; }
+  function bookCall(name,args,okMsg){
+    if(needPin(function(m){ A.book.msg=m; aRender(); })) return;
+    A.book.busy=true; A.book.msg='جارٍ التنفيذ… (قد يأخذ دقيقة مع الملفات الكبيرة)'; aRender();
+    srv(name,args,function(r){ A.book.busy=false; if(r&&r.book) D.book=r.book; A.book.msg=okMsg(r); aRender(); if(r&&r.book) reload(); },
+      function(m){ A.book.busy=false; A.book.msg='تعذر التنفيذ: '+m; aRender(); });
+  }
+  function bookAct(a){
+    if(a==='book-import'){ bookCall('api_bookImport',[(document.getElementById('bookFile')||{}).value||'',pinVal()],function(r){ var b=r.book&&r.book.meta||{}; return '✓ تم استيراد '+(b.total||0)+' سعر من '+((b.sheets||[]).length)+' شيت، وأُعيد بناء '+(r.trips||0)+' رحلة'; }); return true; }
+    if(a==='book-test'){
+      if(needPin(function(m){ A.book.msg=m; aRender(); })) return true;
+      var g=function(i){ return (document.getElementById(i)||{}).value||''; };
+      A.book.busy=true; aRender();
+      srv('api_bookTest',[{from:g('bkFrom'),to:g('bkTo'),veh:g('bkVeh'),weight:g('bkW'),pkgs:g('bkP'),date:g('bkD'),itemType:g('bkT')},pinVal()],function(r){ A.book.busy=false; A.book.test=r.result||{none:true}; aRender(); },function(m){ A.book.busy=false; A.book.test={error:m}; aRender(); });
+      return true;
+    }
+    return false;
+  }
+  function rBook(){
+    var b=bookSt(), B=(A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}), m=b&&b.meta;
+    var h='<h2>دفتر الأسعار</h2><p class="lead">ملف الأسعار (Excel أو Google Sheet) يتحوّل لدفتر أسعار يُسعّر به النظام الرحلات تلقائيًا. الأولوية: السعر اليدوي ← القواعد ← الدفتر. الرحلة المسعّرة بالدفتر يظهر فيها اسم الشيت والمسار.</p>';
+    if(A.book.msg) h+='<div class="pv"><b>'+esc(A.book.msg)+'</b></div>';
+    h+='<div class="box"><h3>استيراد ملف الأسعار</h3><div class="row" style="align-items:flex-end"><label class="fld" style="min-width:300px;flex:1">رابط أو معرّف الملف في درايف<input id="bookFile" placeholder="https://drive.google.com/file/d/…"></label><button class="abtn pri" data-a="book-import"'+(A.book.busy?' disabled':'')+'>استيراد واستبدال الدفتر</button></div><p class="sub">ارفع الملف على درايف وشاركه مع حساب النظام ثم الصق رابطه. الاستيراد يستبدل الدفتر كله.</p></div>';
+    if(!m) return h+'<div class="box"><p class="sub">لم يُستورد دفتر أسعار بعد.</p></div>';
+    h+='<div class="box"><h3>الحالة</h3><div class="kvg"><div><small>الملف</small><b>'+esc(m.file||'')+'</b></div><div><small>عدد الأسعار</small><b>'+(m.total||0)+'</b></div><div><small>شيتات مستوردة</small><b>'+(m.sheets||[]).length+'</b></div><div><small>تنبيهات على الأسعار</small><b>'+(m.nWarnings||0)+'</b></div></div>'+
+      '<div class="row" style="margin-top:10px"><label class="chk"><input type="checkbox" data-a="book-on"'+(B.enabled!==false?' checked':'')+'> تفعيل التسعير من الدفتر</label><label class="fld">لو سعر الطن وسعر الجامب مختلفين<select data-a="book-comb"><option value="max"'+(B.combine!=='min'?' selected':'')+'>الأعلى</option><option value="min"'+(B.combine==='min'?' selected':'')+'>الأقل</option></select></label></div>'+(A.dirty?'<p class="sub">احفظ الإعدادات لتطبيق التغيير.</p>':'')+'</div>';
+    h+='<div class="box"><h3>الشيتات</h3><div class="tblwrap"><table class="tbl"><thead><tr><th>استخدام</th><th>الشيت</th><th>أسعار</th><th>من</th><th>آخر سريان</th></tr></thead><tbody>'+(m.sheets||[]).map(function(s){ var off=(B.disabled||[]).indexOf(s.name)>=0; return '<tr><td><input type="checkbox" data-a="book-sheet" data-n="'+attr(s.name)+'"'+(off?'':' checked')+'></td><td><b>'+esc(s.name)+'</b></td><td>'+s.count+'</td><td>'+esc(s.from||'—')+'</td><td>'+esc(s.last||'—')+'</td></tr>'; }).join('')+'</tbody></table></div>'+((m.skipped||[]).length?'<p class="sub">شيتات مُتخطّاة: '+(m.skipped||[]).map(esc).join(' · ')+'</p>':'')+'</div>';
+    if((m.warnings||[]).length) h+='<div class="box"><h3>أسعار تحتاج مراجعة في الملف ('+(m.nWarnings||0)+')</h3><p class="sub">قفزات كبيرة بين فترتين لنفس المسار — غالبًا خطأ إدخال في الملف الأصلي.</p><ul class="lst">'+m.warnings.slice(0,40).map(function(w){ return '<li>'+esc(typeof w==='string'?w:(w.sheet+' · '+w.from+' ← '+w.to+(w.veh?' ('+w.veh+')':'')+' : '+w.was+' ← '+w.now+(w.at?' من '+w.at:'')))+'</li>'; }).join('')+'</ul></div>';
+    h+='<div class="box"><h3>جرّب سعر</h3><div class="row" style="align-items:flex-end"><label class="fld">من<input id="bkFrom"></label><label class="fld">إلى<input id="bkTo"></label><label class="fld">نوع السيارة<input id="bkVeh" placeholder="تريلا / جامبو…"></label><label class="fld">الوزن (طن)<input id="bkW" inputmode="decimal"></label><label class="fld">عدد الجامبو<input id="bkP" inputmode="numeric"></label><label class="fld">التاريخ<input id="bkD" placeholder="2026-09-15"></label><label class="fld">نوع الصنف<input id="bkT" placeholder="تقاوي / محصول"></label><button class="abtn" data-a="book-test"'+(A.book.busy?' disabled':'')+'>احسب</button></div>';
+    var t=A.book.test; if(t) h+='<div class="lkres">'+(t.error?'<span class="chip2 bad">'+esc(t.error)+'</span>':t.none?'<span class="chip2">لا يوجد سعر مطابق في الدفتر</span>':'<b>'+t.price+' ج.م</b> <span class="sub">'+esc(t.label)+'</span>')+'</div>';
+    return h+'</div>';
+  }
+
+    /* ================= مستخلص المقاول ================= */
+  A.st={from:'',to:'',who:''};
+  function stFmt(n){ return n===''||n===null||n===undefined?'—':Number(n).toLocaleString('en-US',{maximumFractionDigits:2}); }
+  function stData(){ return computeSettlement_(D.trips||[],{from:A.st.from,to:A.st.to,contractor:A.st.who}); }
+  function rSettle(){
+    var R=stData(), EX=expSummary_(D.expenses||[],D.trips||[]), exBy={}; EX.list.forEach(function(g){ exBy[g.contractor]=g; }); var h='<h2>مستخلص المقاول</h2><p class="lead">مستحقات كل مقاول عن فترة: عدد الرحلات والأطنان ومجموع الأسعار. الرحلات الملغاة والمرفوضة والجارية لا تدخل، والرحلات بلا سعر تُعدّ ولا تُقدَّر. يُحسب من الرحلات المحمّلة في الصفحة (راجع «حدود العرض» لو الفترة طويلة).</p>';
+    h+='<div class="box"><div class="row" style="align-items:flex-end"><label class="fld">من<input data-a="st-from" value="'+attr(A.st.from)+'" placeholder="2026-09-01"></label><label class="fld">إلى<input data-a="st-to" value="'+attr(A.st.to)+'" placeholder="2026-09-30"></label></div>'+
+      '<div class="kvg" style="margin-top:10px"><div><small>رحلات</small><b>'+R.total.trips+'</b></div><div><small>أطنان</small><b>'+stFmt(R.total.tons)+'</b></div><div><small>المبلغ</small><b>'+stFmt(R.total.amount)+'</b></div><div><small>بلا سعر</small><b>'+R.total.unpriced+'</b></div><div><small>أسعار يدوية</small><b>'+R.total.manual+'</b></div></div></div>';
+    h+='<div class="box"><h3>المقاولون ('+R.contractors.length+')</h3>'+(R.contractors.length?'<div class="tblwrap"><table class="tbl"><thead><tr><th>المقاول</th><th>رحلات</th><th>أطنان</th><th>المبلغ</th><th>بلا سعر</th><th>غرامات عليه</th><th></th></tr></thead><tbody>'+R.contractors.map(function(g){ return '<tr><td>'+esc(g.name)+'</td><td>'+g.trips+'</td><td>'+stFmt(g.tons)+'</td><td>'+stFmt(g.amount)+'</td><td>'+(g.unpriced?'<span class="chip2 bad">'+g.unpriced+'</span>':'0')+'</td><td>'+(exBy[g.name]&&exBy[g.name].onContractor?stFmt(exBy[g.name].onContractor):'—')+'</td><td><button class="abtn sm" data-a="st-pick" data-n="'+attr(g.name)+'">التفاصيل</button></td></tr>'; }).join('')+'</tbody></table></div>':'<div class="empty">لا توجد رحلات في هذه الفترة.</div>')+'</div>';
+    var g=R.selected;
+    if(g){
+      h+='<div class="box"><div class="row" style="align-items:center"><h3 style="margin:0">'+esc(g.name)+'</h3><span style="flex:1"></span><button class="abtn pri" data-a="st-csv">تنزيل المستخلص CSV</button></div>'+
+        '<h4>حسب المسار</h4><div class="tblwrap"><table class="tbl"><thead><tr><th>المسار</th><th>رحلات</th><th>أطنان</th><th>المبلغ</th><th>بلا سعر</th></tr></thead><tbody>'+g.routeList.map(function(r){ return '<tr><td>'+esc(r.route)+'</td><td>'+r.trips+'</td><td>'+stFmt(r.tons)+'</td><td>'+stFmt(r.amount)+'</td><td>'+r.unpriced+'</td></tr>'; }).join('')+'</tbody></table></div>'+
+        '<h4>الرحلات ('+g.lines.length+')</h4><div class="tblwrap"><table class="tbl"><thead><tr><th>التاريخ</th><th>كارتة</th><th>السيارة</th><th>المسار</th><th>الوزن</th><th>السعر</th><th>المصدر</th></tr></thead><tbody>'+g.lines.slice(0,300).map(function(l){ return '<tr><td class="ph">'+esc(l.date)+'</td><td class="ph">'+esc(l.card)+'</td><td>'+esc(l.plate||'—')+'</td><td>'+esc(l.route)+'</td><td>'+stFmt(l.weight)+'</td><td>'+stFmt(l.price)+'</td><td class="sub">'+esc(l.rule||'')+'</td></tr>'; }).join('')+'</tbody></table></div>'+(g.lines.length>300?'<p class="sub">المعروض أول 300 رحلة؛ ملف CSV فيه الكل.</p>':'')+'</div>';
+    }
+    return h;
+  }
+  function stAct(a,t){
+    if(a==='st-pick'){ A.st.who=t.dataset.n; aRender(); return true; }
+    if(a==='st-csv'){
+      var g=stData().selected; if(!g) return true;
+      try{ var b=new Blob(['﻿'+settlementCsv_(g)],{type:'text/csv;charset=utf-8'}), u=URL.createObjectURL(b), el=document.createElement('a'); el.href=u; el.download='مستخلص-'+g.name+'.csv'; document.body.appendChild(el); el.click(); setTimeout(function(){ document.body.removeChild(el); URL.revokeObjectURL(u); },500); }catch(e){}
+      return true;
+    }
+    return false;
+  }
+
+    /* ================= قراءة صور المستندات (Gemini) ================= */
+  A.dc={items:[],busy:false,msg:''};
+  var DCF=[['card','كارتة الشحن'],['paper','الكارتة الورقية'],['op','رقم العملية'],['date','التاريخ'],['plate','السيارة'],['trailer','المقطورة'],['driver','السائق'],['contractor','المقاول'],['from','من'],['to','إلى'],['crop','المحصول'],['variety','الصنف'],['itemType','نوع الصنف'],['pack','التعبئة'],['count','العدد'],['grossKg','الإجمالي (كجم)'],['tareKg','الفارغ (كجم)'],['netKg','الصافي (كجم)'],['deductionKg','الخصم (كجم)'],['amount','المبلغ (ج.م)'],['issuer','الجهة']];
+  function dcShrink(file,cb,fail){
+    var fr=new FileReader(); fr.onerror=function(){ fail('تعذرت قراءة الملف'); };
+    fr.onload=function(){ var im=new Image(); im.onerror=function(){ fail('الملف ليس صورة صالحة'); };
+      im.onload=function(){ var mx=1800, k=Math.min(1,mx/Math.max(im.width,im.height)), c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext('2d').drawImage(im,0,0,c.width,c.height); cb(c.toDataURL('image/jpeg',0.85).split(',')[1]); };
+      im.src=fr.result; };
+    fr.readAsDataURL(file);
+  }
+  function dcFiles(files){
+    if(!files||!files.length) return;
+    if(needPin(function(m){ A.dc.msg=m; aRender(); })) return;
+    A.dc.msg='';
+    Array.prototype.slice.call(files,0,12).forEach(function(f){
+      var it={name:f.name||'صورة',status:'wait',doc:null,matches:[],err:''}; A.dc.items.unshift(it); aRender();
+      dcShrink(f,function(b64){
+        it.status='run'; aRender();
+        srv('api_docRead',[b64,'image/jpeg',pinVal()],function(r){ it.status='ok'; it.doc=r.doc; it.matches=docMatchTrips_(r.doc,(D.trips||[]).concat(D.live||[])); aRender(); },
+          function(m){ it.status='err'; it.err=m; aRender(); });
+      },function(m){ it.status='err'; it.err=m; aRender(); });
+    });
+  }
+  function dcAct(a,t){
+    if(a==='dc-clear'){ A.dc.items=[]; A.dc.msg=''; aRender(); return true; }
+    if(a==='dc-apply'){
+      var it=A.dc.items[+t.dataset.i]; if(!it||!it.doc) return true;
+      if(needPin(function(m){ A.dc.msg=m; aRender(); })) return true;
+      var d=it.doc, note='قراءة صورة '+(DOC_KINDS_[d.kind]||'')+(d.netKg!==''?' · صافي '+d.netKg+' كجم':'');
+      srv('api_saveOverrides',[[{card:t.dataset.c,weight:d.netTons,note:note}],myName(),false,pinVal()],function(r){ it.applied=t.dataset.c; A.dc.msg='✓ اتسجّل الوزن '+d.netTons+' طن للكارتة '+t.dataset.c+' كتعديل يدوي'; aRender(); reload(); },function(m){ A.dc.msg='تعذر الحفظ: '+m; aRender(); });
+      return true;
+    }
+    return false;
+  }
+  function dcItem(it,i){
+    var h='<div class="box"><div class="row" style="align-items:center"><b>'+esc(it.name)+'</b><span style="flex:1"></span>'+(it.status==='ok'?'<span class="chip2">'+esc(DOC_KINDS_[it.doc.kind]||'')+'</span>':'')+'</div>';
+    if(it.status==='wait'||it.status==='run') return h+'<p class="sub">جارٍ '+(it.status==='wait'?'تجهيز':'قراءة')+' الصورة…</p></div>';
+    if(it.status==='err') return h+'<p class="sub"><span class="chip2 bad">'+esc(it.err)+'</span></p></div>';
+    var d=it.doc, cells=DCF.filter(function(f){ return d[f[0]]!==''&&d[f[0]]!==undefined; }).map(function(f){ return '<div><small>'+f[1]+'</small><b>'+esc(String(d[f[0]]))+'</b></div>'; }).join('');
+    h+='<div class="kvg">'+(cells||'<div><small>لم تُقرأ حقول</small><b>—</b></div>')+'</div>';
+    (d.flags||[]).forEach(function(x){ h+='<div class="lint warn"><span>⚠</span><span class="grow">'+esc(x)+'</span></div>'; });
+    if(d.netTons!==''){
+      if(!it.matches.length) h+='<p class="sub">ما لقيتش رحلة مطابقة في الرحلات المحمّلة (بالكارتة أو السيارة + التاريخ).</p>';
+      it.matches.forEach(function(m){ var cur=isNum(m.trip.weight)?m.trip.weight:null, same=cur!==null&&Math.abs(cur-d.netTons)<0.05;
+        h+='<div class="lint info"><span>🔗</span><span class="grow">كارتة <b>'+esc(m.card)+'</b> ('+esc(m.by)+') · '+esc(m.trip.contractor||'—')+' · '+esc(m.trip.plate||'')+' · الوزن الحالي: '+(cur===null?'غير متاح':cur+' طن')+(same?' — مطابق ✓':'')+'</span>'+(it.applied===m.card?'<span class="chip2">اتسجّل ✓</span>':(same?'':'<button class="abtn sm" data-a="dc-apply" data-i="'+i+'" data-c="'+attr(m.card)+'">اعتمد '+d.netTons+' طن</button>'))+'</div>'; });
+    }
+    h+=xpDocBox(it,i);
+    return h+'</div>';
+  }
+  function rDocs(){
+    var h='<h2>قراءة صور المستندات</h2><p class="lead">صوّر بطاقة الميزان أو الكارتة الورقية أو تذكرة الميزان الخارجي أو إيصال الغرامة، والنظام يقرأ الأرقام (Gemini) ويربطها بالرحلة. أي رقم بيتسجّل بضغطة منك بس، وبيظهر في سجل التعديلات. القراءة بتتحقق حسابيًا (الإجمالي − الفارغ = الصافي) وتحذّر لو في خطأ.</p>';
+    if(A.dc.msg) h+='<div class="pv"><b>'+esc(A.dc.msg)+'</b></div>';
+    h+='<div class="box"><div class="row" style="align-items:center"><label class="abtn pri" style="cursor:pointer">📷 اختر صور المستندات<input type="file" accept="image/*" multiple capture="environment" data-a="dc-file" style="display:none"></label>'+(A.dc.items.length?'<button class="abtn" data-a="dc-clear">مسح القائمة</button>':'')+'</div><p class="sub">لحد 12 صورة مرة واحدة. تحتاج رقم المحرّر أو الإدارة في أعلى الصفحة. الصور بتتبعت لـ Gemini للقراءة ولا بتتخزن.</p></div>';
+    return h+A.dc.items.map(dcItem).join('');
+  }
+
+    /* ================= مصروفات وغرامات الرحلات ================= */
+  A.xp={msg:'',who:''};
+  function xpList(){ return D.expenses||[]; }
+  function xpFmt(n){ return Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2}); }
+  function xpSave(list,after){
+    if(needPin(function(m){ A.xp.msg=m; aRender(); })) return;
+    srv('api_expenseSave',[list,myName(),pinVal()],function(r){ D.expenses=r.expenses||D.expenses; A.xp.msg='✓ اتسجّل '+r.count+' مصروف'; if(after) after(); aRender(); },function(m){ A.xp.msg='تعذر الحفظ: '+m; aRender(); });
+  }
+  function xpAct(a,t){
+    if(a==='xp-add'){
+      var g=function(i){ return (document.getElementById(i)||{}).value||''; };
+      xpSave([{card:g('exCard'),type:g('exType'),amount:g('exAmt'),date:g('exDate'),issuer:g('exIss'),note:g('exNote'),chargeTo:g('exCh')}]); return true;
+    }
+    if(a==='dc-exp'){
+      var it=A.dc.items[+t.dataset.i], d=it&&it.doc; if(!d) return true;
+      var i=t.dataset.i, v=function(id){ return (document.getElementById(id)||{}).value||''; }, card=t.dataset.c||v('dcK'+i);
+      xpSave([{card:card,type:v('dcT'+i),amount:d.amount,plate:d.plate,date:d.date,issuer:d.issuer,note:'من صورة مستند',chargeTo:v('dcC'+i)}],function(){ it.expSaved=true; }); return true;
+    }
+    if(a==='xp-del'){
+      if(!confirm('حذف هذا المصروف؟')) return true;
+      if(needPin(function(m){ A.xp.msg=m; aRender(); })) return true;
+      srv('api_expenseDelete',[t.dataset.id,pinVal()],function(r){ D.expenses=r.expenses||[]; A.xp.msg='✓ اتحذف'; aRender(); },function(m){ A.xp.msg='تعذر الحذف: '+m; aRender(); }); return true;
+    }
+    return false;
+  }
+  function xpOpts(list,cur){ return list.map(function(x){ return '<option value="'+attr(x[0])+'"'+(x[0]===cur?' selected':'')+'>'+esc(x[1])+'</option>'; }).join(''); }
+  var XPT=EXP_TYPES_.map(function(x){ return [x,x]; }), XPC=[['contractor','على المقاول'],['company','على الشركة']];
+  function xpDocBox(it,i){
+    var d=it.doc; if(!d||d.kind!=='fine'||!(d.amount>0)) return '';
+    if(it.expSaved) return '<div class="lint info"><span>✓</span><span class="grow">اتسجّل كمصروف.</span></div>';
+    var m=it.matches&&it.matches[0];
+    return '<div class="row" style="align-items:flex-end;margin-top:8px">'+(m?'<span class="sub">على كارتة <b>'+esc(m.card)+'</b></span>':'<label class="fld">رقم الكارتة<input id="dcK'+i+'" inputmode="numeric"></label>')+
+      '<label class="fld">النوع<select id="dcT'+i+'">'+xpOpts(XPT,d.amount===500||/ميزان/.test(d.issuer+d.notes)?'غرامة ميزان':'رسوم طريق')+'</select></label><label class="fld">تُحمَّل على<select id="dcC'+i+'">'+xpOpts(XPC,'contractor')+'</select></label>'+
+      '<button class="abtn pri" data-a="dc-exp" data-i="'+i+'"'+(m?' data-c="'+attr(m.card)+'"':'')+'>سجّل '+xpFmt(d.amount)+' ج.م كمصروف</button></div>';
+  }
+  function rExpenses(){
+    var L=xpList(), S=expSummary_(L,(D.trips||[]).concat(D.live||[])), h='<h2>مصروفات وغرامات الرحلات</h2><p class="lead">غرامات الميزان ورسوم الطرق وأي مصروف بيتسجّل على كارتة، وتتحمّل على المقاول أو الشركة. بتظهر منفصلة في «مستخلص المقاول» ولا تتخصم تلقائيًا. تقدر تسجّلها من صورة الإيصال في «قراءة صور المستندات».</p>';
+    if(A.xp.msg) h+='<div class="pv"><b>'+esc(A.xp.msg)+'</b></div>';
+    h+='<div class="box"><div class="kvg"><div><small>الإجمالي</small><b>'+xpFmt(S.total)+'</b></div>'+Object.keys(S.byType).map(function(k){ return '<div><small>'+esc(k)+'</small><b>'+xpFmt(S.byType[k])+'</b></div>'; }).join('')+'<div><small>غير مربوطة برحلة محمّلة</small><b>'+S.unlinked+'</b></div></div></div>';
+    h+='<div class="box"><h3>إضافة مصروف</h3><div class="row" style="align-items:flex-end"><label class="fld">كارتة الشحن<input id="exCard" inputmode="numeric"></label><label class="fld">النوع<select id="exType">'+xpOpts(XPT,'غرامة ميزان')+'</select></label><label class="fld">المبلغ<input id="exAmt" inputmode="decimal"></label><label class="fld">التاريخ<input id="exDate" placeholder="2026-10-07"></label><label class="fld">الجهة<input id="exIss"></label><label class="fld">ملاحظة<input id="exNote"></label><label class="fld">تُحمَّل على<select id="exCh">'+xpOpts(XPC,'contractor')+'</select></label><button class="abtn pri" data-a="xp-add">إضافة</button></div></div>';
+    h+='<div class="box"><h3>حسب المقاول</h3>'+(S.list.length?'<div class="tblwrap"><table class="tbl"><thead><tr><th>المقاول</th><th>عدد</th><th>على المقاول</th><th>على الشركة</th></tr></thead><tbody>'+S.list.map(function(g){ return '<tr><td>'+esc(g.contractor)+'</td><td>'+g.count+'</td><td>'+xpFmt(g.onContractor)+'</td><td>'+xpFmt(g.onCompany)+'</td></tr>'; }).join('')+'</tbody></table></div>':'<div class="empty">لا توجد مصروفات مربوطة.</div>')+'</div>';
+    h+='<div class="box"><h3>السجل ('+L.length+')</h3>'+(L.length?'<div class="tblwrap"><table class="tbl"><thead><tr><th>التاريخ</th><th>كارتة</th><th>النوع</th><th>المبلغ</th><th>السيارة</th><th>الجهة</th><th>على</th><th>بواسطة</th><th></th></tr></thead><tbody>'+L.slice(0,200).map(function(e){ return '<tr><td class="ph">'+esc(e.date||e.at)+'</td><td class="ph">'+esc(e.card)+'</td><td>'+esc(e.type)+'</td><td>'+xpFmt(e.amount)+'</td><td>'+esc(e.plate||'—')+'</td><td>'+esc(e.issuer||'—')+'</td><td>'+(e.chargeTo==='company'?'الشركة':'المقاول')+'</td><td>'+esc(e.by||'—')+'</td><td><button class="abtn sm bad" data-a="xp-del" data-id="'+attr(e.id)+'">حذف</button></td></tr>'; }).join('')+'</tbody></table></div>':'<div class="empty">لا توجد مصروفات.</div>')+'</div>';
     return h;
   }
 
@@ -4129,6 +4586,7 @@ function computeInsights_(trips, rejected, opts) {
     if(chip && chip.dataset.lf){ lfilter=chip.dataset.lf; renderLive(); return; }
     if(t.closest('#moreBtn')){ shown+=400; renderTrips(); return; }
     var tab=t.closest('.tab'); if(tab){ showTab(tab.dataset.tab); return; }
+    var sb=t.closest('[data-stmsg]'); if(sb){ copyText(tripStatusMsg_(findTrip(sb.dataset.stmsg)),sb); return; }
     var eb=t.closest('[data-edit]'); if(eb){ openEdit(eb.dataset.edit); return; }
     if(t.closest('[data-go-sched]')){ A.sec='schedule'; showTab('admin'); return; }
     var go=t.closest('[data-go]'); if(go){ A.sec=go.dataset.go; showTab('admin'); return; }
@@ -4155,7 +4613,7 @@ function computeInsights_(trips, rejected, opts) {
   document.getElementById('fContractor').addEventListener('change',function(e){contractor=e.target.value;shown=400;renderAll()});
   document.getElementById('fRange').addEventListener('change',function(e){range=+e.target.value;shown=400;renderAll()});
 
-  function reload(){ load(function(data){ if(data){ NOW=ts(data.nowIso)||NOW; D.trips=data.trips||[]; D.live=data.live||[]; D.status=data.status||D.status; D.rejected=data.rejected||[]; D.unmatched=data.unmatched||[]; if(data.overrides){ D.overrides=data.overrides; buildOvm(); } D.changeLog=data.changeLog||D.changeLog||[]; if(data.schedule){ D.schedule=data.schedule; if(!A.sch||!A.busy) A.sch=clone(data.schedule.schedule); } if(data.settings&&!A.dirty){ D.settings=clone(data.settings); A.S=clone(D.settings); } D.trips.forEach(prep); D.live.forEach(prep); buildIndex(); renderAll(); renderStatus(); renderMeta(); renderRules(); if(curTab==='admin') aRender(); } }); }
+  function reload(){ load(function(data){ if(data){ NOW=ts(data.nowIso)||NOW; D.trips=data.trips||[]; D.live=data.live||[]; D.status=data.status||D.status; D.counts=data.counts||D.counts; D.rejected=data.rejected||[]; D.unmatched=data.unmatched||[]; if(data.overrides){ D.overrides=data.overrides; buildOvm(); } D.changeLog=data.changeLog||D.changeLog||[]; if(data.schedule){ D.schedule=data.schedule; if(!A.sch||!A.busy) A.sch=clone(data.schedule.schedule); } if(data.settings&&!A.dirty){ D.settings=clone(data.settings); A.S=clone(D.settings); } D.trips.forEach(prep); D.live.forEach(prep); buildIndex(); renderAll(); renderStatus(); renderMeta(); renderRules(); if(curTab==='admin') aRender(); } }); }
   uiStyle();
   load(function(data){
     D=data||D; D.trips=D.trips||[]; D.live=D.live||[];
