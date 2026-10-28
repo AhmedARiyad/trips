@@ -2164,6 +2164,7 @@ function ecApplyPatch(q, patch, S) {
     else if(a==='numhrs'){ sp(t.dataset.p,Math.max(0,Math.min(2160,+t.value||0))); touch(); aRender(); }
     else if(a==='dc-file'){ var fl=t.files; dcFiles(fl); }
     else if(a==='book-on'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; A.S.book.enabled=t.checked; touch(); aRender(); }
+    else if(a==='book-approx'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; A.S.book.approx=t.checked; touch(); aRender(); }
     else if(a==='book-comb'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; A.S.book.combine=t.value; touch(); aRender(); }
     else if(a==='book-sheet'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; var dl=A.S.book.disabled=A.S.book.disabled||[], n=t.dataset.n, ix=dl.indexOf(n); if(t.checked&&ix>=0) dl.splice(ix,1); if(!t.checked&&ix<0) dl.push(n); touch(); aRender(); }
     else if(a==='numret'){ var kk=t.dataset.k, R={retentionDays:[7,1095,60],'archive.afterDays':[7,1095,45],'archive.keepDays':[0,3650,730],emailKeepDays:[0,3650,0]}[kk], v=+t.value; if(!isFinite(v)) v=R[2]; v=Math.max(R[0],Math.min(R[1],Math.round(v))); if(kk.indexOf('archive.')===0){ A.S.archive=A.S.archive||{enabled:true,afterDays:45,keepDays:730}; A.S.archive[kk.slice(8)]=v; } else A.S[kk]=v; touch(); aRender(); }
@@ -3385,6 +3386,34 @@ function computeLearned_(log, minCount) {
     .filter(function (x) { return x.count >= min; }).sort(function (a, b) { return b.count - a.count || (a.last < b.last ? 1 : -1); });
 }
 
+/**
+ * تغطية التسعير: كم رحلة مسعّرة ومن أي مصدر (يدوي / قواعد / دفتر)، وأكثر المسارات بلا سعر (الأكثر تكرارًا أولًا).
+ * مصدر السعر يُستنتج من priceRule: «سعر يدوي» · يبدأ بـ«دفتر الأسعار» · وإلا قاعدة.
+ */
+function computePriceCoverage_(trips, opts) {
+  opts = opts || {};
+  var REV = opts.review || 'تحتاج مراجعة', src = { manual: 0, book: 0, est: 0, rules: 0 }, total = 0, priced = 0, un = {}, noPlace = 0;
+  (trips || []).forEach(function (t) {
+    if (!t || t.live || t.kind === 'ملغاة' || t.kind === 'مرفوضة') return;
+    total++;
+    var p = insNum_(t.price), rule = String(t.priceRule || '');
+    if (p !== null && p > 0) {
+      priced++;
+      if (rule === 'سعر يدوي') src.manual++; else if (/^تقدير/.test(rule)) src.est++; else if (/^دفتر الأسعار/.test(rule)) src.book++; else src.rules++;
+      return;
+    }
+    if (!t.loadPlace || !t.unloadPlace || t.loadPlace === REV || t.unloadPlace === REV) { noPlace++; return; }
+    var k = t.loadPlace + ' ← ' + t.unloadPlace + (t.vehicleType ? ' [' + t.vehicleType + ']' : '');
+    var g = un[k] = un[k] || { route: k, trips: 0, tons: 0, why: {} };
+    g.trips++; g.tons += insNum_(t.weight) || 0;
+    var why = rule || (insNum_(t.weight) === null ? 'الوزن غير متاح' : 'لا يوجد سعر مطابق');
+    g.why[why] = (g.why[why] || 0) + 1;
+  });
+  var list = Object.keys(un).map(function (k) { var g = un[k], w = Object.keys(g.why).sort(function (a, b) { return g.why[b] - g.why[a]; })[0]; return { route: g.route, trips: g.trips, tons: insR2_(g.tons), why: w }; })
+    .sort(function (a, b) { return b.trips - a.trips; });
+  return { total: total, priced: priced, pricedPct: insPct_(priced, total), unpriced: total - priced, noPlace: noPlace, sources: src, topUnpriced: list.slice(0, 40), unpricedRoutes: list.length };
+}
+
   /**
  * 23 · رسالة حالة رحلة جاهزة للنسخ (دالة نقية). لا إرسال ولا ربط واتساب: الموظف ينسخها ويبعتها بنفسه.
  */
@@ -3477,12 +3506,14 @@ var DOC_SYSTEM_ = 'أنت تقرأ صورة مستند نقل زراعي مصر�
   '"grossKg","tareKg","netKg","deductionKg","date" (yyyy-MM-dd),"time","amount" (للغرامات بالجنيه),"issuer","confidence" (0-1),"notes"}. ' +
   'الأوزان بالكيلوجرام كأرقام. لا تضف أي نص خارج JSON.';
 
+/** أرقام عربية/فارسية ← إنجليزية (نسخة محلية: هذا الملف يُدمج في الصفحة حيث لا توجد 02_Utils) */
+function docAscii_(s) { return String(s === null || s === undefined ? '' : s).replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); }).replace(/[\u06F0-\u06F9]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); }); }
 function docNum_(v) {
   if (v === null || v === undefined || v === '') return '';
-  var s = toAsciiDigits_(String(v)).replace(/[,\s٬]/g, '').replace(/٫/g, '.'), n = Number(s);
+  var s = docAscii_(String(v)).replace(/[,\s٬]/g, '').replace(/٫/g, '.'), n = Number(s);
   return isFinite(n) ? n : '';
 }
-function docText_(v) { return v === null || v === undefined ? '' : toAsciiDigits_(String(v)).replace(/\s+/g, ' ').trim(); }
+function docText_(v) { return v === null || v === undefined ? '' : docAscii_(String(v)).replace(/\s+/g, ' ').trim(); }
 function docDate_(v) {
   var s = docText_(v), m = s.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
   if (m) return m[1] + '-' + (m[2].length < 2 ? '0' : '') + m[2] + '-' + (m[3].length < 2 ? '0' : '') + m[3];
@@ -3509,7 +3540,7 @@ function docNormalize_(raw) {
   return d;
 }
 
-function docDigits_(s) { return toAsciiDigits_(String(s || '')).replace(/\D/g, ''); }
+function docDigits_(s) { return docAscii_(String(s || '')).replace(/\D/g, ''); }
 
 /** ربط المستند برحلات: الكارتة/الورقية/العملية بالأولوية، ثم السيارة + التاريخ (±يوم). يرجع [{card, by, trip}] */
 function docMatchTrips_(doc, trips) {
@@ -3580,12 +3611,14 @@ function api_docRead(b64, mime, pin) {
  * ============================================================
  */
 var EXP_TYPES_ = ['غرامة ميزان', 'رسوم طريق', 'غرامة أخرى', 'مصروف آخر'];
+/** أرقام عربية ← إنجليزية (نسخة محلية: الملف يُدمج في الصفحة) */
+function xpAscii_(s) { return String(s === null || s === undefined ? '' : s).replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); }).replace(/[\u06F0-\u06F9]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); }); }
 var EXP_COLUMNS = [['id', 'المعرّف'], ['at', 'سُجّل في'], ['by', 'بواسطة'], ['card', 'كارتة الشحن'], ['type', 'النوع'], ['amount', 'المبلغ'], ['plate', 'السيارة'], ['date', 'تاريخ المستند'], ['issuer', 'الجهة'], ['note', 'ملاحظة'], ['chargeTo', 'تُحمَّل على']];
 
 function expNormalize_(raw) {
   raw = raw || {};
-  function tx(v, n) { return String(v === null || v === undefined ? '' : toAsciiDigits_(String(v))).replace(/\s+/g, ' ').trim().slice(0, n || 120); }
-  var amt = Number(toAsciiDigits_(String(raw.amount === undefined ? '' : raw.amount)).replace(/[,\s]/g, ''));
+  function tx(v, n) { return String(v === null || v === undefined ? '' : xpAscii_(String(v))).replace(/\s+/g, ' ').trim().slice(0, n || 120); }
+  var amt = Number(xpAscii_(String(raw.amount === undefined ? '' : raw.amount)).replace(/[,\s]/g, ''));
   var type = EXP_TYPES_.indexOf(raw.type) >= 0 ? raw.type : 'مصروف آخر';
   var ct = raw.chargeTo === 'contractor' || raw.chargeTo === 'company' ? raw.chargeTo : 'contractor';
   return { card: tx(raw.card, 30), type: type, amount: isFinite(amt) ? Math.round(amt * 100) / 100 : 0, plate: tx(raw.plate, 40), date: /^\d{4}-\d{2}-\d{2}$/.test(String(raw.date || '')) ? raw.date : '', issuer: tx(raw.issuer, 80), note: tx(raw.note, 200), chargeTo: ct };
@@ -3707,17 +3740,20 @@ function api_expenseDelete(id, pin) {
     return false;
   }
   function rBook(){
-    var b=bookSt(), B=(A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}), m=b&&b.meta;
+    var b=bookSt(), B=(A.S.book=A.S.book||{enabled:true,combine:'max',approx:true,disabled:[]}), m=b&&b.meta;
     var h='<h2>دفتر الأسعار</h2><p class="lead">ملف الأسعار (Excel أو Google Sheet) يتحوّل لدفتر أسعار يُسعّر به النظام الرحلات تلقائيًا. الأولوية: السعر اليدوي ← القواعد ← الدفتر. الرحلة المسعّرة بالدفتر يظهر فيها اسم الشيت والمسار.</p>';
     if(A.book.msg) h+='<div class="pv"><b>'+esc(A.book.msg)+'</b></div>';
     h+='<div class="box"><h3>استيراد ملف الأسعار</h3><div class="row" style="align-items:flex-end"><label class="fld" style="min-width:300px;flex:1">رابط أو معرّف الملف في درايف<input id="bookFile" placeholder="https://drive.google.com/file/d/…"></label><button class="abtn pri" data-a="book-import"'+(A.book.busy?' disabled':'')+'>استيراد واستبدال الدفتر</button><button class="abtn" data-a="book-add"'+(A.book.busy?' disabled':'')+' title="يضيف الجداول من ملف آخر ويُبقي الباقي">إضافة ملف آخر (دمج)</button></div><p class="sub">ارفع الملف على درايف وشاركه مع حساب النظام ثم الصق رابطه. يقبل ملف الحسابات الأصلي والملف المرتَّب (دليل الأسعار). «استبدال» يمسح الدفتر ويبدأ من الملف ده، و«إضافة» يدمجه مع اللي موجود.</p></div>';
     if(!m) return h+'<div class="box"><p class="sub">لم يُستورد دفتر أسعار بعد.</p></div>';
     h+='<div class="box"><h3>الحالة</h3><div class="kvg"><div><small>الملف</small><b>'+esc(m.file||'')+'</b></div><div><small>عدد الأسعار</small><b>'+(m.total||0)+'</b></div><div><small>شيتات مستوردة</small><b>'+(m.sheets||[]).length+'</b></div><div><small>تنبيهات على الأسعار</small><b>'+(m.nWarnings||0)+'</b></div><div><small>تعريفات قديمة لم تُستورد</small><b>'+(m.oldSkipped||0)+'</b></div></div>'+
-      '<div class="row" style="margin-top:10px"><label class="chk"><input type="checkbox" data-a="book-on"'+(B.enabled!==false?' checked':'')+'> تفعيل التسعير من الدفتر</label><label class="fld">لو سعر الطن وسعر الجامب مختلفين<select data-a="book-comb"><option value="max"'+(B.combine!=='min'?' selected':'')+'>الأعلى</option><option value="min"'+(B.combine==='min'?' selected':'')+'>الأقل</option></select></label></div>'+(A.dirty?'<p class="sub">احفظ الإعدادات لتطبيق التغيير.</p>':'')+'</div>';
+      '<div class="row" style="margin-top:10px"><label class="chk"><input type="checkbox" data-a="book-on"'+(B.enabled!==false?' checked':'')+'> تفعيل التسعير من الدفتر</label><label class="chk"><input type="checkbox" data-a="book-approx"'+(B.approx!==false?' checked':'')+'> تسعير تقديري (تشابه إملائي / عكس الاتجاه) — يظهر كـ«تقدير»</label><label class="fld">لو سعر الطن وسعر الجامب مختلفين<select data-a="book-comb"><option value="max"'+(B.combine!=='min'?' selected':'')+'>الأعلى</option><option value="min"'+(B.combine==='min'?' selected':'')+'>الأقل</option></select></label></div>'+(A.dirty?'<p class="sub">احفظ الإعدادات لتطبيق التغيير.</p>':'')+'</div>';
     h+='<div class="box"><h3>الشيتات</h3><div class="tblwrap"><table class="tbl"><thead><tr><th>استخدام</th><th>الشيت</th><th>أسعار</th><th>من</th><th>آخر سريان</th></tr></thead><tbody>'+(m.sheets||[]).map(function(s){ var off=(B.disabled||[]).indexOf(s.name)>=0; return '<tr><td><input type="checkbox" data-a="book-sheet" data-n="'+attr(s.name)+'"'+(off?'':' checked')+'></td><td><b>'+esc(s.name)+'</b></td><td>'+s.count+'</td><td>'+esc(s.from||'—')+'</td><td>'+esc(s.last||'—')+'</td></tr>'; }).join('')+'</tbody></table></div>'+((m.skipped||[]).length?'<p class="sub">شيتات مُتخطّاة: '+(m.skipped||[]).map(esc).join(' · ')+'</p>':'')+'</div>';
     if((m.warnings||[]).length) h+='<div class="box"><h3>أسعار تحتاج مراجعة في الملف ('+(m.nWarnings||0)+')</h3><p class="sub">قفزات كبيرة بين فترتين لنفس المسار — غالبًا خطأ إدخال في الملف الأصلي.</p><ul class="lst">'+m.warnings.slice(0,40).map(function(w){ return '<li>'+esc(typeof w==='string'?w:(w.sheet+' · '+w.from+' ← '+w.to+(w.veh?' ('+w.veh+')':'')+' : '+w.was+' ← '+w.now+(w.at?' من '+w.at:'')))+'</li>'; }).join('')+'</ul></div>';
     if((m.fees||[]).length) h+='<div class="box"><h3>دليل الرسوم (مرجع فقط — لا يدخل في التسعير)</h3><div class="tblwrap"><table class="tbl"><thead><tr><th>الموقع</th><th>المرحلة</th><th>النوع</th><th>القيمة</th></tr></thead><tbody>'+m.fees.map(function(f){ return '<tr><td>'+esc(f.place)+'</td><td>'+esc(f.stage)+'</td><td>'+esc(f.type)+'</td><td>'+esc(f.value)+'</td></tr>'; }).join('')+'</tbody></table></div></div>';
     if((m.rules||[]).length) h+='<div class="box"><h3>قواعد وإعدادات الحسابات (مرجع)</h3><ul class="lst">'+m.rules.map(function(x){ return '<li><b>'+esc(x.k)+'</b>: '+esc(String(x.v))+(x.note?'<div class="sub">'+esc(x.note)+'</div>':'')+'</li>'; }).join('')+'</ul></div>';
+    var CV=computePriceCoverage_((D.trips||[]));
+    h+='<div class="box"><h3>تغطية التسعير</h3><div class="kvg"><div><small>رحلات (غير الجارية)</small><b>'+CV.total+'</b></div><div><small>مسعّرة</small><b>'+CV.pricedPct+'٪</b></div><div><small>بسعر يدوي</small><b>'+CV.sources.manual+'</b></div><div><small>بقواعد</small><b>'+CV.sources.rules+'</b></div><div><small>من الدفتر</small><b>'+CV.sources.book+'</b></div><div><small>تقدير</small><b>'+(CV.sources.est||0)+'</b></div><div><small>بلا سعر</small><b>'+CV.unpriced+'</b></div><div><small>مكانها يحتاج مراجعة</small><b>'+CV.noPlace+'</b></div></div>'+
+      (CV.topUnpriced.length?'<h4>أكثر المسارات بلا سعر ('+CV.unpricedRoutes+' مسار)</h4><div class="tblwrap"><table class="tbl"><thead><tr><th>المسار [السيارة]</th><th>رحلات</th><th>أطنان</th><th>السبب</th></tr></thead><tbody>'+CV.topUnpriced.map(function(g){ return '<tr><td>'+esc(g.route)+'</td><td>'+g.trips+'</td><td>'+g.tons+'</td><td class="sub">'+esc(g.why)+'</td></tr>'; }).join('')+'</tbody></table></div><p class="sub">أضف سعر المسار في ملف الأسعار وأعد الاستيراد، أو اكتب سعر يدوي للكارتة من «مراجعة وتعديل يدوي».</p>':'<p class="sub">كل الرحلات المعروضة مسعّرة أو مكانها يحتاج مراجعة.</p>')+'</div>';
     h+='<div class="box"><h3>جرّب سعر</h3><div class="row" style="align-items:flex-end"><label class="fld">من<input id="bkFrom"></label><label class="fld">إلى<input id="bkTo"></label><label class="fld">نوع السيارة<input id="bkVeh" placeholder="تريلا / جامبو…"></label><label class="fld">الوزن (طن)<input id="bkW" inputmode="decimal"></label><label class="fld">عدد الجامبو<input id="bkP" inputmode="numeric"></label><label class="fld">التاريخ<input id="bkD" placeholder="2026-09-15"></label><label class="fld">نوع الصنف<input id="bkT" placeholder="تقاوي / محصول"></label><button class="abtn" data-a="book-test"'+(A.book.busy?' disabled':'')+'>احسب</button></div>';
     var t=A.book.test; if(t) h+='<div class="lkres">'+(t.error?'<span class="chip2 bad">'+esc(t.error)+'</span>':t.none?'<span class="chip2">لا يوجد سعر مطابق في الدفتر</span>':'<b>'+t.price+' ج.م</b> <span class="sub">'+esc(t.label)+'</span>')+'</div>';
     return h+'</div>';
