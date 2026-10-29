@@ -1480,7 +1480,7 @@ function ecApplyPatch(q, patch, S) {
 
   /* ================= لوحة التحكم ================= */
   var A={S:null,sec:'ladder',dirty:false,busy:false,msg:'',f:{co:'',pl:'',rej:'',rv:''},res:{},focus:null,sandbox:'',rv:{},rvMode:'review',pv:null,pvBusy:false,sch:null,schMsg:'',learn:true};
-  var SECGROUPS=[['نظرة عامة',[['insights','الرؤى والتنبيهات'],['ladder','سلم القواعد'],['rcenter','مركز القواعد'],['test','اختبار فوري'],['settle','مستخلص المقاول'],['docs','قراءة صور المستندات'],['expenses','مصروفات وغرامات']]],['١ · البيانات والربط',[['extlink','ملفات الربط الخارجية'],['extset','إعدادات محرك الربط']]],['٢–٣ · الرفض والمقاولون',[['layers','طبقات الرفض'],['contractors','المقاولون']]],['٤ · الأماكن والتحميل',[['places','الأماكن'],['loading','قواعد مكان التحميل']]],['٦ · المراجعة اليدوية',[['review','مراجعة وتعديل يدوي']]],['٨–٩ · الجارية والأسعار',[['live','الرحلات الجارية'],['pricing','الأسعار'],['book','دفتر الأسعار']]],['التشغيل',[['schedule','الجدولة'],['general','السائق والعام']]],['الإيميل',[['emview','العرض والحسابات'],['emmsg','الرسالة المولدة'],['emreply','الردود الجاهزة'],['emact','الإجراءات'],['eminfer','الاستنتاج والاقتراح']]],['شخصي',[['ui','المظهر واللغة']]]];
+  var SECGROUPS=[['نظرة عامة',[['ask','اسأل البيانات'],['insights','الرؤى والتنبيهات'],['ladder','سلم القواعد'],['rcenter','مركز القواعد'],['test','اختبار فوري'],['settle','مستخلص المقاول'],['docs','قراءة صور المستندات'],['expenses','مصروفات وغرامات']]],['١ · البيانات والربط',[['extlink','ملفات الربط الخارجية'],['extset','إعدادات محرك الربط']]],['٢–٣ · الرفض والمقاولون',[['layers','طبقات الرفض'],['contractors','المقاولون']]],['٤ · الأماكن والتحميل',[['places','الأماكن'],['loading','قواعد مكان التحميل']]],['٦ · المراجعة اليدوية',[['review','مراجعة وتعديل يدوي']]],['٨–٩ · الجارية والأسعار',[['live','الرحلات الجارية'],['pricing','الأسعار'],['contract','قواعد العقد'],['book','دفتر الأسعار']]],['التشغيل',[['schedule','الجدولة'],['general','السائق والعام']]],['الإيميل',[['emview','العرض والحسابات'],['emmsg','الرسالة المولدة'],['emreply','الردود الجاهزة'],['emact','الإجراءات'],['eminfer','الاستنتاج والاقتراح']]],['شخصي',[['ui','المظهر واللغة']]]];
   var SECS=[]; SECGROUPS.forEach(function(g){ g[1].forEach(function(x){ SECS.push(x); }); });
   var LAYER_LABEL={cancelled:'ملغاة',blockedContractor:'مقاول خارج التشغيل',container:'حاوية/كونتينر'};
   function clone(o){return JSON.parse(JSON.stringify(o))}
@@ -1723,7 +1723,7 @@ function ecApplyPatch(q, patch, S) {
     var nq=nz(A.lad.navq);
     var nav='<input class="nvq" data-a="navq" value="'+attr(A.lad.navq)+'" placeholder="ابحث عن قسم…" aria-label="بحث في الأقسام">'+SECGROUPS.map(function(g){ var items=g[1].filter(function(x){ return !nq||nz(x[1]).indexOf(nq)>=0; }); return items.length?'<div class="ngrp">'+g[0]+'</div>'+items.map(navBtn).join(''):''; }).join('');
     document.getElementById('anav').innerHTML=nav;
-    fillLists(); var f={review:rReview,extlink:rExtLink,extset:rExtSet,layers:rLayers,contractors:rContractors,places:rPlaces,loading:rLoading,live:rLive,pricing:rPricing,schedule:rSchedule,general:rGeneral,test:rTest,emview:rEmView,emmsg:rEmMsg,emreply:rEmReply,emact:rEmAct,eminfer:rEmInfer,ui:rUiPanel,rcenter:rRulesCenter,ladder:rLadder,insights:rInsights,book:rBook,settle:rSettle,docs:rDocs,expenses:rExpenses}[A.sec];
+    fillLists(); var f={review:rReview,extlink:rExtLink,extset:rExtSet,layers:rLayers,contractors:rContractors,places:rPlaces,loading:rLoading,live:rLive,pricing:rPricing,schedule:rSchedule,general:rGeneral,test:rTest,emview:rEmView,emmsg:rEmMsg,emreply:rEmReply,emact:rEmAct,eminfer:rEmInfer,ui:rUiPanel,rcenter:rRulesCenter,ladder:rLadder,insights:rInsights,book:rBook,settle:rSettle,ask:rAsk,contract:rContract,docs:rDocs,expenses:rExpenses}[A.sec];
     document.getElementById('asec').innerHTML=(A.sec==='ladder'?'':ladBanner(A.sec))+f();
     sbRender();
     if(A.focus){ var el=document.querySelector(A.focus.sel); if(el){ el.focus(); try{ var v=el.value; el.setSelectionRange(v.length,v.length);}catch(e){} } A.focus=null; }
@@ -2107,7 +2107,7 @@ function ecApplyPatch(q, patch, S) {
     if(a==='saveRebuild'){ aSave(true); return; }
     if(a==='revert'){ A.S=clone(D.settings); A.dirty=false; A.msg=''; aRender(); return; }
     if(a==='reset'){ if(confirm('استعادة كل الإعدادات والقواميس للقيم الافتراضية؟ (لن تُحفظ إلا بعد الضغط على حفظ)')){ A.S=clone(D.defaults); touch(); aRender(); } return; }
-    if(bookAct(a)||stAct(a,t)||dcAct(a,t)||xpAct(a,t)) return;
+    if(bookAct(a)||stAct(a,t)||dcAct(a,t)||xpAct(a,t)||askAct(a,t)) return;
     if(a==='ext-refresh'){ A.ext.msg=''; A.ext.loaded=false; extLoad(true); return; }
     if(a==='ext-folder'){ extCall('api_extSetFolder',[(document.getElementById('extFolder')||{}).value||'',pinVal()],function(r){ return r.folderId?'✓ تم حفظ المجلد: '+r.folderName:'✓ أُزيل مجلد الربط المنفصل'; }); setTimeout(function(){ A.ext.loaded=false; extLoad(true); },600); return; }
     if(a==='ext-scan'||a==='ext-scan-force'){ extCall('api_extScan',[a==='ext-scan-force',pinVal()],function(r){ var s=r.summary||{}; return '✓ تم الفحص: '+(s.files||0)+' ملف JDE جديد، '+((s.ext&&s.ext.files)||0)+' ملف خارجي ('+((s.ext&&s.ext.records)||0)+' سجل)، وأُعيد بناء '+(s.trips||0)+' رحلة'+((s.errors&&s.errors.length)?' — تنبيهات: '+s.errors.join(' ؛ '):''); }); return; }
@@ -2155,6 +2155,7 @@ function ecApplyPatch(q, patch, S) {
     if(a.indexOf('em-')===0&&emAdminChange(t,a,A.S)) return;
     if(a.indexOf('ui-')===0&&uiChange(t,a)) return;
     if(a.indexOf('plx-')===0&&plChange(t,a,A.S)) return;
+    if(a==='ask-q'){ A.ask.q=t.value; return; }
     if(a==='sw'){ sp(t.dataset.p,t.checked); touch(); aRender(); }
     else if(a==='radio'){ sp(t.dataset.p,t.value); touch(); aRender(); }
     else if(a==='num'){ sp(t.dataset.p,+t.value); touch(); aRender(); }
@@ -3511,7 +3512,7 @@ function stR2_(n) { return Math.round(n * 100) / 100; }
 function computeSettlement_(trips, opts) {
   opts = opts || {};
   var from = opts.from || '', to = opts.to || '', only = opts.contractor || '';
-  var groups = {}, order = [], total = { trips: 0, tons: 0, amount: 0, unpriced: 0, manual: 0, est: 0, estN: 0 };
+  var groups = {}, order = [], total = { trips: 0, tons: 0, amount: 0, unpriced: 0, manual: 0, est: 0, estN: 0, extras: 0 };
   (trips || []).forEach(function (t) {
     if (!t || t.live || t.kind === 'ملغاة' || t.kind === 'مرفوضة') return;
     var d = String(t.lastAt || t.loadAt || t.unloadAt || '').slice(0, 10);
@@ -3519,25 +3520,27 @@ function computeSettlement_(trips, opts) {
     if (to && d > to) return;
     var name = t.contractor || '—';
     var g = groups[name];
-    if (!g) { g = groups[name] = { name: name, trips: 0, tons: 0, amount: 0, unpriced: 0, manual: 0, est: 0, estN: 0, routes: {}, lines: [] }; order.push(name); }
+    if (!g) { g = groups[name] = { name: name, trips: 0, tons: 0, amount: 0, unpriced: 0, manual: 0, est: 0, estN: 0, extras: 0, extraByType: {}, routes: {}, lines: [] }; order.push(name); }
     var w = stNum_(t.weight), p = stNum_(t.price), isManual = t.priceRule === 'سعر يدوي';
     g.trips++; g.tons += w || 0;
     if (p !== null && p > 0) { g.amount += p; if (/^تقدير/.test(String(t.priceRule || ''))) { g.est += p; g.estN++; } } else g.unpriced++;
     if (isManual) g.manual++;
     var rk = (t.loadPlace || '—') + ' ← ' + (t.unloadPlace || '—'), r = g.routes[rk] = g.routes[rk] || { route: rk, trips: 0, tons: 0, amount: 0, unpriced: 0 };
     r.trips++; r.tons += w || 0; if (p !== null && p > 0) r.amount += p; else r.unpriced++;
-    g.lines.push({ date: d, card: t.card, plate: t.plate || '', route: rk, crop: t.cropVar || '', weight: w === null ? '' : w, price: p === null ? '' : p, rule: t.priceRule || '' });
+    var ex = opts.contract && typeof ctExtras_ === 'function' ? ctExtras_(t, opts.contract, opts.resolver) : null;
+    if (ex && ex.total > 0) { g.extras += ex.total; ex.items.forEach(function (i) { g.extraByType[i.type] = (g.extraByType[i.type] || 0) + i.amount; }); }
+    g.lines.push({ date: d, card: t.card, plate: t.plate || '', route: rk, crop: t.cropVar || '', weight: w === null ? '' : w, price: p === null ? '' : p, rule: t.priceRule || '', extra: ex && ex.total > 0 ? ex.total : '', extraWhy: ex ? ex.items.map(function (i) { return i.type; }).join(' + ') : '' });
   });
   var rows = order.map(function (n) {
     var g = groups[n];
-    g.tons = Math.round(g.tons * 1000) / 1000; g.amount = stR2_(g.amount); g.est = stR2_(g.est);
+    g.tons = Math.round(g.tons * 1000) / 1000; g.amount = stR2_(g.amount); g.est = stR2_(g.est); g.extras = stR2_(g.extras);
     g.routeList = Object.keys(g.routes).map(function (k) { var r = g.routes[k]; r.tons = Math.round(r.tons * 1000) / 1000; r.amount = stR2_(r.amount); return r; }).sort(function (a, b) { return b.amount - a.amount; });
     delete g.routes;
     g.lines.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
-    total.trips += g.trips; total.tons += g.tons; total.amount += g.amount; total.unpriced += g.unpriced; total.manual += g.manual; total.est += g.est; total.estN += g.estN;
+    total.trips += g.trips; total.tons += g.tons; total.amount += g.amount; total.unpriced += g.unpriced; total.manual += g.manual; total.est += g.est; total.estN += g.estN; total.extras += g.extras;
     return g;
   }).sort(function (a, b) { return b.amount - a.amount || b.trips - a.trips; });
-  total.tons = Math.round(total.tons * 1000) / 1000; total.amount = stR2_(total.amount); total.est = stR2_(total.est);
+  total.tons = Math.round(total.tons * 1000) / 1000; total.amount = stR2_(total.amount); total.est = stR2_(total.est); total.extras = stR2_(total.extras);
   var sel = only ? rows.filter(function (g) { return g.name === only; })[0] || null : null;
   return { contractors: rows, total: total, selected: sel, from: from, to: to };
 }
@@ -3545,9 +3548,9 @@ function computeSettlement_(trips, opts) {
 /** CSV لمستخلص مقاول (سطر لكل رحلة + إجمالي) */
 function settlementCsv_(g) {
   function q(v) { v = String(v === null || v === undefined ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
-  var rows = [['التاريخ', 'الكارتة', 'السيارة', 'المسار', 'المحصول', 'الوزن (طن)', 'السعر', 'مصدر السعر']];
-  g.lines.forEach(function (l) { rows.push([l.date, l.card, l.plate, l.route, l.crop, l.weight, l.price, l.rule]); });
-  rows.push(['', '', '', '', 'الإجمالي', g.tons, g.amount, g.unpriced ? g.unpriced + ' رحلة بلا سعر' : '']);
+  var rows = [['التاريخ', 'الكارتة', 'السيارة', 'المسار', 'المحصول', 'الوزن (طن)', 'السعر', 'مصدر السعر', 'إضافات العقد', 'نوع الإضافة']];
+  g.lines.forEach(function (l) { rows.push([l.date, l.card, l.plate, l.route, l.crop, l.weight, l.price, l.rule, l.extra === undefined ? '' : l.extra, l.extraWhy || '']); });
+  rows.push(['', '', '', '', 'الإجمالي', g.tons, g.amount, g.unpriced ? g.unpriced + ' رحلة بلا سعر' : '', g.extras || '', '']);
   return rows.map(function (r) { return r.map(q).join(','); }).join('\r\n');
 }
 
@@ -3558,11 +3561,11 @@ function settlementCsv_(g) {
 function settlementAllCsv_(R, ex) {
   function q(v) { v = String(v === null || v === undefined ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
   var by = {}; ((ex && ex.list) || []).forEach(function (g) { by[g.contractor] = g; });
-  var rows = [['الفترة: ' + (R.from || '…') + ' ← ' + (R.to || '…')], ['المقاول', 'رحلات', 'أطنان', 'المبلغ', 'منه تقديري', 'رحلات بلا سعر', 'غرامات على المقاول', 'غرامات على الشركة', 'الصافي المستحق']];
-  var sums = [0, 0, 0, 0, 0, 0, 0, 0];
+  var rows = [['الفترة: ' + (R.from || '…') + ' ← ' + (R.to || '…')], ['المقاول', 'رحلات', 'أطنان', 'المبلغ', 'منه تقديري', 'إضافات العقد', 'رحلات بلا سعر', 'غرامات على المقاول', 'غرامات على الشركة', 'الصافي المستحق (غير شامل الضرائب)']];
+  var sums = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   R.contractors.forEach(function (g) {
-    var f = by[g.name] || { onContractor: 0, onCompany: 0 }, net = stR2_(g.amount - f.onContractor);
-    var v = [g.trips, g.tons, g.amount, g.est || 0, g.unpriced, f.onContractor, f.onCompany, net];
+    var f = by[g.name] || { onContractor: 0, onCompany: 0 }, net = stR2_(g.amount + (g.extras || 0) - f.onContractor);
+    var v = [g.trips, g.tons, g.amount, g.est || 0, g.extras || 0, g.unpriced, f.onContractor, f.onCompany, net];
     v.forEach(function (x, i) { sums[i] += x; });
     rows.push([g.name].concat(v));
   });
@@ -3579,9 +3582,9 @@ function settlementHtml_(g, fines, opts) {
   opts = opts || {};
   function e(v) { return String(v === null || v === undefined ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function n(v) { return v === '' || v === null || v === undefined ? '—' : Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
-  var fl = (fines || []).filter(function (f) { return Number(f.amount) > 0; }), onC = 0, onCo = 0;
+  var fl = (fines || []).filter(function (f) { return Number(f.amount) > 0; }), onC = 0, onCo = 0, ext = g.extras || 0;
   fl.forEach(function (f) { if (f.chargeTo === 'company') onCo += Number(f.amount); else onC += Number(f.amount); });
-  var net = stR2_(g.amount - onC), per = (opts.from || opts.to) ? 'الفترة: ' + e(opts.from || '…') + ' ← ' + e(opts.to || '…') : 'كل الفترات';
+  var net = stR2_(g.amount + ext - onC), per = (opts.from || opts.to) ? 'الفترة: ' + e(opts.from || '…') + ' ← ' + e(opts.to || '…') : 'كل الفترات';
   var h = '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>مستخلص ' + e(g.name) + '</title><style>' +
     'body{font-family:Tahoma,Arial,sans-serif;margin:24px;color:#111;font-size:13px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:18px 0 6px}.sub{color:#555;margin-bottom:12px}' +
     'table{width:100%;border-collapse:collapse;margin-bottom:8px}th,td{border:1px solid #999;padding:4px 6px;text-align:right}th{background:#eee}.num{text-align:left;direction:ltr}' +
@@ -3589,20 +3592,20 @@ function settlementHtml_(g, fines, opts) {
     '.sg{display:flex;gap:30px;margin-top:40px}.sg div{flex:1;border-top:1px solid #333;padding-top:6px;text-align:center}.note{color:#a00;margin:6px 0}@media print{body{margin:10mm}}</style></head><body>' +
     '<h1>مستخلص مقاول: ' + e(g.name) + '</h1><div class="sub">' + (opts.company ? e(opts.company) + ' · ' : '') + per + '</div>' +
     '<div class="kv"><div><small>رحلات</small>' + g.trips + '</div><div><small>أطنان</small>' + n(g.tons) + '</div><div><small>المبلغ</small>' + n(g.amount) + '</div>' +
-    (g.est ? '<div><small>منه تقديري *</small>' + n(g.est) + '</div>' : '') + (onC ? '<div><small>غرامات على المقاول</small>' + n(onC) + '</div>' : '') + '<div><small>الصافي المستحق</small>' + n(net) + '</div></div>';
+    (g.est ? '<div><small>منه تقديري *</small>' + n(g.est) + '</div>' : '') + (ext ? '<div><small>إضافات العقد</small>' + n(ext) + '</div>' : '') + (onC ? '<div><small>غرامات على المقاول</small>' + n(onC) + '</div>' : '') + '<div><small>الصافي المستحق (غير شامل الضرائب)</small>' + n(net) + '</div></div>';
   if (g.unpriced) h += '<div class="note">تنبيه: ' + g.unpriced + ' رحلة بلا سعر لم تدخل في المبلغ.</div>';
   if (g.est) h += '<div class="note">* الأسعار المعلَّمة بنجمة تقديرية (تشابه أسماء/عكس اتجاه/مسافة) وتحتاج اعتمادًا.</div>';
   h += '<h2>حسب المسار</h2><table><thead><tr><th>المسار</th><th>رحلات</th><th>أطنان</th><th>المبلغ</th><th>بلا سعر</th></tr></thead><tbody>' +
     g.routeList.map(function (r) { return '<tr><td>' + e(r.route) + '</td><td class="num">' + r.trips + '</td><td class="num">' + n(r.tons) + '</td><td class="num">' + n(r.amount) + '</td><td class="num">' + (r.unpriced || '') + '</td></tr>'; }).join('') + '</tbody></table>';
-  h += '<h2>الرحلات (' + g.lines.length + ')</h2><table><thead><tr><th>التاريخ</th><th>كارتة</th><th>السيارة</th><th>المسار</th><th>الوزن</th><th>السعر</th></tr></thead><tbody>' +
-    g.lines.map(function (l) { var est = /^تقدير/.test(String(l.rule || '')); return '<tr><td>' + e(l.date) + '</td><td>' + e(l.card) + '</td><td>' + e(l.plate) + '</td><td>' + e(l.route) + '</td><td class="num">' + n(l.weight) + '</td><td class="num">' + n(l.price) + (est ? ' *' : '') + '</td></tr>'; }).join('') +
-    '<tr class="tot"><td colspan="4">الإجمالي</td><td class="num">' + n(g.tons) + '</td><td class="num">' + n(g.amount) + '</td></tr></tbody></table>';
+  h += '<h2>الرحلات (' + g.lines.length + ')</h2><table><thead><tr><th>التاريخ</th><th>كارتة</th><th>السيارة</th><th>المسار</th><th>الوزن</th><th>السعر</th><th>إضافات</th></tr></thead><tbody>' +
+    g.lines.map(function (l) { var est = /^تقدير/.test(String(l.rule || '')); return '<tr><td>' + e(l.date) + '</td><td>' + e(l.card) + '</td><td>' + e(l.plate) + '</td><td>' + e(l.route) + '</td><td class="num">' + n(l.weight) + '</td><td class="num">' + n(l.price) + (est ? ' *' : '') + '</td><td class="num" title="' + e(l.extraWhy || '') + '">' + (l.extra === '' || l.extra === undefined ? '' : n(l.extra)) + '</td></tr>'; }).join('') +
+    '<tr class="tot"><td colspan="4">الإجمالي</td><td class="num">' + n(g.tons) + '</td><td class="num">' + n(g.amount) + '</td><td class="num">' + (ext ? n(ext) : '') + '</td></tr></tbody></table>';
   if (fl.length) {
     h += '<h2>الغرامات والمصروفات</h2><table><thead><tr><th>كارتة</th><th>النوع</th><th>المبلغ</th><th>على</th><th>ملاحظة</th></tr></thead><tbody>' +
       fl.map(function (f) { return '<tr><td>' + e(f.card) + '</td><td>' + e(f.type) + '</td><td class="num">' + n(f.amount) + '</td><td>' + (f.chargeTo === 'company' ? 'الشركة' : 'المقاول') + '</td><td>' + e(f.note || '') + '</td></tr>'; }).join('') +
       '<tr class="tot"><td colspan="2">على المقاول / على الشركة</td><td class="num">' + n(onC) + ' / ' + n(onCo) + '</td><td colspan="2"></td></tr></tbody></table>';
   }
-  h += '<h2>الصافي المستحق: ' + n(net) + ' ج.م</h2><div class="sg"><div>المقاول</div><div>منسق النقل</div><div>المحاسب</div></div></body></html>';
+  h += '<h2>الصافي المستحق: ' + n(net) + ' ج.م <small>(الأسعار غير شاملة الضرائب)</small></h2><div class="sg"><div>المقاول</div><div>منسق النقل</div><div>المحاسب</div></div></body></html>';
   return h;
 }
 
@@ -4246,6 +4249,301 @@ function pintTripKm_(t, R) { return t && R ? R.km(t.loadPlace, t.unloadPlace) : 
   }
   function inChange(t,a){ if(a==='plx-in-txt'){ A.pl.intel.txt=t.value; return true; } if(a==='plx-in-row') return true; return false; }
 
+  /**
+ * ============================================================
+ * 31 · قواعد العقد والإضافات (دوال نقية ES5 — سيرفر + واجهة)
+ * مصدرها شروط عقد النقل: التحويلة، المبيت، اليومية، رسوم الموازين والإكراميات، ومعادلات الأسعار من سعر الجامب الصغير.
+ * الإضافات لا تُغيّر سعر الرحلة المخزَّن ولا تُكتب في الشيت: تُحسب لحظيًا من الإعدادات الحالية فتتحدّث بمجرد تعديل القاعدة.
+ * ما لم يحدده العقد (يومية الفرداني للبيفوتات، رسوم البسكول الخارجي، إكراميات المصانع) قيمته 0 في الإعدادات ويظهر كـ«بند محتمل».
+ * ============================================================
+ */
+function contractDefaults_() {
+  return {
+    enabled: true, excludesTax: true,
+    formulas: { tonDivisor: 1.3, bigJumboFactor: 1.4, trailerJumbos: 24, tractorJumbos: 28, fardaniPct: 65 },
+    detour: { enabled: true, amount: 3000, vehicles: ['تريلا', 'جرار'], itemTypes: ['مستلزمات', 'كيماويات', 'سماد', 'أسمدة'], south: ['شرق العوينات', 'العوينات'],
+      north: ['كفر الزيات', 'وادي النطرون', 'مدينة السادات', 'العبور', 'العاشر من رمضان', 'الصالحية', 'النوبارية', 'الضبعة', 'قليوب', 'ابو حمص', 'منوف', 'الشيخ زايد', 'سلمى'], via: 'مريم', needVia: true },
+    overnight: { enabled: true, fromHours: 20, cycleHours: 24, avgSpeedKmh: 50, rates: { trailer: 1500, tractor: 1500, fardani: 700, counter: 2000, tipperTrailer: 2000, fardaniTipper: 1250 } },
+    pivotFert: { enabled: true, dailyRate: 0, itemTypes: ['سماد', 'أسمدة', 'كيماويات'] },
+    fees: { portGratuity: 380, extScale: 0, fertFactory: 0, potatoFactory: 0 }
+  };
+}
+function ctNum_(v, d, lo, hi) { var n = Number(v); return v !== '' && v !== null && v !== undefined && isFinite(n) && n >= lo && n <= hi ? n : d; }
+function ctList_(v, d) { var a = Array.isArray(v) ? v : d; return a.map(function (x) { return String(x === null || x === undefined ? '' : x).replace(/\s+/g, ' ').trim().slice(0, 80); }).filter(function (x) { return x; }).slice(0, 60); }
+function contractSanitize_(raw) {
+  var D = contractDefaults_(); raw = raw && typeof raw === 'object' ? raw : {};
+  var f = raw.formulas || {}, d = raw.detour || {}, o = raw.overnight || {}, orr = o.rates || {}, p = raw.pivotFert || {}, fe = raw.fees || {};
+  var rates = {}; Object.keys(D.overnight.rates).forEach(function (k) { rates[k] = ctNum_(orr[k], D.overnight.rates[k], 0, 100000); });
+  return {
+    enabled: raw.enabled !== false, excludesTax: raw.excludesTax !== false,
+    formulas: { tonDivisor: ctNum_(f.tonDivisor, D.formulas.tonDivisor, 0.1, 10), bigJumboFactor: ctNum_(f.bigJumboFactor, D.formulas.bigJumboFactor, 0.1, 10), trailerJumbos: ctNum_(f.trailerJumbos, D.formulas.trailerJumbos, 1, 200), tractorJumbos: ctNum_(f.tractorJumbos, D.formulas.tractorJumbos, 1, 200), fardaniPct: ctNum_(f.fardaniPct, D.formulas.fardaniPct, 1, 200) },
+    detour: { enabled: d.enabled !== false, amount: ctNum_(d.amount, D.detour.amount, 0, 100000), vehicles: ctList_(d.vehicles, D.detour.vehicles), itemTypes: ctList_(d.itemTypes, D.detour.itemTypes), south: ctList_(d.south, D.detour.south), north: ctList_(d.north, D.detour.north), via: String(d.via === undefined ? D.detour.via : d.via).trim().slice(0, 80), needVia: d.needVia !== false },
+    overnight: { enabled: o.enabled !== false, fromHours: ctNum_(o.fromHours, D.overnight.fromHours, 1, 200), cycleHours: ctNum_(o.cycleHours, D.overnight.cycleHours, 1, 200), avgSpeedKmh: ctNum_(o.avgSpeedKmh, D.overnight.avgSpeedKmh, 10, 120), rates: rates },
+    pivotFert: { enabled: p.enabled !== false, dailyRate: ctNum_(p.dailyRate, D.pivotFert.dailyRate, 0, 100000), itemTypes: ctList_(p.itemTypes, D.pivotFert.itemTypes) },
+    fees: { portGratuity: ctNum_(fe.portGratuity, D.fees.portGratuity, 0, 100000), extScale: ctNum_(fe.extScale, D.fees.extScale, 0, 100000), fertFactory: ctNum_(fe.fertFactory, D.fees.fertFactory, 0, 100000), potatoFactory: ctNum_(fe.potatoFactory, D.fees.potatoFactory, 0, 100000) }
+  };
+}
+
+/** نوع السيارة ← فئة العقد: trailer | tractor | fardani | counter | tipperTrailer | fardaniTipper | '' */
+function ctVeh_(v) {
+  var k = pintKey_(v), tip = /قلاب/.test(k);
+  if (!k) return '';
+  if (/فرداني|فردان/.test(k)) return tip ? 'fardaniTipper' : 'fardani';
+  if (/كونتر/.test(k)) return 'counter';
+  if (/تريلا/.test(k)) return tip ? 'tipperTrailer' : 'trailer';
+  if (/جرار/.test(k)) return tip ? 'tipperTrailer' : 'tractor';
+  return '';
+}
+function ctHas_(text, list) { var k = pintKey_(text); if (!k) return false; return (list || []).some(function (x) { var w = pintKey_(x); return w && k.indexOf(w) >= 0; }); }
+function ctSame_(place, list) { var k = pintKey_(place); if (!k) return false; return (list || []).some(function (x) { var w = pintKey_(x); return w && (k === w || k.indexOf(w) >= 0 || w.indexOf(k) >= 0 && k.length >= 4); }); }
+
+/**
+ * إضافات رحلة واحدة. t = الرحلة، C = إعدادات العقد، R = محلّل الأماكن pintResolver_ (اختياري: يعطي النوع والمسافة).
+ * يرجع {items:[{type, amount, why}], total, maybe:[{type, why}]}. الرحلات الملغاة/المرفوضة/الجارية بلا إضافات.
+ */
+function ctExtras_(t, C, R) {
+  var out = { items: [], total: 0, maybe: [] };
+  if (!t || !C || C.enabled === false || t.live || t.kind === 'ملغاة' || t.kind === 'مرفوضة') return out;
+  var cls = ctVeh_(t.vehicleType), lp = t.loadPlace || '', up = t.unloadPlace || '', it = t.itemType || '', note = String(t.stationNotes || '') + ' ' + String(t.origin || '');
+  function add(type, amount, why) { if (amount > 0) { out.items.push({ type: type, amount: Math.round(amount * 100) / 100, why: why }); out.total += amount; } }
+  // ١) التحويلة: بحري ↔ العوينات لنقلات المستلزمات مع المرور على مريم
+  var D = C.detour;
+  if (D && D.enabled && cls && D.vehicles.some(function (v) { return ctVeh_(v) === cls; }) && ctHas_(it, D.itemTypes)) {
+    var lS = ctSame_(lp, D.south), uS = ctSame_(up, D.south), lN = ctSame_(lp, D.north), uN = ctSame_(up, D.north);
+    if (R) { var a = R.pt(lp), b = R.pt(up); if (!lN && a && a.lat >= 30.0 && !lS) lN = true; if (!uN && b && b.lat >= 30.0 && !uS) uN = true; }
+    var north = (lS && uN) || (uS && lN), viaEnd = (lS && ctSame_(up, [D.via])) || (uS && ctSame_(lp, [D.via]));
+    if (north) {
+      var viaOk = !D.needVia || !D.via || pintKey_(note).indexOf(pintKey_(D.via)) >= 0;
+      if (viaOk) add('تحويلة', D.amount, 'بحري ↔ العوينات (' + it + ') عبر ' + D.via);
+      else out.maybe.push({ type: 'تحويلة', why: 'مسار بحري ↔ العوينات (' + it + ') ولم يُذكر المرور على ' + D.via });
+    } else if (viaEnd) out.maybe.push({ type: 'تحويلة', why: D.via + ' طرف في الرحلة مع العوينات — تأكد أن السيارة جاءت من بحري' });
+  }
+  // ٢) المبيت: من زمن الانتظار = الزمن الكلي − زمن السفر التقديري (لو المسافة معروفة)
+  var O = C.overnight, rate = O && O.enabled && cls ? O.rates[cls] : 0, h = Number(t.hours);
+  if (rate > 0 && isFinite(h) && h > 0) {
+    var km = R ? R.km(lp, up) : null;
+    if (km !== null) {
+      var wait = h - km / (O.avgSpeedKmh || 50);
+      if (wait >= O.fromHours) { var nights = 1 + Math.floor((wait - O.fromHours) / O.cycleHours); add('مبيت', rate * nights, nights + ' ليلة (انتظار ≈ ' + Math.round(wait) + ' س بعد خصم السفر)'); }
+    } else if (h >= O.fromHours) out.maybe.push({ type: 'مبيت', why: 'الزمن الكلي ' + h + ' س والمسافة غير معروفة (أضف إحداثيات الأماكن)' });
+  }
+  // ٣) يومية الفرداني عند توزيع الأسمدة على البيفوتات
+  var P = C.pivotFert;
+  if (P && P.enabled && ctHas_(it, P.itemTypes) && /بيفوت/.test(pintKey_(up + ' ' + note))) {
+    if (P.dailyRate > 0) add('يومية فرداني', P.dailyRate, 'توزيع أسمدة على بيفوت');
+    else out.maybe.push({ type: 'يومية فرداني', why: 'توزيع أسمدة على بيفوت — قيمة اليومية غير محددة في الإعدادات' });
+  }
+  // ٤) الرسوم والإكراميات
+  var F = C.fees || {}, ru = R ? R.find(up) : null, rl = R ? R.find(lp) : null;
+  var port = (ru && ru.kind === 'port') || (rl && rl.kind === 'port') || /ميناء/.test(pintKey_(lp + ' ' + up));
+  if (port) add('إكرامية ميناء', F.portGratuity, 'تحميل/تفريغ ميناء');
+  var extScale = /ميزان خارجي|بسكول/.test(String(t.loadSrc || '') + ' ' + String(t.unloadSrc || '') + ' ' + String(t.extSrc || ''));
+  if (extScale) { if (F.extScale > 0) add('رسوم ميزان خارجي', F.extScale, 'ميزان بسكول خارجي'); else out.maybe.push({ type: 'رسوم ميزان خارجي', why: 'القيمة غير محددة في الإعدادات' }); }
+  var factory = (ru && ru.kind === 'factory') || (rl && rl.kind === 'factory');
+  if (factory) {
+    if (ctHas_(it + ' ' + (t.cropVar || ''), ['سماد', 'أسمدة', 'كيماويات'])) { if (F.fertFactory > 0) add('إكرامية مصنع أسمدة', F.fertFactory, 'مصنع أسمدة'); else out.maybe.push({ type: 'إكرامية مصنع أسمدة', why: 'القيمة غير محددة' }); }
+    else if (ctHas_(t.cropVar || '', ['بطاطس'])) { if (F.potatoFactory > 0) add('إكرامية مصنع بطاطس', F.potatoFactory, 'مصنع بطاطس'); else out.maybe.push({ type: 'إكرامية مصنع بطاطس', why: 'القيمة غير محددة' }); }
+  }
+  out.total = Math.round(out.total * 100) / 100;
+  return out;
+}
+
+/** ملخص الإضافات على مجموعة رحلات: {byType:{نوع:{n, amount}}, total, maybeByType:{نوع:n}, cards:{نوع:[كارتات]}, trips} */
+function ctSummary_(trips, C, R) {
+  var res = { byType: {}, total: 0, maybeByType: {}, cards: {}, trips: 0, withExtras: 0 };
+  (trips || []).forEach(function (t) {
+    var x = ctExtras_(t, C, R); if (!t || t.live) return; res.trips++;
+    if (x.items.length) res.withExtras++;
+    x.items.forEach(function (i) { var g = res.byType[i.type] = res.byType[i.type] || { n: 0, amount: 0 }; g.n++; g.amount = Math.round((g.amount + i.amount) * 100) / 100; res.total += i.amount; (res.cards[i.type] = res.cards[i.type] || []).push(t.card); });
+    x.maybe.forEach(function (m) { res.maybeByType[m.type] = (res.maybeByType[m.type] || 0) + 1; });
+  });
+  res.total = Math.round(res.total * 100) / 100;
+  return res;
+}
+
+    /* ================= قواعد العقد: معادلات، حد أدنى، تحويلة، مبيت، يومية، رسوم + تطبيقها على الرحلات الحالية ================= */
+  var CT_MINDEF={enabled:true,bigFromTon:1.5,jumboLarge:{trailer:20,tractor:24,fardani:8},jumboSmall:{trailer:24,tractor:28,fardani:12},ton:{trailer:40,tractor:45,fardani:20},grain:{counter:65,fardaniTipper:30}};
+  function ctFill(dst,def){ Object.keys(def).forEach(function(k){ if(def[k]&&typeof def[k]==='object'&&!Array.isArray(def[k])){ if(!dst[k]||typeof dst[k]!=='object') dst[k]={}; ctFill(dst[k],def[k]); } else if(dst[k]===undefined) dst[k]=def[k]; }); }
+  function ctPrep(){ var S=A.S; S.contract=S.contract||{}; ctFill(S.contract,contractDefaults_()); S.book=S.book||{}; S.book.minimums=S.book.minimums||{}; ctFill(S.book.minimums,CT_MINDEF); }
+  function ctF(p,label,sub){ return '<label class="fld2">'+label+inp(p,'n',gp(p),'')+(sub?'<small class="sub">'+sub+'</small>':'')+'</label>'; }
+  function rContract(){
+    ctPrep();
+    var C=A.S.contract, S0=A.S, pl=(S0.places&&S0.places.list)||[], R=pintResolver_(pl,(S0.places||{}).roadFactor);
+    var sm=ctSummary_((D.trips||[]).concat(D.live||[]),C,R);
+    var h='<h2>قواعد العقد</h2><p class="lead">شروط عقد النقل في مكان واحد: معادلات الأسعار من سعر الجامب الصغير، الحد الأدنى للحساب، والإضافات (تحويلة / مبيت / يومية / رسوم). كل رقم هنا قابل للتعديل، وبعد «حفظ الإعدادات» يتطبق على التسعير والمستخلصات. <b>كل الأسعار غير شاملة الضرائب.</b></p>';
+    h+='<div class="box">'+swt('contract.enabled','تفعيل قواعد العقد','لو أوقفتها تتعطل المعادلات والإضافات ويبقى سعر الدفتر كما هو')+swt('contract.excludesTax','الأسعار غير شاملة الضرائب','تظهر ملاحظة في المستخلص المطبوع')+'</div>';
+    // معادلات
+    h+='<div class="box"><h3>معادلات الأسعار (من سعر الجامب الصغير)</h3><p class="sub">تُستخدم لما لا يوجد سعر طن أو نقلة للمسار في دفتر الأسعار. سعر الجامب الكبير = سعر الصغير × المعامل.</p><div class="fgrid">'+
+      ctF('contract.formulas.tonDivisor','سعر الطن = الجامب ÷','1.3')+ctF('contract.formulas.bigJumboFactor','الجامب الكبير = الصغير ×','7÷5 = 1.4')+ctF('contract.formulas.trailerJumbos','نقلة التريلا = الجامب ×','24')+ctF('contract.formulas.tractorJumbos','نقلة الجرار = الجامب ×','28')+ctF('contract.formulas.fardaniPct','نقلة الفرداني ٪ من التريلا','65')+'</div></div>';
+    // حد أدنى
+    var M=A.S.book.minimums, mrow=function(label,g,keys){ return '<tr><td>'+label+'</td>'+keys.map(function(k){ return '<td>'+inp('book.minimums.'+g+'.'+k,'n',M[g][k],'')+'</td>'; }).join('')+'</tr>'; };
+    h+='<div class="box"><h3>الحد الأدنى للحساب</h3>'+swt('book.minimums.enabled','تطبيق الحد الأدنى عند التسعير','الحمولة الأقل تُحسب على الحد الأدنى. الحمولة التي فيها شكاير تُحسب بالطن بلا حد أدنى.')+
+      '<div class="tblwrap"><table class="tbl"><thead><tr><th>الحمولة</th><th>تريلا</th><th>جرار</th><th>فرداني</th></tr></thead><tbody>'+mrow('جامب صغير 1.25 طن (عدد)','jumboSmall',['trailer','tractor','fardani'])+mrow('جامب كبير 1.75 طن (عدد)','jumboLarge',['trailer','tractor','fardani'])+mrow('بالطن','ton',['trailer','tractor','fardani'])+'</tbody></table></div>'+
+      '<div class="fgrid" style="margin-top:8px"><label class="fld2">حبوب: الحد الأدنى للكونتر (طن)'+inp('book.minimums.grain.counter','n',M.grain.counter,'')+'</label><label class="fld2">حبوب: الفرداني القلاب (طن)'+inp('book.minimums.grain.fardaniTipper','n',M.grain.fardaniTipper,'')+'</label><label class="fld2">الجامب «كبير» لو متوسط وزنه ≥ (طن)'+inp('book.minimums.bigFromTon','n',M.bigFromTon,'')+'</label></div></div>';
+    // تحويلة
+    var D0=C.detour;
+    h+='<div class="box"><h3>التحويلة</h3>'+swt('contract.detour.enabled','احتساب التحويلة','توجيه السيارة بين بحري والعوينات لنقلات المستلزمات مع المرور على مريم')+
+      '<div class="fgrid">'+ctF('contract.detour.amount','قيمة التحويلة (ج.م)','')+'<label class="fld2">المرور على'+inp('contract.detour.via','s',D0.via,'')+'</label></div>'+swt('contract.detour.needVia','اشتراط ذكر المرور على المكان (في الملاحظات أو أحد الطرفين)','لو أوقفته تُحتسب كل رحلات بحري ↔ العوينات من المستلزمات')+
+      '<div class="fgrid" style="margin-top:8px"><div><div class="sec-l">السيارات</div>'+tagEd('contract.detour.vehicles','تريلا / جرار')+'</div><div><div class="sec-l">أصناف المستلزمات</div>'+tagEd('contract.detour.itemTypes','نوع الصنف')+'</div><div><div class="sec-l">جهة العوينات (جنوب)</div>'+tagEd('contract.detour.south','مكان','dlPlaces')+'</div><div><div class="sec-l">أماكن بحري (إضافة لما موقعه شمال خط 30)</div>'+tagEd('contract.detour.north','مكان','dlPlaces')+'</div></div></div>';
+    // مبيت
+    var O=C.overnight, rr=O.rates;
+    h+='<div class="box"><h3>المبيت</h3>'+swt('contract.overnight.enabled','احتساب المبيت','يبدأ من الحد المحدد، وكل دورة بعده ليلة جديدة. زمن الانتظار = الزمن الكلي − زمن السفر التقديري (يحتاج إحداثيات الأماكن).')+
+      '<div class="fgrid">'+ctF('contract.overnight.fromHours','يبدأ من (ساعة)','20')+ctF('contract.overnight.cycleHours','كل ليلة إضافية بعد (ساعة)','24')+ctF('contract.overnight.avgSpeedKmh','متوسط السرعة للسفر (كم/س)','50')+'</div>'+
+      '<div class="fgrid" style="margin-top:8px">'+ctF('contract.overnight.rates.trailer','تريلا (ج.م)','1500')+ctF('contract.overnight.rates.tractor','جرار (ج.م)','1500')+ctF('contract.overnight.rates.fardani','فرداني (ج.م)','700')+ctF('contract.overnight.rates.counter','كونتر (ج.م)','2000')+ctF('contract.overnight.rates.tipperTrailer','تريلا/جرار قلاب (ج.م)','2000')+ctF('contract.overnight.rates.fardaniTipper','فرداني قلاب (ج.م)','1250')+'</div></div>';
+    // يومية + رسوم
+    h+='<div class="box"><h3>يومية الفرداني للبيفوتات</h3>'+swt('contract.pivotFert.enabled','احتساب اليومية عند توزيع الأسمدة على البيفوتات','القيمة غير محددة في العقد — اكتبها لتُحتسب (0 = تظهر كبند محتمل فقط)')+'<div class="fgrid">'+ctF('contract.pivotFert.dailyRate','قيمة اليومية (ج.م)','')+'</div><div class="sec-l">أصناف الأسمدة</div>'+tagEd('contract.pivotFert.itemTypes','نوع الصنف')+'</div>';
+    h+='<div class="box"><h3>الرسوم والإكراميات</h3><p class="sub">أي رسم قيمته 0 لا يُحتسب ويظهر كبند محتمل.</p><div class="fgrid">'+ctF('contract.fees.portGratuity','إكرامية الميناء (ج.م)','380')+ctF('contract.fees.extScale','رسوم ميزان البسكول الخارجي (ج.م)','')+ctF('contract.fees.fertFactory','إكرامية مصانع الأسمدة (ج.م)','')+ctF('contract.fees.potatoFactory','إكرامية مصانع البطاطس (ج.م)','')+'</div></div>';
+    // تطبيق على الرحلات الحالية
+    var types=Object.keys(sm.byType), may=Object.keys(sm.maybeByType);
+    h+='<div class="box"><h3>أثرها على الرحلات الحالية</h3><div class="kvg"><div><small>رحلات محسوبة</small><b>'+sm.trips+'</b></div><div><small>رحلات بإضافات</small><b>'+sm.withExtras+'</b></div><div><small>إجمالي الإضافات</small><b>'+Number(sm.total).toLocaleString('en-US')+' ج.م</b></div></div>'+
+      (types.length?'<div class="tblwrap"><table class="tbl"><thead><tr><th>البند</th><th>رحلات</th><th>المبلغ</th><th>أمثلة كارتة</th></tr></thead><tbody>'+types.map(function(k){ return '<tr><td>'+esc(k)+'</td><td>'+sm.byType[k].n+'</td><td>'+Number(sm.byType[k].amount).toLocaleString('en-US')+'</td><td class="ph">'+esc(sm.cards[k].slice(0,5).join('، '))+'</td></tr>'; }).join('')+'</tbody></table></div>':'<p class="sub">لا رحلات تنطبق عليها إضافات حاليًا.</p>')+
+      (may.length?'<h4>بنود محتملة تحتاج قيمة أو بيانات</h4>'+may.map(function(k){ return '<div class="lint warn"><span>⚠</span><span class="grow">'+esc(k)+' — '+sm.maybeByType[k]+' رحلة (أكمل القيمة أو إحداثيات الأماكن من لوحة التحكم)</span></div>'; }).join(''):'')+'</div>';
+    return h;
+  }
+
+  /**
+ * ============================================================
+ * 29 · اسأل البيانات (قلب منطقي نقي ES5، يُضمَّن في الصفحة)
+ * النموذج (Gemini) يحوّل السؤال العربي إلى «مواصفة» JSON فقط؛ الحساب كله هنا بكود ثابت على بيانات النظام
+ * فلا يخترع أرقامًا. askSanitize_ ينقّي المواصفة، askRun_ ينفّذها، askDescribe_ يشرح للمستخدم كيف فُهم سؤاله.
+ * ============================================================
+ */
+var ASK_METRICS_ = { trips: 'عدد الرحلات', tons: 'الأطنان', amount: 'المبلغ', unpriced: 'رحلات بلا سعر', avgTons: 'متوسط الحمولة (طن)', perTon: 'تكلفة الطن' };
+var ASK_GROUPS_ = { none: 'بدون تجميع', contractor: 'المقاول', route: 'المسار', load: 'مكان التحميل', unload: 'مكان التفريغ', crop: 'المحصول', vehicle: 'نوع السيارة', plate: 'السيارة', day: 'اليوم', week: 'الأسبوع', month: 'الشهر' };
+
+function askList_(v) { return (Array.isArray(v) ? v : (v ? [v] : [])).map(function (x) { return String(x === null || x === undefined ? '' : x).trim().slice(0, 80); }).filter(function (x) { return x; }).slice(0, 10); }
+function askDate_(v) { var s = String(v || '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : ''; }
+
+/** مواصفة خام ← مواصفة نظيفة (قيم افتراضية آمنة) */
+function askSanitize_(raw) {
+  raw = raw && typeof raw === 'object' ? raw : {};
+  var f = raw.filters && typeof raw.filters === 'object' ? raw.filters : {}, lim = Number(raw.limit);
+  return {
+    metric: ASK_METRICS_[raw.metric] ? raw.metric : 'trips',
+    groupBy: ASK_GROUPS_[raw.groupBy] ? raw.groupBy : 'none',
+    filters: { contractor: askList_(f.contractor), load: askList_(f.load), unload: askList_(f.unload), place: askList_(f.place), crop: askList_(f.crop), vehicle: askList_(f.vehicle), itemType: askList_(f.itemType), plate: askList_(f.plate),
+      from: askDate_(f.from), to: askDate_(f.to), priced: f.priced === 'yes' || f.priced === 'no' ? f.priced : '' },
+    sort: raw.sort === 'asc' ? 'asc' : 'desc', limit: isFinite(lim) && lim >= 1 ? Math.min(200, Math.round(lim)) : 20,
+    title: String(raw.title || '').slice(0, 120)
+  };
+}
+
+function askHit_(field, wanted) {
+  if (!wanted.length) return true;
+  var k = pintKey_(field);
+  if (!k) return false;
+  return wanted.some(function (w) { var wk = pintKey_(w); return wk && (k === wk || k.indexOf(wk) >= 0 || (wk.length >= 4 && pintSim_(field, w) >= 0.8)); });
+}
+function askWeekStart_(iso) { var d = new Date(iso + 'T00:00:00Z'), dow = (d.getUTCDay() + 1) % 7; return new Date(d.getTime() - dow * 864e5).toISOString().slice(0, 10); }   // الأسبوع يبدأ السبت
+
+/** ينفّذ المواصفة على الرحلات. يرجع {rows:[{key, trips, tons, amount, unpriced, avgTons, perTon, value}], total, matched, spec} */
+function askRun_(trips, spec) {
+  spec = askSanitize_(spec);
+  var F = spec.filters, groups = {}, order = [], total = { trips: 0, tons: 0, amount: 0, unpriced: 0 };
+  (trips || []).forEach(function (t) {
+    if (!t || t.live || t.kind === 'ملغاة' || t.kind === 'مرفوضة') return;
+    var d = String(t.lastAt || t.loadAt || t.unloadAt || '').slice(0, 10);
+    if (F.from && d < F.from) return;
+    if (F.to && d > F.to) return;
+    var p = Number(t.price), priced = t.price !== '' && t.price !== null && t.price !== undefined && isFinite(p) && p > 0;
+    if (F.priced === 'yes' && !priced) return;
+    if (F.priced === 'no' && priced) return;
+    if (!askHit_(t.contractor, F.contractor) || !askHit_(t.loadPlace, F.load) || !askHit_(t.unloadPlace, F.unload) || !askHit_(t.cropVar, F.crop) || !askHit_(t.vehicleType, F.vehicle) || !askHit_(t.itemType, F.itemType) || !askHit_(t.plate, F.plate)) return;
+    if (F.place.length && !(askHit_(t.loadPlace, F.place) || askHit_(t.unloadPlace, F.place))) return;
+    var key = '';
+    switch (spec.groupBy) {
+      case 'contractor': key = t.contractor || '—'; break;
+      case 'route': key = (t.loadPlace || '—') + ' ← ' + (t.unloadPlace || '—'); break;
+      case 'load': key = t.loadPlace || '—'; break;
+      case 'unload': key = t.unloadPlace || '—'; break;
+      case 'crop': key = t.cropVar || '—'; break;
+      case 'vehicle': key = t.vehicleType || '—'; break;
+      case 'plate': key = t.plate || '—'; break;
+      case 'day': key = d || '—'; break;
+      case 'week': key = d ? 'أسبوع ' + askWeekStart_(d) : '—'; break;
+      case 'month': key = d ? d.slice(0, 7) : '—'; break;
+      default: key = 'الإجمالي';
+    }
+    var g = groups[key]; if (!g) { g = groups[key] = { key: key, trips: 0, tons: 0, amount: 0, unpriced: 0 }; order.push(key); }
+    var w = Number(t.weight); w = t.weight !== '' && t.weight !== null && isFinite(w) ? w : 0;
+    g.trips++; g.tons += w; if (priced) g.amount += p; else g.unpriced++;
+    total.trips++; total.tons += w; if (priced) total.amount += p; else total.unpriced++;
+  });
+  function fin(g) {
+    g.tons = Math.round(g.tons * 100) / 100; g.amount = Math.round(g.amount * 100) / 100;
+    g.avgTons = g.trips ? Math.round(g.tons / g.trips * 100) / 100 : 0; g.perTon = g.tons ? Math.round(g.amount / g.tons * 100) / 100 : 0;
+    g.value = g[spec.metric]; return g;
+  }
+  var rows = order.map(function (k) { return fin(groups[k]); });
+  if (spec.groupBy === 'day' || spec.groupBy === 'week' || spec.groupBy === 'month') rows.sort(function (a, b) { return a.key < b.key ? -1 : 1; });
+  else rows.sort(function (a, b) { return spec.sort === 'asc' ? a.value - b.value : b.value - a.value; });
+  var tt = fin({ key: 'الإجمالي', trips: total.trips, tons: total.tons, amount: total.amount, unpriced: total.unpriced });
+  return { rows: rows.slice(0, spec.limit), total: tt, matched: total.trips, spec: spec, groupsTotal: rows.length };
+}
+
+/** شرح بالعربي لما فُهم من السؤال (للثقة والتصحيح) */
+function askDescribe_(spec) {
+  spec = askSanitize_(spec);
+  var F = spec.filters, p = [];
+  p.push('المقياس: ' + ASK_METRICS_[spec.metric]);
+  if (spec.groupBy !== 'none') p.push('مجمّعًا حسب: ' + ASK_GROUPS_[spec.groupBy]);
+  [['contractor', 'المقاول'], ['load', 'من'], ['unload', 'إلى'], ['place', 'مكان'], ['crop', 'المحصول'], ['vehicle', 'السيارة'], ['itemType', 'نوع الصنف'], ['plate', 'اللوحة']].forEach(function (x) { if (F[x[0]].length) p.push(x[1] + ': ' + F[x[0]].join(' أو ')); });
+  if (F.from || F.to) p.push('الفترة: ' + (F.from || '…') + ' ← ' + (F.to || '…'));
+  if (F.priced) p.push(F.priced === 'yes' ? 'المسعّرة فقط' : 'بلا سعر فقط');
+  return p.join(' · ');
+}
+
+    /* ================= اسأل البيانات: سؤال بالعربي ← مواصفة (Gemini) ← حساب ثابت على بيانات النظام ================= */
+  A.ask={q:'',busy:false,msg:'',res:null,desc:'',hist:[]};
+  var ASK_EX=['كام طن نقل كل مقاول الأسبوع الماضي؟','أكتر 10 مسارات تكلفة الشهر ده','الرحلات بلا سعر آخر 30 يوم حسب المسار','متوسط حمولة كل نوع سيارة','عدد رحلات تقاوي من حليمة لكل مقاول'];
+  function askHints(){
+    var all=(D.trips||[]).concat(D.live||[]), cnt=function(f){ var m={}; all.forEach(function(t){ var v=t[f]; if(v&&v!=='تحتاج مراجعة') m[v]=(m[v]||0)+1; }); return Object.keys(m).sort(function(a,b){ return m[b]-m[a]; }).slice(0,80); };
+    var pl={}; cnt('loadPlace').concat(cnt('unloadPlace')).forEach(function(x){ pl[x]=1; });
+    return {contractors:cnt('contractor'),places:Object.keys(pl).slice(0,80),crops:cnt('cropVar'),vehicles:cnt('vehicleType')};
+  }
+  function askFmt(v,m){ return v===''||v===null||v===undefined?'—':Number(v).toLocaleString('en-US',{maximumFractionDigits:2}); }
+  function rAsk(){
+    var S=A.ask, h='<h2>اسأل البيانات</h2><p class="lead">اكتب سؤالك بالعربي (مثلًا: كام طن نقل كل مقاول الأسبوع الماضي؟). Gemini يفهم السؤال فقط، والأرقام تُحسب من رحلات النظام بكود ثابت — ما فيش تخمين.</p>';
+    h+='<div class="box"><label class="fld"><span>سؤالك</span><textarea data-a="ask-q" rows="2" style="width:100%" placeholder="اسأل عن الرحلات والأطنان والمبالغ…">'+esc(S.q)+'</textarea></label>'+
+      '<div class="row" style="margin-top:8px;align-items:center"><button class="abtn pri" data-a="ask-go"'+(S.busy?' disabled':'')+'>'+(S.busy?'جارٍ الفهم…':'اسأل')+'</button>'+ASK_EX.map(function(x,i){ return '<button class="abtn" data-a="ask-ex" data-i="'+i+'">'+esc(x)+'</button>'; }).join('')+'</div></div>';
+    if(S.msg) h+='<div class="pv"><b>'+esc(S.msg)+'</b></div>';
+    var R=S.res;
+    if(R){
+      var m=R.spec.metric, g=R.spec.groupBy;
+      h+='<div class="box"><h3>'+esc(R.spec.title||'النتيجة')+'</h3><p class="sub">فهمت سؤالك كالتالي: '+esc(S.desc)+' — إن لم يكن صحيحًا أعد صياغته.</p>'+
+        '<div class="kvg"><div><small>رحلات مطابقة</small><b>'+askFmt(R.total.trips)+'</b></div><div><small>أطنان</small><b>'+askFmt(R.total.tons)+'</b></div><div><small>المبلغ</small><b>'+askFmt(R.total.amount)+'</b></div><div><small>بلا سعر</small><b>'+askFmt(R.total.unpriced)+'</b></div></div>';
+      if(g!=='none'){
+        h+='<div class="tblwrap"><table class="tbl"><thead><tr><th>'+esc(ASK_GROUPS_[g])+'</th><th>رحلات</th><th>أطنان</th><th>المبلغ</th><th>بلا سعر</th><th>متوسط الحمولة</th><th>تكلفة الطن</th></tr></thead><tbody>'+R.rows.map(function(r){ return '<tr><td>'+esc(r.key)+'</td><td>'+askFmt(r.trips)+'</td><td>'+askFmt(r.tons)+'</td><td>'+askFmt(r.amount)+'</td><td>'+askFmt(r.unpriced)+'</td><td>'+askFmt(r.avgTons)+'</td><td>'+askFmt(r.perTon)+'</td></tr>'; }).join('')+'</tbody></table></div>'+(R.groupsTotal>R.rows.length?'<p class="sub">معروض '+R.rows.length+' من '+R.groupsTotal+'.</p>':'')+
+          '<div class="row" style="margin-top:8px"><button class="abtn" data-a="ask-csv">تنزيل CSV</button></div>';
+      }
+      if(!R.matched) h+='<div class="lint warn"><span>⚠</span><span class="grow">ما لقيتش رحلات مطابقة. جرّب توسيع الفترة أو اسم المقاول/المكان.</span></div>';
+      h+='</div>';
+    }
+    return h;
+  }
+  function askGo(){
+    var S=A.ask; S.q=(document.querySelector('[data-a="ask-q"]')||{}).value||S.q;
+    if(S.q.trim().length<3){ S.msg='اكتب سؤالك أولًا'; aRender(); return; }
+    if(needPin(function(m){ S.msg=m; aRender(); })) return;
+    S.busy=true; S.msg=''; aRender();
+    srv('api_ask',[S.q,askHints(),pinVal()],function(r){
+      S.busy=false; S.res=askRun_((D.trips||[]).concat(D.live||[]),r.spec); S.desc=askDescribe_(r.spec); aRender();
+    },function(m){ S.busy=false; S.msg=m; aRender(); });
+  }
+  function askAct(a,t){
+    if(a==='ask-go'){ askGo(); return true; }
+    if(a==='ask-ex'){ A.ask.q=ASK_EX[+t.dataset.i]; askGo(); return true; }
+    if(a==='ask-csv'){
+      var R=A.ask.res; if(!R) return true;
+      var q=function(v){ v=String(v===null||v===undefined?'':v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+      var rows=[[ASK_GROUPS_[R.spec.groupBy],'رحلات','أطنان','المبلغ','بلا سعر','متوسط الحمولة','تكلفة الطن']].concat(R.rows.map(function(r){ return [r.key,r.trips,r.tons,r.amount,r.unpriced,r.avgTons,r.perTon]; })).concat([['الإجمالي',R.total.trips,R.total.tons,R.total.amount,R.total.unpriced,R.total.avgTons,R.total.perTon]]);
+      try{ var b=new Blob(['﻿'+rows.map(function(r){ return r.map(q).join(','); }).join('\r\n')],{type:'text/csv;charset=utf-8'}), u=URL.createObjectURL(b), el=document.createElement('a'); el.href=u; el.download='نتيجة-السؤال.csv'; document.body.appendChild(el); el.click(); setTimeout(function(){ document.body.removeChild(el); URL.revokeObjectURL(u); },500); }catch(e){}
+      return true;
+    }
+    if(a==='ask-q'){ A.ask.q=t.value; return true; }
+    return false;
+  }
+
     /* ================= دفتر الأسعار: استيراد ملف الأسعار من درايف + تحذيرات + تجربة سعر ================= */
   A.book={busy:false,msg:'',test:null};
   function bookSt(){ return D.book||null; }
@@ -4290,7 +4588,7 @@ function pintTripKm_(t, R) { return t && R ? R.km(t.loadPlace, t.unloadPlace) : 
     if(!m) return h+'<div class="box"><p class="sub">لم يُستورد دفتر أسعار بعد.</p></div>';
     h+='<div class="box"><h3>الحالة</h3><div class="kvg"><div><small>الملف</small><b>'+esc(m.file||'')+'</b></div><div><small>عدد الأسعار</small><b>'+(m.total||0)+'</b></div><div><small>شيتات مستوردة</small><b>'+(m.sheets||[]).length+'</b></div><div><small>تنبيهات على الأسعار</small><b>'+(m.nWarnings||0)+'</b></div><div><small>تعريفات قديمة لم تُستورد</small><b>'+(m.oldSkipped||0)+'</b></div></div>'+
       '<div class="row" style="margin-top:10px"><label class="chk"><input type="checkbox" data-a="book-on"'+(B.enabled!==false?' checked':'')+'> تفعيل التسعير من الدفتر</label><label class="chk"><input type="checkbox" data-a="book-approx"'+(B.approx!==false?' checked':'')+'> تسعير تقديري (تشابه إملائي / عكس الاتجاه) — يظهر كـ«تقدير»</label><label class="chk"><input type="checkbox" data-a="book-dist"'+(B.byDistance!==false?' checked':'')+'> تقدير بالمسافة (يحتاج إحداثيات الأماكن)</label><label class="fld">لو سعر الطن وسعر الجامب مختلفين<select data-a="book-comb"><option value="max"'+(B.combine!=='min'?' selected':'')+'>الأعلى</option><option value="min"'+(B.combine==='min'?' selected':'')+'>الأقل</option></select></label></div>'+(A.dirty?'<p class="sub">احفظ الإعدادات لتطبيق التغيير.</p>':'')+'</div>';
-    h+=bkMinBox(B);
+    h+='<div class="box"><h3>الحد الأدنى والمعادلات</h3><p class="sub">انتقلت إلى قسم «قواعد العقد» في لوحة التحكم.</p></div>';
     h+='<div class="box"><h3>الشيتات</h3><div class="tblwrap"><table class="tbl"><thead><tr><th>استخدام</th><th>الشيت</th><th>أسعار</th><th>من</th><th>آخر سريان</th></tr></thead><tbody>'+(m.sheets||[]).map(function(s){ var off=(B.disabled||[]).indexOf(s.name)>=0; return '<tr><td><input type="checkbox" data-a="book-sheet" data-n="'+attr(s.name)+'"'+(off?'':' checked')+'></td><td><b>'+esc(s.name)+'</b></td><td>'+s.count+'</td><td>'+esc(s.from||'—')+'</td><td>'+esc(s.last||'—')+'</td></tr>'; }).join('')+'</tbody></table></div>'+((m.skipped||[]).length?'<p class="sub">شيتات مُتخطّاة: '+(m.skipped||[]).map(esc).join(' · ')+'</p>':'')+'</div>';
     if((m.warnings||[]).length) h+='<div class="box"><h3>أسعار تحتاج مراجعة في الملف ('+(m.nWarnings||0)+')</h3><p class="sub">قفزات كبيرة بين فترتين لنفس المسار — غالبًا خطأ إدخال في الملف الأصلي.</p><ul class="lst">'+m.warnings.slice(0,40).map(function(w){ return '<li>'+esc(typeof w==='string'?w:(w.sheet+' · '+w.from+' ← '+w.to+(w.veh?' ('+w.veh+')':'')+' : '+w.was+' ← '+w.now+(w.at?' من '+w.at:'')))+'</li>'; }).join('')+'</ul></div>';
     if((m.fees||[]).length) h+='<div class="box"><h3>دليل الرسوم (مرجع فقط — لا يدخل في التسعير)</h3><div class="tblwrap"><table class="tbl"><thead><tr><th>الموقع</th><th>المرحلة</th><th>النوع</th><th>القيمة</th></tr></thead><tbody>'+m.fees.map(function(f){ return '<tr><td>'+esc(f.place)+'</td><td>'+esc(f.stage)+'</td><td>'+esc(f.type)+'</td><td>'+esc(f.value)+'</td></tr>'; }).join('')+'</tbody></table></div></div>';
@@ -4308,11 +4606,11 @@ function pintTripKm_(t, R) { return t && R ? R.km(t.loadPlace, t.unloadPlace) : 
   function stLoadArc(){ if(!A.st.arc){ A.st.arcTrips=[]; A.st.arcMsg=''; aRender(); return; } A.st.arcMsg='جارٍ تحميل الأرشيف…'; aRender(); srv('api_archiveQuery',[A.st.from,A.st.to,30000],function(r){ A.st.arcTrips=r.trips||[]; A.st.arcMsg='الأرشيف: '+(r.count||0)+' رحلة في الفترة'+(r.count>(r.trips||[]).length?' (معروض جزء)':''); aRender(); },function(m){ A.st.arcMsg='تعذر تحميل الأرشيف: '+m; aRender(); }); }
   function stAll(){ var seen={}, out=[]; (D.trips||[]).concat(A.st.arc?A.st.arcTrips:[]).forEach(function(t){ var k=t.card+'|'+String(t.lastAt||'').slice(0,16); if(seen[k]) return; seen[k]=1; out.push(t); }); return out; }
   function stFmt(n){ return n===''||n===null||n===undefined?'—':Number(n).toLocaleString('en-US',{maximumFractionDigits:2}); }
-  function stData(){ return computeSettlement_(stAll(),{from:A.st.from,to:A.st.to,contractor:A.st.who}); }
+  function stData(){ var S0=A.S||D.settings||{}, pl=(S0.places&&S0.places.list)||[]; return computeSettlement_(stAll(),{from:A.st.from,to:A.st.to,contractor:A.st.who,contract:S0.contract,resolver:pintResolver_(pl,(S0.places||{}).roadFactor)}); }
   function rSettle(){
     var R=stData(), EX=expSummary_(D.expenses||[],D.trips||[]), exBy={}; EX.list.forEach(function(g){ exBy[g.contractor]=g; }); var h='<h2>مستخلص المقاول</h2><p class="lead">مستحقات كل مقاول عن فترة: عدد الرحلات والأطنان ومجموع الأسعار. الرحلات الملغاة والمرفوضة والجارية لا تدخل، والرحلات بلا سعر تُعدّ ولا تُقدَّر. يُحسب من الرحلات المحمّلة في الصفحة (راجع «حدود العرض» لو الفترة طويلة).</p>';
     h+='<div class="box"><div class="row" style="align-items:flex-end"><label class="fld">من<input data-a="st-from" value="'+attr(A.st.from)+'" placeholder="2026-09-01"></label><label class="fld">إلى<input data-a="st-to" value="'+attr(A.st.to)+'" placeholder="2026-09-30"></label><label class="chk" style="align-self:center"><input type="checkbox" data-a="st-arc"'+(A.st.arc?' checked':'')+'> تضمين الأرشيف</label></div>'+(A.st.arcMsg?'<p class="sub">'+esc(A.st.arcMsg)+'</p>':'')+''+
-      '<div class="kvg" style="margin-top:10px"><div><small>رحلات</small><b>'+R.total.trips+'</b></div><div><small>أطنان</small><b>'+stFmt(R.total.tons)+'</b></div><div><small>المبلغ</small><b>'+stFmt(R.total.amount)+'</b></div>'+(R.total.est?'<div><small>منه تقديري</small><b>'+stFmt(R.total.est)+'</b></div>':'')+'<div><small>بلا سعر</small><b>'+R.total.unpriced+'</b></div><div><small>أسعار يدوية</small><b>'+R.total.manual+'</b></div></div></div>';
+      '<div class="kvg" style="margin-top:10px"><div><small>رحلات</small><b>'+R.total.trips+'</b></div><div><small>أطنان</small><b>'+stFmt(R.total.tons)+'</b></div><div><small>المبلغ</small><b>'+stFmt(R.total.amount)+'</b></div>'+(R.total.est?'<div><small>منه تقديري</small><b>'+stFmt(R.total.est)+'</b></div>':'')+(R.total.extras?'<div><small>إضافات العقد</small><b>'+stFmt(R.total.extras)+'</b></div>':'')+'<div><small>بلا سعر</small><b>'+R.total.unpriced+'</b></div><div><small>أسعار يدوية</small><b>'+R.total.manual+'</b></div></div></div>';
     h+='<div class="box"><div class="row" style="align-items:center"><h3 style="margin:0">المقاولون ('+R.contractors.length+')</h3><span style="flex:1"></span><button class="abtn" data-a="st-week">الأسبوع الماضي (سبت–جمعة)</button><button class="abtn pri" data-a="st-all">تنزيل تقرير كل المقاولين CSV</button></div>'+(R.contractors.length?'<div class="tblwrap"><table class="tbl"><thead><tr><th>المقاول</th><th>رحلات</th><th>أطنان</th><th>المبلغ</th><th>بلا سعر</th><th>غرامات عليه</th><th></th></tr></thead><tbody>'+R.contractors.map(function(g){ return '<tr><td>'+esc(g.name)+'</td><td>'+g.trips+'</td><td>'+stFmt(g.tons)+'</td><td>'+stFmt(g.amount)+'</td><td>'+(g.unpriced?'<span class="chip2 bad">'+g.unpriced+'</span>':'0')+'</td><td>'+(exBy[g.name]&&exBy[g.name].onContractor?stFmt(exBy[g.name].onContractor):'—')+'</td><td><button class="abtn sm" data-a="st-pick" data-n="'+attr(g.name)+'">التفاصيل</button></td></tr>'; }).join('')+'</tbody></table></div>':'<div class="empty">لا توجد رحلات في هذه الفترة.</div>')+'</div>';
     var g=R.selected;
     if(g){
