@@ -4264,12 +4264,36 @@ function contractDefaults_() {
     detour: { enabled: true, amount: 3000, vehicles: ['تريلا', 'جرار'], itemTypes: ['مستلزمات', 'كيماويات', 'سماد', 'أسمدة'], south: ['شرق العوينات', 'العوينات'],
       north: ['كفر الزيات', 'وادي النطرون', 'مدينة السادات', 'العبور', 'العاشر من رمضان', 'الصالحية', 'النوبارية', 'الضبعة', 'قليوب', 'ابو حمص', 'منوف', 'الشيخ زايد', 'سلمى'], via: 'مريم', needVia: true },
     overnight: { enabled: true, fromHours: 20, cycleHours: 24, avgSpeedKmh: 50, rates: { trailer: 1500, tractor: 1500, fardani: 700, counter: 2000, tipperTrailer: 2000, fardaniTipper: 1250 } },
-    pivotFert: { enabled: true, dailyRate: 0, itemTypes: ['سماد', 'أسمدة', 'كيماويات'] },
-    fees: { portGratuity: 380, extScale: 0, fertFactory: 0, potatoFactory: 0 }
+    pivotFert: { enabled: true, dailyRate: 4000, places: ['مريم', 'حليمة'], itemTypes: ['سماد', 'أسمدة', 'كيماويات'] },
+    fees: { portGratuity: 380, extScale: 0, fertFactory: 0, potatoFactory: 0, placeFees: [
+      { place: 'الادهم', seedGrat: 0, seedScale: 0, harvGrat: 0, harvScale: 150 },
+      { place: 'القطاعات', seedGrat: 0, seedScale: 150, harvGrat: 0, harvScale: 150 },
+      { place: 'ثلاجات العاشر', seedGrat: 100, seedScale: 50, harvGrat: 0, harvScale: 150 },
+      { place: 'ثلاجات العياط', seedGrat: 100, seedScale: 170, harvGrat: 0, harvScale: 270 },
+      { place: 'ثلاجة الحرمين', seedGrat: 300, seedScale: 100, harvGrat: 0, harvScale: 0 },
+      { place: 'ثلاجة الفاروق', seedGrat: 350, seedScale: 80, harvGrat: 0, harvScale: 0 },
+      { place: 'ثلاجة النهرين', seedGrat: 350, seedScale: 100, harvGrat: 0, harvScale: 0 },
+      { place: 'ثلاجة ايفر فريش', seedGrat: 300, seedScale: 150, harvGrat: 0, harvScale: 0 },
+      { place: 'ثلاجة يحيى', seedGrat: 0, seedScale: 0, harvGrat: 0, harvScale: 100 },
+      { place: 'صحاري مصر', seedGrat: 0, seedScale: 185, harvGrat: 0, harvScale: 185 },
+      { place: 'كيما اسوان', seedGrat: 1000, seedScale: 0, harvGrat: 1000, harvScale: 0 },
+      { place: 'مصنع ابو قير للاسمدة', seedGrat: 1500, seedScale: 0, harvGrat: 1500, harvScale: 0 },
+      { place: 'مصنع الاسكندرية للاسمدة', seedGrat: 1800, seedScale: 0, harvGrat: 1800, harvScale: 0 },
+      { place: 'ميناء ابو قير', seedGrat: 1000, seedScale: 0, harvGrat: 1000, harvScale: 0 },
+      { place: 'منشية جنزور', seedGrat: 0, seedScale: 100, harvGrat: 0, harvScale: 100 }
+    ] }
   };
 }
 function ctNum_(v, d, lo, hi) { var n = Number(v); return v !== '' && v !== null && v !== undefined && isFinite(n) && n >= lo && n <= hi ? n : d; }
 function ctList_(v, d) { var a = Array.isArray(v) ? v : d; return a.map(function (x) { return String(x === null || x === undefined ? '' : x).replace(/\s+/g, ' ').trim().slice(0, 80); }).filter(function (x) { return x; }).slice(0, 60); }
+function ctPlaceFees_(v, d) {
+  if (!Array.isArray(v)) return d.map(function (x) { return JSON.parse(JSON.stringify(x)); });
+  return v.slice(0, 80).map(function (x) {
+    x = x || {}; var o = { place: String(x.place === undefined || x.place === null ? '' : x.place).replace(/\s+/g, ' ').trim().slice(0, 80) };
+    ['seedGrat', 'seedScale', 'harvGrat', 'harvScale'].forEach(function (k) { o[k] = ctNum_(x[k], 0, 0, 100000); });
+    return o;
+  }).filter(function (x) { return x.place; });
+}
 function contractSanitize_(raw) {
   var D = contractDefaults_(); raw = raw && typeof raw === 'object' ? raw : {};
   var f = raw.formulas || {}, d = raw.detour || {}, o = raw.overnight || {}, orr = o.rates || {}, p = raw.pivotFert || {}, fe = raw.fees || {};
@@ -4279,8 +4303,8 @@ function contractSanitize_(raw) {
     formulas: { tonDivisor: ctNum_(f.tonDivisor, D.formulas.tonDivisor, 0.1, 10), bigJumboFactor: ctNum_(f.bigJumboFactor, D.formulas.bigJumboFactor, 0.1, 10), trailerJumbos: ctNum_(f.trailerJumbos, D.formulas.trailerJumbos, 1, 200), tractorJumbos: ctNum_(f.tractorJumbos, D.formulas.tractorJumbos, 1, 200), fardaniPct: ctNum_(f.fardaniPct, D.formulas.fardaniPct, 1, 200) },
     detour: { enabled: d.enabled !== false, amount: ctNum_(d.amount, D.detour.amount, 0, 100000), vehicles: ctList_(d.vehicles, D.detour.vehicles), itemTypes: ctList_(d.itemTypes, D.detour.itemTypes), south: ctList_(d.south, D.detour.south), north: ctList_(d.north, D.detour.north), via: String(d.via === undefined ? D.detour.via : d.via).trim().slice(0, 80), needVia: d.needVia !== false },
     overnight: { enabled: o.enabled !== false, fromHours: ctNum_(o.fromHours, D.overnight.fromHours, 1, 200), cycleHours: ctNum_(o.cycleHours, D.overnight.cycleHours, 1, 200), avgSpeedKmh: ctNum_(o.avgSpeedKmh, D.overnight.avgSpeedKmh, 10, 120), rates: rates },
-    pivotFert: { enabled: p.enabled !== false, dailyRate: ctNum_(p.dailyRate, D.pivotFert.dailyRate, 0, 100000), itemTypes: ctList_(p.itemTypes, D.pivotFert.itemTypes) },
-    fees: { portGratuity: ctNum_(fe.portGratuity, D.fees.portGratuity, 0, 100000), extScale: ctNum_(fe.extScale, D.fees.extScale, 0, 100000), fertFactory: ctNum_(fe.fertFactory, D.fees.fertFactory, 0, 100000), potatoFactory: ctNum_(fe.potatoFactory, D.fees.potatoFactory, 0, 100000) }
+    pivotFert: { enabled: p.enabled !== false, dailyRate: ctNum_(p.dailyRate, D.pivotFert.dailyRate, 0, 100000), places: ctList_(p.places, D.pivotFert.places), itemTypes: ctList_(p.itemTypes, D.pivotFert.itemTypes) },
+    fees: { portGratuity: ctNum_(fe.portGratuity, D.fees.portGratuity, 0, 100000), extScale: ctNum_(fe.extScale, D.fees.extScale, 0, 100000), fertFactory: ctNum_(fe.fertFactory, D.fees.fertFactory, 0, 100000), potatoFactory: ctNum_(fe.potatoFactory, D.fees.potatoFactory, 0, 100000), placeFees: ctPlaceFees_(fe.placeFees, D.fees.placeFees) }
   };
 }
 
@@ -4329,14 +4353,21 @@ function ctExtras_(t, C, R) {
   }
   // ٣) يومية الفرداني عند توزيع الأسمدة على البيفوتات
   var P = C.pivotFert;
-  if (P && P.enabled && ctHas_(it, P.itemTypes) && /بيفوت/.test(pintKey_(up + ' ' + note))) {
+  if (P && P.enabled && ctHas_(it, P.itemTypes) && /بيفوت/.test(pintKey_(up + ' ' + note)) && (!(P.places || []).length || ctHas_(lp + ' ' + up + ' ' + note, P.places))) {
     if (P.dailyRate > 0) add('يومية فرداني', P.dailyRate, 'توزيع أسمدة على بيفوت');
     else out.maybe.push({ type: 'يومية فرداني', why: 'توزيع أسمدة على بيفوت — قيمة اليومية غير محددة في الإعدادات' });
   }
   // ٤) الرسوم والإكراميات
   var F = C.fees || {}, ru = R ? R.find(up) : null, rl = R ? R.find(lp) : null;
   var port = (ru && ru.kind === 'port') || (rl && rl.kind === 'port') || /ميناء/.test(pintKey_(lp + ' ' + up));
-  if (port) add('إكرامية ميناء', F.portGratuity, 'تحميل/تفريغ ميناء');
+  var seedLoad = ctHas_(it, ['تقاوي', 'تقاوى']), pfHit = false;
+  (F.placeFees || []).forEach(function (pf) {
+    var hitL = ctHas_(lp, [pf.place]), hitU = ctHas_(up, [pf.place]); if (!hitL && !hitU) return;
+    var g = seedLoad ? pf.seedGrat : pf.harvGrat, sc = seedLoad ? pf.seedScale : pf.harvScale;
+    if (g > 0) { add('إكرامية موقع', g, pf.place + (seedLoad ? ' (تقاوي)' : ' (حصاد)')); pfHit = true; }
+    if (sc > 0) { add('ميزان موقع', sc, pf.place + (seedLoad ? ' (تقاوي)' : ' (حصاد)')); pfHit = true; }
+  });
+  if (port && !pfHit) add('إكرامية ميناء', F.portGratuity, 'تحميل/تفريغ ميناء');
   var extScale = /ميزان خارجي|بسكول/.test(String(t.loadSrc || '') + ' ' + String(t.unloadSrc || '') + ' ' + String(t.extSrc || ''));
   if (extScale) { if (F.extScale > 0) add('رسوم ميزان خارجي', F.extScale, 'ميزان بسكول خارجي'); else out.maybe.push({ type: 'رسوم ميزان خارجي', why: 'القيمة غير محددة في الإعدادات' }); }
   var factory = (ru && ru.kind === 'factory') || (rl && rl.kind === 'factory');
@@ -4391,8 +4422,10 @@ function ctSummary_(trips, C, R) {
       '<div class="fgrid">'+ctF('contract.overnight.fromHours','يبدأ من (ساعة)','20')+ctF('contract.overnight.cycleHours','كل ليلة إضافية بعد (ساعة)','24')+ctF('contract.overnight.avgSpeedKmh','متوسط السرعة للسفر (كم/س)','50')+'</div>'+
       '<div class="fgrid" style="margin-top:8px">'+ctF('contract.overnight.rates.trailer','تريلا (ج.م)','1500')+ctF('contract.overnight.rates.tractor','جرار (ج.م)','1500')+ctF('contract.overnight.rates.fardani','فرداني (ج.م)','700')+ctF('contract.overnight.rates.counter','كونتر (ج.م)','2000')+ctF('contract.overnight.rates.tipperTrailer','تريلا/جرار قلاب (ج.م)','2000')+ctF('contract.overnight.rates.fardaniTipper','فرداني قلاب (ج.م)','1250')+'</div></div>';
     // يومية + رسوم
-    h+='<div class="box"><h3>يومية الفرداني للبيفوتات</h3>'+swt('contract.pivotFert.enabled','احتساب اليومية عند توزيع الأسمدة على البيفوتات','القيمة غير محددة في العقد — اكتبها لتُحتسب (0 = تظهر كبند محتمل فقط)')+'<div class="fgrid">'+ctF('contract.pivotFert.dailyRate','قيمة اليومية (ج.م)','')+'</div><div class="sec-l">أصناف الأسمدة</div>'+tagEd('contract.pivotFert.itemTypes','نوع الصنف')+'</div>';
+    h+='<div class="box"><h3>يومية الفرداني للبيفوتات</h3>'+swt('contract.pivotFert.enabled','احتساب اليومية عند توزيع الأسمدة على البيفوتات','اليومية 4000 ج.م في مريم / حليمة (غيّرها أو أفرغ الأماكن لتسري في كل مكان)')+'<div class="fgrid">'+ctF('contract.pivotFert.dailyRate','قيمة اليومية (ج.م)','')+'</div><div class="sec-l">الأماكن</div>'+tagEd('contract.pivotFert.places','مكان')+'<div class="sec-l">أصناف الأسمدة</div>'+tagEd('contract.pivotFert.itemTypes','نوع الصنف')+'</div>';
     h+='<div class="box"><h3>الرسوم والإكراميات</h3><p class="sub">أي رسم قيمته 0 لا يُحتسب ويظهر كبند محتمل.</p><div class="fgrid">'+ctF('contract.fees.portGratuity','إكرامية الميناء (ج.م)','380')+ctF('contract.fees.extScale','رسوم ميزان البسكول الخارجي (ج.م)','')+ctF('contract.fees.fertFactory','إكرامية مصانع الأسمدة (ج.م)','')+ctF('contract.fees.potatoFactory','إكرامية مصانع البطاطس (ج.م)','')+'</div></div>';
+    var pf=C.fees.placeFees||[];
+    h+='<div class="box"><h3>رسوم المواقع (إكرامية وميزان)</h3><p class="sub">من ورقة «موازين واكراميات». تُحتسب لما يكون المكان طرفًا في الرحلة: عمود «تقاوي» لو الصنف تقاوي، وإلا عمود «حصاد». 0 = لا رسم. اسم المكان يكفي جزء منه. (رسوم المزارع المكتوبة بالنص مثل «للطن 40 جنيه» غير مُدخلة.)</p><div class="tblwrap"><table class="tbl"><thead><tr><th>المكان</th><th>تقاوي: إكرامية</th><th>تقاوي: ميزان</th><th>حصاد: إكرامية</th><th>حصاد: ميزان</th></tr></thead><tbody>'+pf.map(function(x,i){ var b='contract.fees.placeFees.'+i+'.'; return '<tr><td>'+inp(b+'place','s',x.place,'')+'</td><td>'+inp(b+'seedGrat','n',x.seedGrat,'')+'</td><td>'+inp(b+'seedScale','n',x.seedScale,'')+'</td><td>'+inp(b+'harvGrat','n',x.harvGrat,'')+'</td><td>'+inp(b+'harvScale','n',x.harvScale,'')+'</td></tr>'; }).join('')+'</tbody></table></div></div>';
     // تطبيق على الرحلات الحالية
     var types=Object.keys(sm.byType), may=Object.keys(sm.maybeByType);
     h+='<div class="box"><h3>أثرها على الرحلات الحالية</h3><div class="kvg"><div><small>رحلات محسوبة</small><b>'+sm.trips+'</b></div><div><small>رحلات بإضافات</small><b>'+sm.withExtras+'</b></div><div><small>إجمالي الإضافات</small><b>'+Number(sm.total).toLocaleString('en-US')+' ج.م</b></div></div>'+
