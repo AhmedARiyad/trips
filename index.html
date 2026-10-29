@@ -1823,6 +1823,7 @@ function ecApplyPatch(q, patch, S) {
     if(r.crops.length) p.push('محصول: '+r.crops.join('، ')); if(r.packTypes.length) p.push('عبوة: '+r.packTypes.join('، ')+(r.packMode==='exact'?' (بالاسم الكامل)':'')); if(r.packExclude&&r.packExclude.length) p.push('بدون: '+r.packExclude.join('، ')); if(r.minKg!=null||r.maxKg!=null) p.push('حجم العبوة '+(r.minKg!=null?'من '+r.minKg:'')+(r.maxKg!=null?' إلى '+r.maxKg:'')+' كجم'); if(r.vehicles.length) p.push('سيارة: '+r.vehicles.join('، '));
     if(r.minPkg!=null||r.maxPkg!=null) p.push('عدد العبوات '+(r.minPkg!=null?'من '+r.minPkg:'')+(r.maxPkg!=null?' إلى '+r.maxPkg:''));
     if(r.minTons!=null||r.maxTons!=null) p.push('الوزن '+(r.minTons!=null?'من '+r.minTons:'')+(r.maxTons!=null?' إلى '+r.maxTons:'')+' طن');
+    if(r.minKm!=null||r.maxKm!=null) p.push('المسافة '+(r.minKm!=null?'من '+r.minKm:'')+(r.maxKm!=null?' إلى '+r.maxKm:'')+' كم');
     if(r.from||r.to) p.push('فترة '+(r.from||'…')+' ← '+(r.to||'…'));
     return p.join(' · ');
   }
@@ -1843,7 +1844,7 @@ function ecApplyPatch(q, patch, S) {
       '<div class="row" style="gap:10px;margin-top:8px;align-items:flex-end"><label class="fld2" style="min-width:240px">اسم القاعدة<input data-a="pk-label" value="'+attr(A.pk.label)+'" placeholder="مثال: أسعار العبوات العامة"></label><label class="fld2" style="min-width:220px">لمقاول محدد (اختياري)<input list="dlCo" data-a="pk-co" value="'+attr(A.pk.contractor)+'"></label><button class="abtn pri" data-a="pk-make">إنشاء القاعدة من الأسعار المكتوبة</button><button class="abtn" data-a="pk-close">إغلاق</button></div></div>';
     return h;
   }
-  function newPriceRule(){ return {packMode:'contains',packExclude:[],minKg:null,maxKg:null,label:'',enabled:true,mode:'set',unit:'trip',price:0,contractors:[],loads:[],unloads:[],crops:[],packTypes:[],vehicles:[],minPkg:null,maxPkg:null,minTons:null,maxTons:null,from:'',to:'',priority:0,parts:[],combine:'sum'}; }
+  function newPriceRule(){ return {packMode:'contains',packExclude:[],minKg:null,maxKg:null,minKm:null,maxKm:null,label:'',enabled:true,mode:'set',unit:'trip',price:0,contractors:[],loads:[],unloads:[],crops:[],packTypes:[],vehicles:[],minPkg:null,maxPkg:null,minTons:null,maxTons:null,from:'',to:'',priority:0,parts:[],combine:'sum'}; }
   function rPricing(){
     var P=A.S.pricing, h='<h2>أسعار النقلات</h2><p class="lead">أنشئ قواعد تحسب عمود «السعر (ج.م)» لكل رحلة. كل قاعدة لها شروط اختيارية (المقاول، مكان التحميل أو التفريغ، المحصول، نوع العبوة وعددها، نوع السيارة، نطاق الوزن، فترة سريان)، وما تتركه فارغًا يعني «أي قيمة». لو انطبقت عدة قواعد «سعر أساسي» يفوز <b>الأعلى أولوية ثم الأخص</b> (الأكثر شروطًا)، وقواعد «إضافة» تُجمع فوق السعر الأساسي. السعر اليدوي على الرحلة يتفوق على كل القواعد.</p>';
     h+='<div class="box'+(P.enabled?'':' off')+'"><div class="row">'+swt('pricing.enabled','تفعيل حساب الأسعار','عند التعطيل يختفي العمود من الواجهة ولا تُحسب أسعار.')+'<span class="sub" style="margin:0">'+P.rules.length+' قاعدة</span></div></div>';
@@ -1861,7 +1862,7 @@ function ecApplyPatch(q, patch, S) {
       h+='<div class="sec-l">المقاولون (فارغ = كل المقاولين)</div>'+tagEd(b+'.contractors','اختر مقاولًا واضغط Enter','dlCo')+
         '<div class="fgrid" style="margin-top:8px"><div><div class="sec-l">أماكن التحميل</div>'+tagEd(b+'.loads','مكان تحميل','dlPlaces')+'</div><div><div class="sec-l">أماكن التفريغ</div>'+tagEd(b+'.unloads','مكان تفريغ','dlPlaces')+'</div></div>'+
         '<div class="fgrid" style="margin-top:8px"><div><div class="sec-l">المحاصيل / الحمولة</div>'+tagEd(b+'.crops','محصول','dlCrop')+'</div><div><div class="sec-l">أنواع العبوات</div>'+tagEd(b+'.packTypes','نوع عبوة','dlPack')+'<label class="fld2" style="margin-top:6px">المطابقة<select data-a="set" data-t="s" data-p="'+b+'.packMode">'+selOpts([['contains','يحتوي الاسم (جامب تشمل كل أنواع الجامب)'],['exact','الاسم الكامل بالضبط']],r.packMode||'contains')+'</select></label><div class="sec-l" style="margin-top:6px">استبعاد أنواع تحتوي</div>'+tagEd(b+'.packExclude','كلمة (مثل: بالطبلية)','dlPack')+'<div class="row" style="gap:8px;margin-top:6px"><label class="fld2">حجم العبوة من (كجم)'+inp(b+'.minKg','nn',r.minKg,'—')+'</label><label class="fld2">إلى (كجم)'+inp(b+'.maxKg','nn',r.maxKg,'—')+'</label></div></div><div><div class="sec-l">أنواع السيارات</div>'+tagEd(b+'.vehicles','نوع سيارة','dlVeh')+'</div></div>'+
-        '<div class="fgrid" style="margin-top:8px"><label class="fld2">عدد العبوات من'+inp(b+'.minPkg','nn',r.minPkg,'—')+'</label><label class="fld2">إلى'+inp(b+'.maxPkg','nn',r.maxPkg,'—')+'</label><label class="fld2">الوزن من (طن)'+inp(b+'.minTons','nn',r.minTons,'—')+'</label><label class="fld2">إلى (طن)'+inp(b+'.maxTons','nn',r.maxTons,'—')+'</label>'+
+        '<div class="fgrid" style="margin-top:8px"><label class="fld2">عدد العبوات من'+inp(b+'.minPkg','nn',r.minPkg,'—')+'</label><label class="fld2">إلى'+inp(b+'.maxPkg','nn',r.maxPkg,'—')+'</label><label class="fld2">الوزن من (طن)'+inp(b+'.minTons','nn',r.minTons,'—')+'</label><label class="fld2">إلى (طن)'+inp(b+'.maxTons','nn',r.maxTons,'—')+'</label><label class="fld2">المسافة من (كم)'+inp(b+'.minKm','nn',r.minKm,'—')+'</label><label class="fld2">إلى (كم)'+inp(b+'.maxKm','nn',r.maxKm,'—')+'</label>'+
         '<label class="fld2">سارية من<input type="date" data-a="set" data-t="s" data-p="'+b+'.from" value="'+attr(r.from)+'"></label><label class="fld2">إلى<input type="date" data-a="set" data-t="s" data-p="'+b+'.to" value="'+attr(r.to)+'"></label></div>'+
         '<div class="sub" style="margin-top:8px">ملخص: '+esc(ruleSummary(r))+' ← <b>'+esc(String(r.price))+' ج.م '+({trip:'للرحلة',ton:'للطن',pkg:'للعبوة'}[r.unit])+'</b>'+(r.mode==='add'?' (إضافة)':'')+'</div></div>';
     });
@@ -2164,6 +2165,9 @@ function ecApplyPatch(q, patch, S) {
     else if(a==='numhrs'){ sp(t.dataset.p,Math.max(0,Math.min(2160,+t.value||0))); touch(); aRender(); }
     else if(a==='dc-file'){ var fl=t.files; dcFiles(fl); }
     else if(a==='book-on'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; A.S.book.enabled=t.checked; touch(); aRender(); }
+    else if(a==='book-min-on'){ A.S.book=A.S.book||{}; var Mn=A.S.book.minimums=A.S.book.minimums||{}; Mn.enabled=t.checked; touch(); aRender(); }
+    else if(a==='book-min'){ A.S.book=A.S.book||{}; var Mm=A.S.book.minimums=A.S.book.minimums||{jumboLarge:{},jumboSmall:{},ton:{}}, nv=Number(t.value); if(isFinite(nv)&&nv>=0){ if(t.dataset.g==='bigFromTon') Mm.bigFromTon=nv; else { Mm[t.dataset.g]=Mm[t.dataset.g]||{}; Mm[t.dataset.g][t.dataset.v]=nv; } touch(); } }
+    else if(a==='book-dist'){ A.S.book=A.S.book||{}; A.S.book.byDistance=t.checked; touch(); aRender(); }
     else if(a==='book-approx'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; A.S.book.approx=t.checked; touch(); aRender(); }
     else if(a==='book-comb'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; A.S.book.combine=t.value; touch(); aRender(); }
     else if(a==='book-sheet'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; var dl=A.S.book.disabled=A.S.book.disabled||[], n=t.dataset.n, ix=dl.indexOf(n); if(t.checked&&ix>=0) dl.splice(ix,1); if(!t.checked&&ix<0) dl.push(n); touch(); aRender(); }
@@ -3167,12 +3171,13 @@ function geoFmt(p) { return p && geoValid(p.lat, p.lng) ? geoRound(p.lat) + ', '
     h+='<div class="plbar"><div class="chips">'+plChip('all','الكل',st.all)+plChip('gps','بإحداثيات',st.gps)+plChip('nogps','بلا إحداثيات',st.all-st.gps)+plChip('scale','لها ميزان',st.scale)+plChip('unset','ميزان غير محدد',st.unk)+plChip('noscale','بلا ميزان',plFilterCount('no'))+plChip('noload','لا تحميل',A.S.places.list.filter(function(p){ return p.noLoad; }).length)+'</div>'+
       '<div class="row" style="gap:8px;align-items:center;margin-top:8px"><input type="search" data-a="plx-q" value="'+attr(P.q)+'" placeholder="ابحث بالاسم أو الصيغة أو العنوان…" style="flex:1;min-width:200px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit" aria-label="بحث">'+
       '<select data-a="plx-kind" aria-label="النوع"><option value="">كل الأنواع</option>'+PLK.map(function(k){ return '<option value="'+k[0]+'"'+(P.kind===k[0]?' selected':'')+'>'+k[1]+'</option>'; }).join('')+'</select>'+
-      '<span class="seg">'+[['list','البطاقات'],['map','خريطة النقاط'],['dist','المسافات والمسارات'],['io','استيراد / تصدير']].map(function(v){ return '<button data-a="plx-view" data-v="'+v[0]+'" aria-pressed="'+(P.view===v[0])+'">'+v[1]+'</button>'; }).join('')+'</span></div></div>';
+      '<span class="seg">'+[['list','البطاقات'],['map','خريطة النقاط'],['dist','المسافات والمسارات'],['intel','ذكاء الأماكن'],['io','استيراد / تصدير']].map(function(v){ return '<button data-a="plx-view" data-v="'+v[0]+'" aria-pressed="'+(P.view===v[0])+'">'+v[1]+'</button>'; }).join('')+'</span></div></div>';
     if(P.view==='list'){
       h+='<div class="row" style="gap:8px;margin:10px 0"><input id="plxNew" placeholder="+ اسم مكان جديد ثم Enter" style="flex:1;max-width:340px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit" aria-label="مكان جديد"><button class="abtn pri" data-a="plx-add">إضافة</button><span class="sub" style="margin:0">'+list.length+' مكان</span></div>';
       h+=plOrphanBox();
       h+='<div class="pllist">'+shown.map(function(x){ return plCard(x[0],x[1]); }).join('')+'</div>'+(list.length>shown.length?'<div class="row" style="margin-top:10px"><button class="abtn" data-a="plx-more">عرض المزيد ('+(list.length-shown.length)+')</button></div>':'')+(list.length?'':'<div class="empty">لا نتائج.</div>');
     } else if(P.view==='map') h+='<div class="box">'+plMap(list)+'</div>';
+    else if(P.view==='intel') h+=rIntel();
     else if(P.view==='dist') h+=plDist()+plRoutes();
     else h+=plImport();
     return h;
@@ -3218,6 +3223,7 @@ function geoFmt(p) { return p && geoValid(p.lat, p.lng) ? geoRound(p.lat) + ', '
     L.unshift({name:name,aliases:[],noLoad:false,address:'',lat:null,lng:null,geoQ:'',kind:'',scale:'',region:'',notes:'',radiusM:null}); PLIDX=null; touch(); return 0;
   }
   function plClick(t,a,S){
+    if(a.indexOf('plx-in-')===0) return inClick(t,a,S);
     var i=t.dataset.i!==undefined?+t.dataset.i:-1, p=i>=0?S.places.list[i]:null;
     if(a==='plx-flt'){ A.pl.flt=t.dataset.k; A.pl.page=1; aRender(); return true; }
     if(a==='plx-view'){ A.pl.view=t.dataset.v; aRender(); return true; }
@@ -3240,6 +3246,7 @@ function geoFmt(p) { return p && geoValid(p.lat, p.lng) ? geoRound(p.lat) + ', '
     return false;
   }
   function plChange(t,a,S){
+    if(a.indexOf('plx-in-')===0) return inChange(t,a);
     var i=t.dataset.i!==undefined?+t.dataset.i:-1, p=i>=0?S.places.list[i]:null;
     if(a==='plx-kind'){ A.pl.kind=t.value; A.pl.page=1; aRender(); return true; }
     if(a==='plx-routes'){ A.pl.routes=t.checked; aRender(); return true; }
@@ -3360,6 +3367,8 @@ function computeInsights_(trips, rejected, opts) {
   if (review > 0) add('warn', 'review', review + ' رحلة تحتاج مراجعة مكان (' + quality.reviewPct + '٪ من الرحلات)', review);
   if (unpriced > 0) add(quality.unpricedPct >= 50 ? 'err' : 'warn', 'pricing', unpriced + ' رحلة بلا سعر (' + quality.unpricedPct + '٪) — دفتر الأسعار ناقص', unpriced);
   if (anomalies.length) add('warn', 'insights', anomalies.length + ' رحلة وزنها بعيد ≥ ' + tol + '٪ عن المعتاد لنفس السيارة', anomalies.length);
+  var pa = computePriceAnomalies_(trips, { review: REV });
+  if (pa.count) add('warn', 'insights', pa.count + ' رحلة سعرها بعيد ≥ ' + pa.tolPct + '٪ عن المعتاد لنفس المسار — راجع القاعدة أو السعر اليدوي', pa.count);
   if (noWeight > 0) add('info', 'review', noWeight + ' رحلة بلا وزن', noWeight);
   contractors.forEach(function (c) {
     if (c.trips + c.rejected >= (opts.rejMinRows || 10) && c.rejectedPct >= (opts.rejAlertPct || 30) && c.name !== '—')
@@ -3368,7 +3377,7 @@ function computeInsights_(trips, rejected, opts) {
   var rank = { err: 0, warn: 1, info: 2 };
   alerts.sort(function (a, b) { return rank[a.level] - rank[b.level] || b.n - a.n; });
 
-  return { quality: quality, contractors: contractors, anomalies: anomalies.slice(0, 60), anomalyCount: anomalies.length, costByCrop: costByCrop, costByRoute: costByRoute, alerts: alerts, tolPct: tol };
+  return { quality: quality, contractors: contractors, anomalies: anomalies.slice(0, 60), anomalyCount: anomalies.length, costByCrop: costByCrop, costByRoute: costByRoute, alerts: alerts, tolPct: tol, priceAnoms: pa };
 }
 
 /**
@@ -3414,6 +3423,60 @@ function computePriceCoverage_(trips, opts) {
   return { total: total, priced: priced, pricedPct: insPct_(priced, total), unpriced: total - priced, noPlace: noPlace, sources: src, topUnpriced: list.slice(0, 40), unpricedRoutes: list.length };
 }
 
+/**
+ * قالب «أسعار ناقصة»: CSV بنفس أعمدة «دليل الأسعار» لكل مسار بلا سعر (تقاوي منفصل عن غيره)، عمود السعر فارغ ليُملأ ثم يُستورد بـ«دمج ملف آخر».
+ * الأكثر تكرارًا أولًا. يرجع نص CSV (أو '' لو كل شيء مسعّر).
+ */
+function priceGapCsv_(trips, opts) {
+  opts = opts || {};
+  var REV = opts.review || 'تحتاج مراجعة', g = {}, esc = function (v) { v = String(v === null || v === undefined ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  (trips || []).forEach(function (t) {
+    if (!t || t.live || t.kind === 'ملغاة' || t.kind === 'مرفوضة') return;
+    var p = insNum_(t.price);
+    if (p !== null && p > 0) return;
+    if (!t.loadPlace || !t.unloadPlace || t.loadPlace === REV || t.unloadPlace === REV) return;
+    var seed = /تقاوي|تقاوى/.test(String(t.itemType || '')), veh = String(t.vehicleType || '').trim();
+    var k = [seed ? 1 : 0, t.loadPlace, t.unloadPlace, veh].join('|');
+    var x = g[k] = g[k] || { seed: seed, from: t.loadPlace, to: t.unloadPlace, veh: veh, n: 0 };
+    x.n++;
+  });
+  var rows = Object.keys(g).map(function (k) { return g[k]; }).sort(function (a, b) { return b.n - a.n; });
+  if (!rows.length) return '';
+  var out = [['جدول السعر', 'من', 'إلى', 'المسار / المفتاح', 'وحدة السعر', 'سعر الوحدة (جنيه)', 'تاريخ السريان', 'حالة التعريفة', 'المصدر / ملاحظات'].map(esc).join(',')];
+  rows.forEach(function (r) {
+    out.push([r.seed ? 'تقاوي - مكمّل' : 'نقل - مكمّل', r.from, r.to, r.from + ' ' + r.to, 'نقلة ' + (r.veh || 'تريلا'), '', '', 'جديد', 'ناقص من التسعير — ' + r.n + ' رحلة'].map(esc).join(','));
+  });
+  return out.join('\r\n');
+}
+
+/**
+ * شذوذ الأسعار: رحلات سعرها بعيد عن المعتاد لنفس (تحميل ← تفريغ + سيارة + فئة تقاوي/غير تقاوي).
+ * يُستبعد المقدَّر؛ والمجموعة ≥ minGroup رحلات؛ والرحلة تُعلَّم فقط لو انحرف السعر الكلي وسعر الطن معًا ≥ tolPct٪ عن الوسيط
+ * (لأن سعر النقلة الثابت يتفاوت سعر طنه بتفاوت الحمولة). يرجع {anomalies:[{card, route, price, median, devPct, rule}], count, groups}
+ */
+function computePriceAnomalies_(trips, opts) {
+  opts = opts || {};
+  var tol = opts.tolPct || 35, minG = opts.minGroup || 4, REV = opts.review || 'تحتاج مراجعة', g = {};
+  (trips || []).forEach(function (t) {
+    if (!t || t.live || t.kind === 'ملغاة' || t.kind === 'مرفوضة') return;
+    var p = insNum_(t.price), rule = String(t.priceRule || '');
+    if (p === null || p <= 0 || /^تقدير/.test(rule) || !t.loadPlace || !t.unloadPlace || t.loadPlace === REV || t.unloadPlace === REV) return;
+    var w = insNum_(t.weight), seed = /تقاوي|تقاوى/.test(String(t.itemType || '')) ? 1 : 0, k = [t.loadPlace, t.unloadPlace, t.vehicleType || '', seed].join('|');
+    (g[k] = g[k] || []).push({ t: t, p: p, pt: w && w > 0 ? p / w : null });
+  });
+  var out = [], groups = 0;
+  Object.keys(g).forEach(function (k) {
+    var L = g[k]; if (L.length < minG) return; groups++;
+    var mp = insMedian_(L.map(function (x) { return x.p; })), mt = insMedian_(L.filter(function (x) { return x.pt !== null; }).map(function (x) { return x.pt; }));
+    L.forEach(function (x) {
+      var dp = (x.p - mp) / mp * 100, dt = x.pt !== null && mt ? (x.pt - mt) / mt * 100 : dp;
+      if (Math.abs(dp) >= tol && Math.abs(dt) >= tol) out.push({ card: x.t.card, route: x.t.loadPlace + ' ← ' + x.t.unloadPlace + (x.t.vehicleType ? ' [' + x.t.vehicleType + ']' : ''), contractor: x.t.contractor || '', price: x.p, median: Math.round(mp), devPct: Math.round(dp), rule: String(x.t.priceRule || '') });
+    });
+  });
+  out.sort(function (a, b) { return Math.abs(b.devPct) - Math.abs(a.devPct); });
+  return { anomalies: out.slice(0, 60), count: out.length, groups: groups, tolPct: tol };
+}
+
   /**
  * 23 · رسالة حالة رحلة جاهزة للنسخ (دالة نقية). لا إرسال ولا ربط واتساب: الموظف ينسخها ويبعتها بنفسه.
  */
@@ -3448,7 +3511,7 @@ function stR2_(n) { return Math.round(n * 100) / 100; }
 function computeSettlement_(trips, opts) {
   opts = opts || {};
   var from = opts.from || '', to = opts.to || '', only = opts.contractor || '';
-  var groups = {}, order = [], total = { trips: 0, tons: 0, amount: 0, unpriced: 0, manual: 0 };
+  var groups = {}, order = [], total = { trips: 0, tons: 0, amount: 0, unpriced: 0, manual: 0, est: 0, estN: 0 };
   (trips || []).forEach(function (t) {
     if (!t || t.live || t.kind === 'ملغاة' || t.kind === 'مرفوضة') return;
     var d = String(t.lastAt || t.loadAt || t.unloadAt || '').slice(0, 10);
@@ -3456,10 +3519,10 @@ function computeSettlement_(trips, opts) {
     if (to && d > to) return;
     var name = t.contractor || '—';
     var g = groups[name];
-    if (!g) { g = groups[name] = { name: name, trips: 0, tons: 0, amount: 0, unpriced: 0, manual: 0, routes: {}, lines: [] }; order.push(name); }
+    if (!g) { g = groups[name] = { name: name, trips: 0, tons: 0, amount: 0, unpriced: 0, manual: 0, est: 0, estN: 0, routes: {}, lines: [] }; order.push(name); }
     var w = stNum_(t.weight), p = stNum_(t.price), isManual = t.priceRule === 'سعر يدوي';
     g.trips++; g.tons += w || 0;
-    if (p !== null && p > 0) g.amount += p; else g.unpriced++;
+    if (p !== null && p > 0) { g.amount += p; if (/^تقدير/.test(String(t.priceRule || ''))) { g.est += p; g.estN++; } } else g.unpriced++;
     if (isManual) g.manual++;
     var rk = (t.loadPlace || '—') + ' ← ' + (t.unloadPlace || '—'), r = g.routes[rk] = g.routes[rk] || { route: rk, trips: 0, tons: 0, amount: 0, unpriced: 0 };
     r.trips++; r.tons += w || 0; if (p !== null && p > 0) r.amount += p; else r.unpriced++;
@@ -3467,14 +3530,14 @@ function computeSettlement_(trips, opts) {
   });
   var rows = order.map(function (n) {
     var g = groups[n];
-    g.tons = Math.round(g.tons * 1000) / 1000; g.amount = stR2_(g.amount);
+    g.tons = Math.round(g.tons * 1000) / 1000; g.amount = stR2_(g.amount); g.est = stR2_(g.est);
     g.routeList = Object.keys(g.routes).map(function (k) { var r = g.routes[k]; r.tons = Math.round(r.tons * 1000) / 1000; r.amount = stR2_(r.amount); return r; }).sort(function (a, b) { return b.amount - a.amount; });
     delete g.routes;
     g.lines.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
-    total.trips += g.trips; total.tons += g.tons; total.amount += g.amount; total.unpriced += g.unpriced; total.manual += g.manual;
+    total.trips += g.trips; total.tons += g.tons; total.amount += g.amount; total.unpriced += g.unpriced; total.manual += g.manual; total.est += g.est; total.estN += g.estN;
     return g;
   }).sort(function (a, b) { return b.amount - a.amount || b.trips - a.trips; });
-  total.tons = Math.round(total.tons * 1000) / 1000; total.amount = stR2_(total.amount);
+  total.tons = Math.round(total.tons * 1000) / 1000; total.amount = stR2_(total.amount); total.est = stR2_(total.est);
   var sel = only ? rows.filter(function (g) { return g.name === only; })[0] || null : null;
   return { contractors: rows, total: total, selected: sel, from: from, to: to };
 }
@@ -3488,6 +3551,61 @@ function settlementCsv_(g) {
   return rows.map(function (r) { return r.map(q).join(','); }).join('\r\n');
 }
 
+/**
+ * تقرير كل المقاولين لفترة (CSV): رحلات، أطنان، المبلغ، منه تقديري، رحلات بلا سعر، غرامات على المقاول وعلى الشركة، الصافي المستحق.
+ * ex = ناتج expSummary_ (اختياري). الصافي = المبلغ − الغرامات على المقاول.
+ */
+function settlementAllCsv_(R, ex) {
+  function q(v) { v = String(v === null || v === undefined ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  var by = {}; ((ex && ex.list) || []).forEach(function (g) { by[g.contractor] = g; });
+  var rows = [['الفترة: ' + (R.from || '…') + ' ← ' + (R.to || '…')], ['المقاول', 'رحلات', 'أطنان', 'المبلغ', 'منه تقديري', 'رحلات بلا سعر', 'غرامات على المقاول', 'غرامات على الشركة', 'الصافي المستحق']];
+  var sums = [0, 0, 0, 0, 0, 0, 0, 0];
+  R.contractors.forEach(function (g) {
+    var f = by[g.name] || { onContractor: 0, onCompany: 0 }, net = stR2_(g.amount - f.onContractor);
+    var v = [g.trips, g.tons, g.amount, g.est || 0, g.unpriced, f.onContractor, f.onCompany, net];
+    v.forEach(function (x, i) { sums[i] += x; });
+    rows.push([g.name].concat(v));
+  });
+  rows.push(['الإجمالي'].concat(sums.map(function (x) { return stR2_(x); })));
+  return rows.map(function (r) { return r.map(q).join(','); }).join('\r\n');
+}
+
+/**
+ * مستخلص مقاول للطباعة/PDF: صفحة HTML كاملة RTL (جدول الرحلات + المسارات + الغرامات + الصافي + توقيعات).
+ * g = المقاول من computeSettlement_().selected ؛ fines = [{card, type, amount, chargeTo, note}] (اختياري) ؛ opts = {from, to, company}
+ * الأسعار المقدَّرة تُعلَّم بنجمة ويُذكر مجموعها، وغير المسعّر يُنبَّه عليه.
+ */
+function settlementHtml_(g, fines, opts) {
+  opts = opts || {};
+  function e(v) { return String(v === null || v === undefined ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function n(v) { return v === '' || v === null || v === undefined ? '—' : Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+  var fl = (fines || []).filter(function (f) { return Number(f.amount) > 0; }), onC = 0, onCo = 0;
+  fl.forEach(function (f) { if (f.chargeTo === 'company') onCo += Number(f.amount); else onC += Number(f.amount); });
+  var net = stR2_(g.amount - onC), per = (opts.from || opts.to) ? 'الفترة: ' + e(opts.from || '…') + ' ← ' + e(opts.to || '…') : 'كل الفترات';
+  var h = '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>مستخلص ' + e(g.name) + '</title><style>' +
+    'body{font-family:Tahoma,Arial,sans-serif;margin:24px;color:#111;font-size:13px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:18px 0 6px}.sub{color:#555;margin-bottom:12px}' +
+    'table{width:100%;border-collapse:collapse;margin-bottom:8px}th,td{border:1px solid #999;padding:4px 6px;text-align:right}th{background:#eee}.num{text-align:left;direction:ltr}' +
+    '.tot td{font-weight:bold;background:#f6f6f6}.kv{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}.kv div{border:1px solid #999;padding:6px 10px;min-width:110px}.kv small{display:block;color:#555}' +
+    '.sg{display:flex;gap:30px;margin-top:40px}.sg div{flex:1;border-top:1px solid #333;padding-top:6px;text-align:center}.note{color:#a00;margin:6px 0}@media print{body{margin:10mm}}</style></head><body>' +
+    '<h1>مستخلص مقاول: ' + e(g.name) + '</h1><div class="sub">' + (opts.company ? e(opts.company) + ' · ' : '') + per + '</div>' +
+    '<div class="kv"><div><small>رحلات</small>' + g.trips + '</div><div><small>أطنان</small>' + n(g.tons) + '</div><div><small>المبلغ</small>' + n(g.amount) + '</div>' +
+    (g.est ? '<div><small>منه تقديري *</small>' + n(g.est) + '</div>' : '') + (onC ? '<div><small>غرامات على المقاول</small>' + n(onC) + '</div>' : '') + '<div><small>الصافي المستحق</small>' + n(net) + '</div></div>';
+  if (g.unpriced) h += '<div class="note">تنبيه: ' + g.unpriced + ' رحلة بلا سعر لم تدخل في المبلغ.</div>';
+  if (g.est) h += '<div class="note">* الأسعار المعلَّمة بنجمة تقديرية (تشابه أسماء/عكس اتجاه/مسافة) وتحتاج اعتمادًا.</div>';
+  h += '<h2>حسب المسار</h2><table><thead><tr><th>المسار</th><th>رحلات</th><th>أطنان</th><th>المبلغ</th><th>بلا سعر</th></tr></thead><tbody>' +
+    g.routeList.map(function (r) { return '<tr><td>' + e(r.route) + '</td><td class="num">' + r.trips + '</td><td class="num">' + n(r.tons) + '</td><td class="num">' + n(r.amount) + '</td><td class="num">' + (r.unpriced || '') + '</td></tr>'; }).join('') + '</tbody></table>';
+  h += '<h2>الرحلات (' + g.lines.length + ')</h2><table><thead><tr><th>التاريخ</th><th>كارتة</th><th>السيارة</th><th>المسار</th><th>الوزن</th><th>السعر</th></tr></thead><tbody>' +
+    g.lines.map(function (l) { var est = /^تقدير/.test(String(l.rule || '')); return '<tr><td>' + e(l.date) + '</td><td>' + e(l.card) + '</td><td>' + e(l.plate) + '</td><td>' + e(l.route) + '</td><td class="num">' + n(l.weight) + '</td><td class="num">' + n(l.price) + (est ? ' *' : '') + '</td></tr>'; }).join('') +
+    '<tr class="tot"><td colspan="4">الإجمالي</td><td class="num">' + n(g.tons) + '</td><td class="num">' + n(g.amount) + '</td></tr></tbody></table>';
+  if (fl.length) {
+    h += '<h2>الغرامات والمصروفات</h2><table><thead><tr><th>كارتة</th><th>النوع</th><th>المبلغ</th><th>على</th><th>ملاحظة</th></tr></thead><tbody>' +
+      fl.map(function (f) { return '<tr><td>' + e(f.card) + '</td><td>' + e(f.type) + '</td><td class="num">' + n(f.amount) + '</td><td>' + (f.chargeTo === 'company' ? 'الشركة' : 'المقاول') + '</td><td>' + e(f.note || '') + '</td></tr>'; }).join('') +
+      '<tr class="tot"><td colspan="2">على المقاول / على الشركة</td><td class="num">' + n(onC) + ' / ' + n(onCo) + '</td><td colspan="2"></td></tr></tbody></table>';
+  }
+  h += '<h2>الصافي المستحق: ' + n(net) + ' ج.م</h2><div class="sg"><div>المقاول</div><div>منسق النقل</div><div>المحاسب</div></div></body></html>';
+  return h;
+}
+
   /**
  * ============================================================
  * 24 · قراءة صور المستندات (بطاقة ميزان دالتكس · كارتة شحن ورقية · تذكرة ميزان خارجي · غرامة/إيصال طريق)
@@ -3497,14 +3615,20 @@ function settlementCsv_(g) {
  */
 var DOC_KINDS_ = { weighcard: 'بطاقة ميزان دالتكس', paper: 'كارتة شحن ورقية', ext_scale: 'تذكرة ميزان خارجي', fine: 'غرامة / إيصال طريق', other: 'مستند آخر' };
 
-var DOC_SYSTEM_ = 'أنت تقرأ صورة مستند نقل زراعي مصري (عربي، بعضه مكتوب بخط اليد، وقد تكون الصورة مقلوبة أو مائلة). ' +
-  'أنواع المستندات: weighcard = بطاقة كارتة شحن مطبوعة من ميزان دالتكس (فيها رقم كارتة الشحن، بيانات وزن الدخول والخروج، اجمالي الوزن، صافي الوزن، بيانات الاصناف)؛ ' +
-  'paper = كارتة شحن ورقية مكتوبة باليد (رقمها بالأحمر، جهة الشحن، رقم السيارة، الصنف والعدد والوزن)؛ ' +
-  'ext_scale = تذكرة ميزان خارجي (إجمالي الوزن الأول والثاني وصافي الوزن)؛ fine = غرامة ميزان أو إيصال طريق أو بون تحصيل بمبلغ؛ other = غير ذلك. ' +
-  'أعد JSON فقط بهذه المفاتيح (قيمة فارغة "" لما لا يظهر بوضوح، ولا تخمّن): ' +
-  '{"kind","card" (رقم كارتة الشحن),"paper" (رقم الكارتة الورقية),"op" (رقم العملية/كارتة الصادر),"plate","trailer","driver","contractor","from","to","crop","variety","itemType","pack","count" (عدد العبوات),' +
-  '"grossKg","tareKg","netKg","deductionKg","date" (yyyy-MM-dd),"time","amount" (للغرامات بالجنيه),"issuer","confidence" (0-1),"notes"}. ' +
-  'الأوزان بالكيلوجرام كأرقام. لا تضف أي نص خارج JSON.';
+var DOC_FIELDS_ = ['card', 'paper', 'op', 'plate', 'trailer', 'driver', 'contractor', 'from', 'to', 'crop', 'variety', 'itemType', 'pack', 'count', 'grossKg', 'tareKg', 'netKg', 'deductionKg', 'date', 'time', 'amount', 'issuer'];
+var DOC_SYSTEM_ = 'أنت خبير قراءة مستندات نقل زراعي مصرية (عربي، كثير منها مكتوب بخط اليد، وقد تكون الصورة مقلوبة أو مائلة أو مظلمة أو مطبوعة بحبر باهت). اقرأ كل ركن في الصورة بعناية ولا تتجاهل الأختام والكتابة الهامشية. ' +
+  'أنواع المستندات: weighcard = بطاقة كارتة شحن مطبوعة من ميزان دالتكس (رقم كارتة الشحن، وزن الدخول والخروج، اجمالي الوزن والفارغ والصافي)؛ ' +
+  'paper = كارتة شحن ورقية مكتوبة باليد: عادةً الرقم المسلسل مطبوع أو مكتوب بالأحمر، وأعلى اليسار غالبًا مكان التحميل أو جهة الشحن/الوجهة، وفي الجسم: اسم المقاول، السائق، رقم السيارة (حروف عربية ثم أرقام)، الصنف والتعبئة والعدد، الوزن، التاريخ؛ ' +
+  'ext_scale = تذكرة ميزان خارجي (الوزن الأول والثاني والصافي)؛ fine = غرامة ميزان أو إيصال طريق أو بون تحصيل بمبلغ؛ other = غير ذلك. ' +
+  'قواعد القراءة: (١) حوّل الأرقام الهندية (٠-٩) إلى إنجليزية. (٢) الأرقام المكتوبة باليد: انتبه للخلط بين ١/٧، ٣/٢، ٤/٦، ٥/٠، ٨/٧؛ لو الرقم غير واضح ضع اسم الحقل في "unsure" ولا تخترع رقمًا. ' +
+  '(٣) الوزن: حدّد الوحدة بالمفتاح "weightUnit" (kg أو ton) بحسب ما هو مكتوب؛ الشاحنة تحمل عادةً من ١٠ إلى ٥٠ طنًا، فالرقم ٢٤٫٥ هو طن والرقم ٢٤٥٠٠ هو كجم. ' +
+  '(٤) لو وُجد إجمالي وفارغ وصافي فتأكد أن الإجمالي − الفارغ = الصافي، وإن لم يتطابق أعد النظر في الأرقام المشكوك فيها قبل الإجابة. ' +
+  '(٥) أسماء المقاولين والأماكن والسائقين: انقلها كما هي مكتوبة بأقرب تهجئة عربية صحيحة ولا تترجمها. (٦) لا تخمّن: ضع "" لما لا يظهر. ' +
+  'أعد JSON فقط بهذه المفاتيح: {"kind","card" (رقم كارتة الشحن),"paper" (رقم الكارتة الورقية),"op" (رقم العملية/كارتة الصادر),"plate","trailer","driver","contractor","from" (مكان التحميل),"to" (الوجهة/مكان التفريغ),"crop","variety","itemType","pack","count",' +
+  '"grossKg","tareKg","netKg","deductionKg","weightUnit","date" (yyyy-MM-dd),"time","amount" (للغرامات بالجنيه),"issuer","confidence" (0-1),"unsure" (مصفوفة أسماء حقول غير متأكد منها),"transcript" (أهم ما قرأته حرفيًا في سطر أو سطرين),"notes"}. ' +
+  'الأوزان كأرقام بوحدة weightUnit. لا تضف أي نص خارج JSON.';
+
+var DOC_VERIFY_ = 'هذه قراءة أولى لنفس الصورة بصيغة JSON: {{FIRST}}. راجع الصورة من جديد حقلًا حقلًا وصحّح أي خطأ، وخاصةً الأرقام المكتوبة بخط اليد والأسماء، وتأكد من اتساق الأوزان (الإجمالي − الفارغ = الصافي) والوحدة، وأن مكان التحميل والوجهة لم يتبدّلا. لا تغيّر قيمة إلا لو رأيت دليلًا في الصورة. أعد نفس مفاتيح JSON بالقيم النهائية، وحدّث "unsure" و"confidence".';
 
 /** أرقام عربية/فارسية ← إنجليزية (نسخة محلية: هذا الملف يُدمج في الصفحة حيث لا توجد 02_Utils) */
 function docAscii_(s) { return String(s === null || s === undefined ? '' : s).replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); }).replace(/[\u06F0-\u06F9]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); }); }
@@ -3528,8 +3652,19 @@ function docNormalize_(raw) {
   ['card', 'paper', 'op', 'plate', 'trailer', 'driver', 'contractor', 'from', 'to', 'crop', 'variety', 'itemType', 'pack', 'time', 'issuer', 'notes'].forEach(function (k) { d[k] = docText_(raw[k]); });
   ['grossKg', 'tareKg', 'netKg', 'deductionKg', 'count', 'amount'].forEach(function (k) { d[k] = docNum_(raw[k]); });
   d.date = docDate_(raw.date);
+  var unit = /ton|طن/i.test(String(raw.weightUnit || '')) ? 'ton' : (/kg|كيلو|كجم/i.test(String(raw.weightUnit || '')) ? 'kg' : '');
+  var wk = ['grossKg', 'tareKg', 'netKg', 'deductionKg'], wv = wk.map(function (k) { return d[k]; }).filter(function (x) { return x !== ''; }), pre = [];
+  if (wv.length && (unit === 'ton' || (unit === '' && Math.max.apply(null, wv) < 200 && Math.max.apply(null, wv) > 0))) {
+    wk.forEach(function (k) { if (d[k] !== '') d[k] = Math.round(d[k] * 1000); });
+    pre.push('الأوزان قُرئت بالطن وحُوّلت إلى كجم');
+  }
+  if (d.netKg === '' && d.grossKg !== '' && d.tareKg !== '' && d.grossKg > d.tareKg) { d.netKg = d.grossKg - d.tareKg - (d.deductionKg === '' ? 0 : d.deductionKg); pre.push('الصافي محسوب (إجمالي − فارغ)'); }
+  var uns = Array.isArray(raw.unsure) ? raw.unsure : [];
+  d.unsure = uns.map(docText_).filter(function (k) { return k && DOC_FIELDS_.indexOf(k) >= 0; });
+  d.transcript = docText_(raw.transcript);
   var conf = Number(raw.confidence); d.confidence = isFinite(conf) ? Math.max(0, Math.min(1, conf)) : '';
-  var flags = [];
+  var flags = pre.slice();
+  if (d.unsure.length) flags.push('حقول غير مؤكدة (راجعها بالعين): ' + d.unsure.join('، '));
   if (d.grossKg !== '' && d.tareKg !== '' && d.netKg !== '' && Math.abs(d.grossKg - d.tareKg - d.netKg) > 20) flags.push('الإجمالي − الفارغ لا يساوي الصافي (' + (d.grossKg - d.tareKg) + ' ≠ ' + d.netKg + ') — راجع الأرقام على الصورة');
   if (d.netKg !== '' && (d.netKg < 1000 || d.netKg > 60000)) flags.push('الصافي خارج المعتاد (' + d.netKg + ' كجم)');
   if (d.kind === 'fine' && d.amount === '') flags.push('لم أقرأ مبلغ الغرامة');
@@ -3565,16 +3700,68 @@ function docMatchTrips_(doc, trips) {
   return out.slice(0, 5);
 }
 
+/** تطبيع عربي للمقارنة: إزالة التشكيل وتوحيد الهمزات والياء/الألف المقصورة والتاء المربوطة */
+function docKey_(s) {
+  return docAscii_(s).toLowerCase().replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/[ؤئ]/g, 'ء').replace(/[^\u0621-\u064Aa-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function docLev_(a, b) {
+  var m = a.length, n = b.length, i, j, prev = [], cur = [];
+  if (!m) return n; if (!n) return m;
+  for (j = 0; j <= n; j++) prev[j] = j;
+  for (i = 1; i <= m; i++) { cur[0] = i; for (j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1)); var t = prev; prev = cur; cur = t; }
+  return prev[n];
+}
+/** تشابه 0..1 بين اسمين: ترتيب الكلمات لا يهم، والاحتواء الكامل لكلمات الأقصر يرفع الدرجة */
+function docSim_(x, y) {
+  var a = docKey_(x), b = docKey_(y);
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  var ta = a.split(' ').sort(), tb = b.split(' ').sort(), sa = ta.join(' '), sb = tb.join(' ');
+  var lev = 1 - docLev_(sa, sb) / Math.max(sa.length, sb.length), best = lev;
+  var sh = ta.length <= tb.length ? ta : tb, lg = ta.length <= tb.length ? tb : ta;
+  if ((sh.length >= 2 || sh.join('').length >= 6) && sh.every(function (w) { return lg.indexOf(w) >= 0; })) best = Math.max(best, 0.9);
+  return best;
+}
+/**
+ * يصحّح الأسماء المقروءة لأقرب اسم معروف في بيانات النظام (مقاول/سائق/مكان). dict = {contractor:[…], driver:[…], from:[…], to:[…], plate:[…]}.
+ * يُصحَّح فقط لو التشابه ≥ 0.82 وبلا تعادل بين مرشحين مختلفين؛ وإلا يبقى كما قُرئ. يسجل doc.snapped = {حقل:{was, sim}}.
+ */
+function docSnap_(doc, dict) {
+  var d = {}; for (var k in doc) d[k] = doc[k];
+  d.snapped = {};
+  dict = dict || {};
+  Object.keys(dict).forEach(function (f) {
+    var v = d[f], list = dict[f] || [];
+    if (!v || !list.length) return;
+    if (f === 'plate') {
+      var dg = docDigits_(v); if (dg.length < 3) return;
+      var hit = list.filter(function (c) { return docDigits_(c) === dg; });
+      if (hit.length === 1 && hit[0] !== v) { d.snapped[f] = { was: v, sim: 1 }; d[f] = hit[0]; }
+      return;
+    }
+    var best = null, second = 0, seen = {};
+    list.forEach(function (c) {
+      if (!c || seen[c]) return; seen[c] = 1;
+      var sc = docSim_(v, c);
+      if (!best || sc > best.sc) { if (best) second = best.sc; best = { c: c, sc: sc }; } else if (sc > second) second = sc;
+    });
+    if (best && best.sc >= 0.82 && best.c !== v && (best.sc - second >= 0.04 || best.sc === 1)) { d.snapped[f] = { was: v, sim: Math.round(best.sc * 100) / 100 }; d[f] = best.c; }
+  });
+  var ks = Object.keys(d.snapped);
+  if (ks.length) d.flags = (d.flags || []).concat('صُحّح تلقائيًا لأقرب اسم معروف: ' + ks.map(function (f) { return d.snapped[f].was + ' ← ' + d[f]; }).join(' · '));
+  return d;
+}
+
 /* ---------------- الجزء الذي يستخدم خدمات جوجل ---------------- */
 
-function callVisionOnce_(p, b64, mime) {
+function callVisionOnce_(p, b64, mime, userText) {
   var resp = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(p.model) + ':generateContent', {
     method: 'post', contentType: 'application/json', muteHttpExceptions: true,
     headers: { 'x-goog-api-key': p.key },
     payload: JSON.stringify({
       systemInstruction: { parts: [{ text: DOC_SYSTEM_ }] },
-      contents: [{ role: 'user', parts: [{ inlineData: { mimeType: mime, data: b64 } }, { text: 'اقرأ هذا المستند.' }] }],
-      generationConfig: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 2048 }
+      contents: [{ role: 'user', parts: [{ inlineData: { mimeType: mime, data: b64 } }, { text: userText || 'اقرأ هذا المستند.' }] }],
+      generationConfig: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 4096 }
     })
   });
   var code = resp.getResponseCode(), body = resp.getContentText();
@@ -3583,6 +3770,13 @@ function callVisionOnce_(p, b64, mime) {
     var j = JSON.parse(body), parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
     return { ok: true, text: parts.map(function (x) { return x.text || ''; }).join('') };
   } catch (e) { return { ok: false, code: 200, body: 'bad response json' }; }
+}
+
+function docParseJson_(text) {
+  var t = String(text || '').replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/, '').trim(), j = null;
+  try { j = JSON.parse(t); } catch (e) { var m = t.match(/\{[\s\S]*\}/); if (m) { try { j = JSON.parse(m[0]); } catch (e2) { j = null; } } }
+  if (Array.isArray(j)) j = j[0] || null;
+  return j && typeof j === 'object' ? j : null;
 }
 
 /** صورة (base64 بدون البادئة) ← حقول مستخرجة ومنظّفة. محرّر أو إدارة. */
@@ -3597,9 +3791,18 @@ function api_docRead(b64, mime, pin) {
   for (var i = 0; i < prov.length; i++) {
     var r = callVisionOnce_(prov[i], b64, mime);
     if (!r.ok) { last = 'HTTP ' + r.code; continue; }
-    var j; try { j = JSON.parse(String(r.text).replace(/^```json|```$/g, '').trim()); } catch (e) { last = 'ردّ غير مفهوم'; continue; }
-    if (Array.isArray(j)) j = j[0] || {};
-    return { ok: true, doc: docNormalize_(j), model: prov[i].label };
+    var j = docParseJson_(r.text); if (!j) { last = 'ردّ غير مفهوم'; continue; }
+    var d = docNormalize_(j), passes = 1;
+    // مراجعة ثانية (نفس الصورة + القراءة الأولى) لو الثقة ضعيفة أو فيه تحذيرات أو حقول غير مؤكدة
+    if ((d.confidence !== '' && d.confidence < 0.85) || d.flags.length || d.unsure.length) {
+      try {
+        var r2 = callVisionOnce_(prov[i], b64, mime, DOC_VERIFY_.replace('{{FIRST}}', JSON.stringify(j)));
+        var j2 = r2.ok ? docParseJson_(r2.text) : null;
+        if (j2) { var d2 = docNormalize_(j2); passes = 2; if (d2.flags.length <= d.flags.length) d = d2; }
+      } catch (e2) { /* نكتفي بالقراءة الأولى */ }
+    }
+    d.passes = passes;
+    return { ok: true, doc: d, model: prov[i].label };
   }
   throw new Error('تعذرت قراءة الصورة (' + last + '). جرّب صورة أوضح.');
 }
@@ -3708,6 +3911,9 @@ function api_expenseDelete(id, pin) {
       insTbl(['المقاول','رحلات','أطنان','متوسط الحمولة','مراجعة','مرفوضة','وزن شاذ','تكلفة الطن'],I.contractors.slice(0,40).map(function(c){ return '<tr><td>'+esc(c.name)+'</td><td>'+c.trips+'</td><td>'+insFmt(c.tons)+'</td><td>'+c.avgTons+'</td><td>'+c.reviewPct+'٪</td><td>'+c.rejected+' ('+c.rejectedPct+'٪)</td><td>'+c.anomalies+'</td><td>'+insFmt(c.costPerTon)+'</td></tr>'; }))+'</div>';
     h+='<div class="box"><h3>رحلات وزنها بعيد عن المعتاد لنفس السيارة ('+I.anomalyCount+')</h3><p class="sub">المقارنة بوسيط وزن نفس السيارة (٥ رحلات فأكثر). حد الانحراف: <input class="fld" type="number" min="5" max="90" step="5" style="width:70px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg)" data-a="ins-tol" value="'+A.ins.tol+'" aria-label="حد الانحراف">٪</p>'+
       insTbl(['كارتة','السيارة','المقاول','الوزن','المعتاد','الانحراف'],I.anomalies.slice(0,40).map(function(a){ return '<tr><td class="ph">'+esc(a.card)+'</td><td>'+esc(a.plate||'—')+'</td><td>'+esc(a.contractor||'—')+'</td><td>'+a.weight+'</td><td>'+a.median+'</td><td><span class="chip2 bad">'+(a.devPct>0?'+':'')+a.devPct+'٪</span></td></tr>'; }))+'</div>';
+    var PA=I.priceAnoms||{anomalies:[],count:0,tolPct:35};
+    h+='<div class="box"><h3>أسعار بعيدة عن المعتاد لنفس المسار ('+PA.count+')</h3><p class="sub">المقارنة بوسيط سعر نفس (تحميل ← تفريغ + سيارة + تقاوي/غير تقاوي)، وتُعلَّم الرحلة لو انحرف سعرها وسعر طنها معًا ≥ '+PA.tolPct+'٪. الأسعار التقديرية مستبعدة.</p>'+
+      insTbl(['كارتة','المسار','المقاول','السعر','المعتاد','الانحراف','مصدر السعر'],PA.anomalies.slice(0,40).map(function(a){ return '<tr><td class="ph">'+esc(a.card)+'</td><td>'+esc(a.route)+'</td><td>'+esc(a.contractor||'—')+'</td><td>'+insFmt(a.price)+'</td><td>'+insFmt(a.median)+'</td><td>'+(a.devPct>0?'+':'')+a.devPct+'٪</td><td>'+esc(a.rule||'—')+'</td></tr>'; }))+'</div>';
     h+='<div class="box"><h3>تكلفة الطن بالمحصول</h3>'+insTbl(['المحصول','رحلات','أطنان','التكلفة','تكلفة الطن'],I.costByCrop.map(function(g){ return '<tr><td>'+esc(g.key)+'</td><td>'+g.trips+'</td><td>'+insFmt(g.tons)+'</td><td>'+insFmt(g.cost)+'</td><td><b>'+g.perTon+'</b></td></tr>'; }))+'</div>';
     h+='<div class="box"><h3>تكلفة الطن بالمسار</h3>'+insTbl(['المسار','رحلات','أطنان','التكلفة','تكلفة الطن'],I.costByRoute.map(function(g){ return '<tr><td>'+esc(g.key)+'</td><td>'+g.trips+'</td><td>'+insFmt(g.tons)+'</td><td>'+insFmt(g.cost)+'</td><td><b>'+g.perTon+'</b></td></tr>'; }))+'</div>';
     var LN=computeLearned_(D.changeLog||[],2);
@@ -3719,6 +3925,327 @@ function api_expenseDelete(id, pin) {
     return h;
   }
 
+  /**
+ * ============================================================
+ * 27 · ذكاء الأماكن (دوال نقية ES5 — تعمل في السيرفر وتُضمَّن في الواجهة)
+ *  - توحيد الأسماء: عائلات المزارع (مزرعة – بيفوت N)، تهجئات مختلفة، أماكن غير مسجلة
+ *  - استنتاج المواقع: من اسم أم له موقع، أو من اسم مدينة/منطقة داخل الاسم أو العنوان (دقة «تقريبي»)
+ *  - علاقات: المسارات بين الأماكن (عدد/أطنان/مسافة)، العائلات، وتدقيق المسافات المستحيلة
+ *  - محلّل مواقع (resolver) يربط أي اسم مكتوب بسجل القاموس لاستخدامه في المسافة والتسعير
+ * لا تغيّر شيئًا بنفسها: ترجع اقتراحات تُطبَّق بضغطة من المستخدم.
+ * ============================================================
+ */
+var PINT_GENERIC_ = ['ثلاجه', 'شركه', 'مزرعه', 'مصنع', 'محطه', 'ميزان', 'سوبر', 'ماركت', 'مخزن', 'شونه', 'مؤسسه', 'مكتب', 'لل', 'جروب'];
+var PINT_GAZ_ = [
+  ['القاهره', 30.0444, 31.2357], ['الجيزه', 30.0131, 31.2089], ['الاسكندريه', 31.2001, 29.9187], ['اسكندريه', 31.2001, 29.9187], ['دمنهور', 31.0341, 30.4682], ['البحيره', 30.85, 30.34],
+  ['النوباريه', 30.7167, 30.1], ['طنطا', 30.7865, 31.0004], ['الغربيه', 30.7865, 31.0004], ['المنصوره', 31.0409, 31.3785], ['الدقهليه', 31.0409, 31.3785], ['الزقازيق', 30.5877, 31.502], ['الشرقيه', 30.5877, 31.502],
+  ['بنها', 30.466, 31.1848], ['القليوبيه', 30.466, 31.1848], ['شبين الكوم', 30.5503, 31.0099], ['المنوفيه', 30.5503, 31.0099], ['كفر الشيخ', 31.1107, 30.9388], ['دمياط', 31.4165, 31.8133],
+  ['بورسعيد', 31.2653, 32.3019], ['الاسماعيليه', 30.5965, 32.2715], ['السويس', 29.9668, 32.5498], ['الفيوم', 29.3084, 30.8428], ['بني سويف', 29.0661, 31.0994], ['المنيا', 28.1099, 30.7503],
+  ['اسيوط', 27.1783, 31.1859], ['سوهاج', 26.5569, 31.6948], ['قنا', 26.1551, 32.716], ['الاقصر', 25.6872, 32.6396], ['اسوان', 24.0889, 32.8998], ['كيما', 24.0889, 32.8998],
+  ['الغرديقه', 27.2579, 33.8116], ['الغردقه', 27.2579, 33.8116], ['مرسي مطروح', 31.3543, 27.2373], ['العلمين', 30.83, 28.9553], ['اكتوبر', 29.9285, 30.9188], ['العاشر من رمضان', 30.292, 31.742],
+  ['بدر', 30.1167, 31.7], ['الشروق', 30.1167, 31.6167], ['العبور', 30.219, 31.478], ['الصف', 29.5667, 31.3667], ['العياط', 29.619, 31.25], ['وادي النطرون', 30.409, 30.354], ['كفر الزيات', 30.825, 30.814],
+  ['ابو حماد', 30.4333, 31.6667], ['بلبيس', 30.4167, 31.5667], ['ههيا', 30.6, 31.6], ['فاقوس', 30.7167, 31.8], ['الحسينيه', 30.8833, 31.8], ['السادات', 30.373, 30.539], ['برج العرب', 30.8644, 29.5622], ['راس سدر', 29.5833, 32.7167],
+  ['الواحات', 28.35, 28.8667], ['الداخله', 25.5, 29.0], ['الخارجه', 25.439, 30.5586], ['توشكي', 22.85, 31.45], ['العوينات', 22.4667, 28.7167]
+];
+
+/** تطبيع عربي للمقارنة: تشكيل/همزات/ياء/تاء مربوطة/أرقام هندية/ترقيم */
+function pintKey_(s) {
+  return String(s === null || s === undefined ? '' : s).replace(/[٠-٩]/g, function (d) { return String(d.charCodeAt(0) - 0x660); }).toLowerCase()
+    .replace(/[ً-ْـ]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/[^ء-يa-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function pintCore_(key) { return key.split(' ').filter(function (w) { return w && PINT_GENERIC_.indexOf(w) < 0; }).join(' '); }
+function pintLev_(a, b) {
+  var m = a.length, n = b.length, i, j, d = [];
+  if (!m) return n; if (!n) return m;
+  for (i = 0; i <= m; i++) { d[i] = [i]; }
+  for (j = 1; j <= n; j++) d[0][j] = j;
+  for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) {
+    var c = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
+    if (i > 1 && j > 1 && a.charAt(i - 1) === b.charAt(j - 2) && a.charAt(i - 2) === b.charAt(j - 1)) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);   // تبديل حرفين متجاورين
+  }
+  return d[m][n];
+}
+/** تشابه 0..1: ترتيب الكلمات لا يهم، والكلمات العامة (ثلاجة/شركة/مزرعة…) تُخفَّف، واحتواء كلمات الأقصر يرفع الدرجة */
+function pintSim_(x, y) {
+  var a = pintKey_(x), b = pintKey_(y);
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  var ca = pintCore_(a) || a, cb = pintCore_(b) || b;
+  if (ca === cb) return 0.93;
+  var ta = ca.split(' ').sort(), tb = cb.split(' ').sort(), sa = ta.join(' '), sb = tb.join(' ');
+  if (Math.min(sa.length, sb.length) < 4) return 0;
+  var best = 1 - pintLev_(sa, sb) / Math.max(sa.length, sb.length);
+  var sh = ta.length <= tb.length ? ta : tb, lg = ta.length <= tb.length ? tb : ta;
+  if (sh.join('').length >= 5 && sh.every(function (w) { return lg.indexOf(w) >= 0; })) best = Math.max(best, 0.88);
+  return best * 0.985;
+}
+
+/** «مزرعة الدلتا الجديدة – بيفوت رقم 2048» ← {base:'مزرعة الدلتا الجديدة', sub:'بيفوت 2048'} ؛ «الكفاح - قطاع 15 – بيفوت 22» ← sub «قطاع 15 / بيفوت 22» */
+function pintSplit_(name) {
+  var raw = String(name === null || name === undefined ? '' : name).replace(/\s+/g, ' ').trim();
+  var re = /(بيفوت|قطاع|قطعه|قطعة)\s*(?:رقم\s*)?([0-9٠-٩]+)/g, subs = [], m, first = -1;
+  var norm = raw.replace(/[٠-٩]/g, function (d) { return String(d.charCodeAt(0) - 0x660); });
+  re.lastIndex = 0;
+  while ((m = re.exec(norm)) !== null) { if (first < 0) first = m.index; subs.push((m[1] === 'قطعة' ? 'قطعه' : m[1]) + ' ' + m[2]); }
+  if (first < 0) return { base: raw, sub: '' };
+  return { base: norm.slice(0, first).replace(/[\s\-–—:/,،]+$/, '').trim() || raw, sub: subs.join(' / ') };
+}
+
+/** محلّل: يربط اسمًا مكتوبًا بسجل القاموس (الاسم/الصيغ، قاعدة الاسم بلا بيفوت، الاسم بلا كلمات عامة، ثم تشابه ≥0.9 فريد) */
+function pintResolver_(list, roadFactor) {
+  var exact = {}, coreMap = {}, recs = [], cache = {}, factor = Number(roadFactor) > 0 ? Number(roadFactor) : 1.3;
+  (list || []).forEach(function (p) {
+    if (!p || !p.name) return;
+    recs.push(p);
+    [p.name].concat(p.aliases || []).forEach(function (f) {
+      var k = pintKey_(f); if (!k) return;
+      if (!exact[k]) exact[k] = p;
+      var c = pintCore_(k); if (c && c !== k) coreMap[c] = coreMap[c] === undefined ? p : (coreMap[c] === p ? p : null);
+      else if (c) coreMap[c] = coreMap[c] === undefined ? p : (coreMap[c] === p ? p : null);
+    });
+  });
+  function find(name) {
+    var k = pintKey_(name); if (!k) return null;
+    if (cache[k] !== undefined) return cache[k];
+    var r = exact[k] || null;
+    if (!r) { var b = pintKey_(pintSplit_(name).base); if (b && b !== k) r = exact[b] || null; }
+    if (!r) { var c = pintCore_(pintKey_(pintSplit_(name).base)); if (c && coreMap[c]) r = coreMap[c]; }
+    if (!r && k.length >= 5) {
+      var best = null, bs = 0, second = 0;
+      recs.forEach(function (p) { var s = Math.max(pintSim_(name, p.name), pintSim_(pintSplit_(name).base, p.name)); (p.aliases || []).forEach(function (a) { var s2 = pintSim_(pintSplit_(name).base, a); if (s2 > s) s = s2; }); if (s > bs) { second = bs; bs = s; best = p; } else if (s > second) second = s; });
+      if (best && bs >= 0.9 && bs - second >= 0.04) r = best;
+    }
+    cache[k] = r; return r;
+  }
+  function pt(name) { var r = find(name); return r && typeof r.lat === 'number' && typeof r.lng === 'number' && geoValid(r.lat, r.lng) ? { lat: r.lat, lng: r.lng, q: r.geoQ || '' } : null; }
+  function km(a, b) { var pa = pt(a), pb = pt(b); if (!pa || !pb) return null; var k = geoKm(pa, pb); return k === null ? null : Math.round(k * factor * 10) / 10; }
+  return { find: find, pt: pt, km: km, factor: factor, size: recs.length };
+}
+
+/**
+ * اقتراحات التوحيد من أسماء ظهرت في البيانات. items = [{name, n}] (الاسم كما كُتب وعدد مرات ظهوره).
+ * يرجع {suggestions:[{type:'alias'|'new', target, members:[{name,n}], sim, n}], families:[{name, n, units:[{sub, n}]}], resolved, unresolved}
+ *  - families: مزارع لها بيفوتات/قطاعات (تُحلّ تلقائيًا بالاسم الأم ولا تحتاج صيغًا)
+ *  - alias: كتابة مختلفة لمكان موجود (تُضاف كصيغة)
+ *  - new: أسماء متقاربة لا مكان لها (تُضاف كمكان جديد واحد بصيغها)
+ */
+function pintClusters_(items, list) {
+  var R = pintResolver_(list), fam = {}, alias = {}, rest = [], resolved = 0;
+  (items || []).forEach(function (it) {
+    if (!it || !it.name) return;
+    var n = Number(it.n) || 1, sp = pintSplit_(it.name), rec = R.find(it.name);
+    if (rec) {
+      resolved += n;
+      if (sp.sub) { var f = fam[rec.name] = fam[rec.name] || { name: rec.name, n: 0, units: {} }; f.n += n; f.units[sp.sub] = (f.units[sp.sub] || 0) + n; }
+      else {
+        var known = [rec.name].concat(rec.aliases || []).some(function (x) { return pintKey_(x) === pintKey_(it.name); });
+        if (!known) { var a = alias[rec.name] = alias[rec.name] || { type: 'alias', target: rec.name, members: [], n: 0, sim: 1 }; a.members.push({ name: it.name, n: n }); a.n += n; a.sim = Math.min(a.sim, Math.round(Math.max(pintSim_(it.name, rec.name), 0.9) * 100) / 100); }
+      }
+      return;
+    }
+    rest.push({ name: sp.base, raw: it.name, n: n, sub: sp.sub });
+  });
+  // أسماء بلا سجل: تجميع بالتشابه
+  var groups = [];
+  rest.sort(function (a, b) { return b.n - a.n; }).forEach(function (r) {
+    var g = null;
+    for (var i = 0; i < groups.length; i++) if (pintSim_(r.name, groups[i].lead) >= 0.85) { g = groups[i]; break; }
+    if (!g) { g = { lead: r.name, members: [], n: 0 }; groups.push(g); }
+    var ex = g.members.filter(function (m) { return pintKey_(m.name) === pintKey_(r.name); })[0];
+    if (ex) ex.n += r.n; else g.members.push({ name: r.name, n: r.n });
+    g.n += r.n;
+  });
+  var sugg = Object.keys(alias).map(function (k) { return alias[k]; });
+  groups.forEach(function (g) {
+    var near = null, ns = 0;
+    (list || []).forEach(function (p) { var sc = pintSim_(g.lead, p.name); (p.aliases || []).forEach(function (a) { var s2 = pintSim_(g.lead, a); if (s2 > sc) sc = s2; }); if (sc > ns) { ns = sc; near = p.name; } });
+    var gz = pintGaz_(g.lead);
+    sugg.push({ type: 'new', target: g.lead, members: g.members, n: g.n, sim: 1, near: ns >= 0.55 ? { name: near, sim: Math.round(ns * 100) / 100 } : null, gaz: gz });
+  });
+  sugg.sort(function (a, b) { return b.n - a.n; });
+  var fams = Object.keys(fam).map(function (k) { var f = fam[k]; return { name: f.name, n: f.n, units: Object.keys(f.units).map(function (s) { return { sub: s, n: f.units[s] }; }).sort(function (a, b) { return b.n - a.n; }) }; }).sort(function (a, b) { return b.n - a.n; });
+  var un = 0; groups.forEach(function (g) { un += g.n; });
+  return { suggestions: sugg, families: fams, resolved: resolved, unresolved: un };
+}
+
+/** سجلات متشابهة داخل القاموس نفسه (قد تكون تكرارًا): [{a, b, sim}] */
+function pintDupes_(list) {
+  var out = [], i, j, L = (list || []).filter(function (p) { return p && p.name; });
+  for (i = 0; i < L.length; i++) for (j = i + 1; j < L.length; j++) {
+    var s = pintSim_(L[i].name, L[j].name);
+    if (s >= 0.88) out.push({ a: L[i].name, b: L[j].name, sim: Math.round(s * 100) / 100 });
+  }
+  return out.sort(function (x, y) { return y.sim - x.sim; });
+}
+
+function pintPad_(k) { return ' ' + k + ' '; }
+/** أطول اسم مدينة/منطقة معروف داخل نص ← {lat,lng,why} أو null (مركز المدينة، «تقريبي») */
+function pintGaz_(text) {
+  var hay = pintPad_(pintKey_(text)), best = null;
+  PINT_GAZ_.forEach(function (g) { if (hay.indexOf(pintPad_(g[0])) >= 0 && (!best || g[0].length > best.k.length)) best = { k: g[0], lat: g[1], lng: g[2] }; });
+  return best ? { lat: best.lat, lng: best.lng, why: 'ذُكرت «' + best.k + '» في الاسم/العنوان (مركز المدينة)' } : null;
+}
+/**
+ * استنتاج مواقع لأماكن بلا إحداثيات: (١) اسم/صيغة تحتوي اسم مكان له موقع («ثلاجة العمدة العياط» ⊃ «العياط»)
+ * (٢) اسم مدينة/منطقة ضمن الاسم أو العنوان أو المحافظة من القاموس الجغرافي الداخلي. كلها «تقريبي».
+ * يرجع [{name, lat, lng, why, conf}] بترتيب الثقة.
+ */
+function pintInfer_(list) {
+  var located = [], out = [];
+  (list || []).forEach(function (p) { if (p && typeof p.lat === 'number' && typeof p.lng === 'number' && geoValid(p.lat, p.lng)) located.push(p); });
+  (list || []).forEach(function (p) {
+    if (!p || !p.name || (typeof p.lat === 'number' && typeof p.lng === 'number' && geoValid(p.lat, p.lng))) return;
+    var texts = [p.name].concat(p.aliases || []), best = null;
+    // (١) احتواء اسم مكان معروف الموقع
+    texts.forEach(function (tx) {
+      var pk = pintPad_(pintKey_(tx));
+      located.forEach(function (q) {
+        [q.name].concat(q.aliases || []).forEach(function (f) {
+          var k = pintCore_(pintKey_(f)); if (!k || k.length < 4 || pintKey_(f) === pintKey_(tx)) return;
+          if (pk.indexOf(pintPad_(k)) >= 0 && (!best || k.length > best.len)) best = { len: k.length, lat: q.lat, lng: q.lng, why: 'الاسم يحتوي «' + f + '» وله موقع', conf: q.geoQ === 'exact' ? 0.7 : 0.5 };
+        });
+      });
+    });
+    // (٢) قاموس المدن والمناطق
+    if (!best) { var gz = pintGaz_(texts.join(' ') + ' ' + (p.address || '') + ' ' + (p.region || '')); if (gz) best = { len: 1, lat: gz.lat, lng: gz.lng, why: gz.why, conf: 0.35 }; }
+    if (best) out.push({ name: p.name, lat: best.lat, lng: best.lng, why: best.why, conf: best.conf });
+  });
+  return out.sort(function (a, b) { return b.conf - a.conf; });
+}
+
+/** أولوية جمع الإحداثيات: أماكن بلا موقع «دقيق» مرتبة بعدد الرحلات (يقرأ المكان بالمحلّل) */
+function pintPriority_(trips, list, limit) {
+  var R = pintResolver_(list), cnt = {}, rows = [];
+  (trips || []).forEach(function (t) { [t.loadPlace, t.unloadPlace].forEach(function (n) { if (!n || n === 'تحتاج مراجعة') return; var r = R.find(n); var k = r ? r.name : n; cnt[k] = cnt[k] || { name: k, n: 0, inDict: !!r, q: r ? (r.geoQ || (typeof r.lat === 'number' ? 'exact' : '')) : '' }; cnt[k].n++; }); });
+  Object.keys(cnt).forEach(function (k) { var c = cnt[k]; if (c.q !== 'exact') rows.push(c); });
+  rows.sort(function (a, b) { return b.n - a.n; });
+  var total = 0, ok = 0; Object.keys(cnt).forEach(function (k) { total += cnt[k].n; if (cnt[k].q === 'exact') ok += cnt[k].n; });
+  return { rows: rows.slice(0, limit || 30), coveragePct: total ? Math.round(ok * 1000 / total) / 10 : 0, total: total };
+}
+
+function pintMedian_(a) { var s = a.slice().sort(function (x, y) { return x - y; }), m = s.length >> 1; return s.length ? (s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2) : null; }
+/**
+ * علاقات: المسارات (تحميل ← تفريغ) بعدد الرحلات والأطنان والمسافة التقديرية، وتدقيق «سرعة مستحيلة»:
+ * أقل زمن رحلة على المسار مقابل المسافة؛ لو السرعة المطلوبة > 110 كم/س فأحد الإحداثيات غالبًا خاطئ.
+ */
+function pintRelations_(trips, list) {
+  var R = pintResolver_(list), E = {}, P = {};
+  (trips || []).forEach(function (t) {
+    if (!t || t.live || !t.loadPlace || !t.unloadPlace || t.loadPlace === 'تحتاج مراجعة' || t.unloadPlace === 'تحتاج مراجعة') return;
+    var a = R.find(t.loadPlace), b = R.find(t.unloadPlace), an = a ? a.name : t.loadPlace, bn = b ? b.name : t.unloadPlace, k = an + '\u0001' + bn;
+    var e = E[k] = E[k] || { from: an, to: bn, n: 0, tons: 0, hours: [] };
+    e.n++; e.tons += Number(t.weight) > 0 ? Number(t.weight) : 0;
+    var h = Number(t.hours); if (isFinite(h) && h > 0 && h < 72) e.hours.push(h);
+    [[an, 'out', bn], [bn, 'in', an]].forEach(function (x) { var p = P[x[0]] = P[x[0]] || { name: x[0], out: {}, inn: {}, n: 0 }; p.n++; (x[1] === 'out' ? p.out : p.inn)[x[2]] = ((x[1] === 'out' ? p.out : p.inn)[x[2]] || 0) + 1; });
+  });
+  var edges = Object.keys(E).map(function (k) {
+    var e = E[k], km = R.km(e.from, e.to), minH = e.hours.length ? Math.min.apply(null, e.hours) : null, bad = false;
+    if (km !== null && minH !== null && e.hours.length >= 3 && km > 30 && km / minH > 110) bad = true;
+    return { from: e.from, to: e.to, n: e.n, tons: Math.round(e.tons * 10) / 10, km: km, medHours: pintMedian_(e.hours), minHours: minH, suspect: bad };
+  }).sort(function (a, b) { return b.n - a.n; });
+  var places = Object.keys(P).map(function (k) {
+    var p = P[k], top = function (m) { return Object.keys(m).map(function (x) { return { name: x, n: m[x] }; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 3); };
+    var o = 0, i = 0; Object.keys(p.out).forEach(function (x) { o += p.out[x]; }); Object.keys(p.inn).forEach(function (x) { i += p.inn[x]; });
+    return { name: p.name, n: p.n, out: o, inn: i, role: o > i * 2 ? 'مصدر' : (i > o * 2 ? 'وجهة' : 'مصدر ووجهة'), topOut: top(p.out), topIn: top(p.inn) };
+  }).sort(function (a, b) { return b.n - a.n; });
+  return { edges: edges, places: places, suspects: edges.filter(function (e) { return e.suspect; }) };
+}
+
+/** مسافة رحلة تقديرية بالكيلومتر (طريق) من القاموس، أو null */
+function pintTripKm_(t, R) { return t && R ? R.km(t.loadPlace, t.unloadPlace) : null; }
+
+    /* ================= ذكاء الأماكن: توحيد الأسماء · استنتاج المواقع · علاقات · أولوية الإحداثيات =================
+     كل شيء هنا اقتراحات: لا يتغير القاموس إلا بضغطة، ولا يُحفظ إلا بزر «حفظ الإعدادات». */
+  A.pl.intel={msg:'',busy:false,txt:'',hide:{}};
+  function inData(){
+    var L=A.S.places.list, all=(D.trips||[]).concat(D.live||[]), cnt={};
+    all.forEach(function(t){ [t.loadPlace,t.unloadPlace,t.origin].forEach(function(n){ if(n&&n!==REVIEW) cnt[n]=(cnt[n]||0)+1; }); });
+    return {C:pintClusters_(Object.keys(cnt).map(function(n){ return {name:n,n:cnt[n]}; }),L), I:pintInfer_(L), PR:pintPriority_(all,L,15), REL:pintRelations_(D.trips||[],L), DUP:pintDupes_(L), L:L};
+  }
+  function inUniq(a){ var m={},o=[]; a.forEach(function(x){ var k=nz(x); if(k&&!m[k]){ m[k]=1; o.push(x); } }); return o; }
+  function inAddAliases(rec,names){ var have={}; [rec.name].concat(rec.aliases||[]).forEach(function(x){ have[nz(x)]=1; }); rec.aliases=rec.aliases||[]; names.forEach(function(n){ if(n&&!have[nz(n)]){ rec.aliases.push(n); have[nz(n)]=1; } }); }
+  function inNote(rec,txt){ rec.notes=(rec.notes?rec.notes+' · ':'')+txt; }
+  function inSetGps(rec,lat,lng,q,why){ rec.lat=geoRound(lat); rec.lng=geoRound(lng); rec.geoQ=q; if(why) inNote(rec,why); }
+  function inChip(txt,cls){ return '<span class="chip2'+(cls?' '+cls:'')+'">'+esc(txt)+'</span>'; }
+  function inSugg(s,i){
+    var mem=s.members.map(function(m){ return esc(m.name)+' <small>('+m.n+')</small>'; }).join('، ');
+    if(s.type==='alias') return '<div class="lint info"><span>🔗</span><span class="grow">اكتب «'+mem+'» = نفس المكان <b>'+esc(s.target)+'</b> ('+s.n+' ظهور)</span><button class="abtn" data-a="plx-in-alias" data-i="'+i+'">أضفها كصيغة</button></div>';
+    return '<div class="lint warn"><span>➕</span><span class="grow">«'+mem+'» بلا سجل في القاموس ('+s.n+' ظهور)'+(s.near?' — <b>قريب من «'+esc(s.near.name)+'»</b>':'')+(s.gaz?' — '+esc(s.gaz.why):'')+'</span>'+
+      (s.near?'<button class="abtn" data-a="plx-in-near" data-i="'+i+'">صيغة لـ «'+esc(s.near.name)+'»</button>':'')+'<button class="abtn pri" data-a="plx-in-new" data-i="'+i+'">أضفه كمكان جديد</button></div>';
+  }
+  function rIntel(){
+    var I=A.pl.intel, d=inData(), L=d.L, ex=0, ap=0; L.forEach(function(p){ if(plHasGps(p)){ if(p.geoQ==='exact') ex++; else ap++; } });
+    var sg=d.C.suggestions.filter(function(s,i){ return !I.hide[s.type+'|'+s.target]; }); d.sg=sg; INC=d;
+    var h='<div class="box"><h3>ذكاء الأماكن</h3><p class="sub">يربط كل اسم مكتوب في الرحلات (بتهجئات وبيفوتات مختلفة) بسجل واحد في القاموس، ويستنتج المواقع الممكنة، ويبني علاقات بين الأماكن تُستخدم في المسافة والتسعير. كل تغيير هنا اقتراح — احفظ الإعدادات بعد التطبيق.</p>'+
+      '<div class="kvg"><div><small>أماكن في القاموس</small><b>'+L.length+'</b></div><div><small>بموقع دقيق</small><b>'+ex+'</b></div><div><small>بموقع تقريبي</small><b>'+ap+'</b></div><div><small>بلا موقع</small><b>'+(L.length-ex-ap)+'</b></div><div><small>رحلات بمكان موقعه دقيق</small><b>'+d.PR.coveragePct+'٪</b></div><div><small>أسماء مرتبطة تلقائيًا</small><b>'+d.C.resolved+'</b></div></div></div>';
+    if(I.msg) h+='<div class="pv"><b>'+esc(I.msg)+'</b></div>';
+    // أولوية الإحداثيات + لصق الروابط
+    h+='<div class="box"><h3>أولوية الإحداثيات</h3><p class="sub">أكثر الأماكن استخدامًا بلا موقع دقيق. الصق رابط خرائط جوجل (حتى المختصر maps.app.goo.gl) أو الإحداثيات بجانب كل مكان ثم اضغط «طبّق». كل ما زادت الأماكن المحددة زادت دقة المسافات وتقدير الأسعار.</p>';
+    if(d.PR.rows.length){
+      h+='<div class="tblwrap"><table class="tbl"><thead><tr><th>المكان</th><th>رحلات</th><th>الحالة</th><th>رابط أو إحداثيات</th></tr></thead><tbody>'+d.PR.rows.map(function(r){ return '<tr><td>'+esc(r.name)+'</td><td>'+r.n+'</td><td>'+(r.q==='approx'?inChip('تقريبي','warn'):inChip(r.inDict?'بلا موقع':'غير مسجل','bad'))+'</td><td><input class="inp" style="min-width:230px" data-a="plx-in-row" data-n="'+attr(r.name)+'" placeholder="https://maps.app.goo.gl/… أو 30.59, 30.48"></td></tr>'; }).join('')+'</tbody></table></div>';
+    } else h+='<p class="sub">كل الأماكن المستخدمة لها مواقع دقيقة ✓</p>';
+    h+='<label class="fld" style="margin-top:8px"><span>أو لصق جماعي (سطر لكل مكان: <b>الاسم | الرابط</b>)</span><textarea data-a="plx-in-txt" rows="3" style="width:100%" placeholder="سلمى | https://maps.app.goo.gl/…">'+esc(I.txt)+'</textarea></label>'+
+      '<div class="row" style="margin-top:8px"><button class="abtn pri" data-a="plx-in-links"'+(I.busy?' disabled':'')+'>'+(I.busy?'جارٍ الحل…':'طبّق الروابط')+'</button></div></div>';
+    // اقتراحات التوحيد
+    h+='<div class="box"><h3>توحيد الأسماء ('+sg.length+')</h3>'+(sg.length?'<div class="row" style="margin-bottom:6px"><button class="abtn" data-a="plx-in-alias-all">طبّق كل «الصيغ»</button></div>'+sg.slice(0,25).map(inSugg).join(''):'<p class="sub">لا اقتراحات — كل الأسماء مرتبطة ✓</p>')+'</div>';
+    if(d.DUP.length) h+='<div class="box"><h3>سجلات قد تكون مكررة ('+d.DUP.length+')</h3>'+d.DUP.slice(0,10).map(function(x,i){ return '<div class="lint info"><span>🔀</span><span class="grow">«'+esc(x.a)+'» ≈ «'+esc(x.b)+'» (تشابه '+Math.round(x.sim*100)+'٪)</span><button class="abtn" data-a="plx-in-merge" data-i="'+i+'">ادمج «'+esc(x.b)+'» في «'+esc(x.a)+'»</button></div>'; }).join('')+'</div>';
+    // مواقع مستنتجة
+    h+='<div class="box"><h3>مواقع مستنتجة ('+d.I.length+')</h3>'+(d.I.length?'<div class="row" style="margin-bottom:6px"><button class="abtn" data-a="plx-in-inf-all">طبّق ما ثقته ≥ 50٪</button></div>'+d.I.slice(0,25).map(function(x,i){ return '<div class="lint '+(x.conf>=0.5?'info':'warn')+'"><span>📍</span><span class="grow"><b>'+esc(x.name)+'</b> ← '+geoFmt(x)+' · '+esc(x.why)+' · ثقة '+Math.round(x.conf*100)+'٪ (تقريبي)</span><button class="abtn" data-a="plx-in-inf" data-i="'+i+'">طبّق</button></div>'; }).join(''):'<p class="sub">لا مواقع يمكن استنتاجها من الأسماء الحالية. أضف روابط الأماكن الرئيسية أعلاه.</p>')+'</div>';
+    // عائلات
+    h+='<div class="box"><h3>عائلات المزارع (بيفوت / قطاع)</h3><p class="sub">كل بيفوت يُنسب تلقائيًا للمزرعة الأم فيأخذ موقعها — لا حاجة لتسجيله كمكان مستقل.</p><div class="tblwrap"><table class="tbl"><thead><tr><th>المزرعة</th><th>ظهور</th><th>وحدات</th><th>أكثرها</th></tr></thead><tbody>'+d.C.families.slice(0,12).map(function(f){ return '<tr><td>'+esc(f.name)+'</td><td>'+f.n+'</td><td>'+f.units.length+'</td><td>'+esc(f.units.slice(0,4).map(function(u){ return u.sub+' ('+u.n+')'; }).join('، '))+'</td></tr>'; }).join('')+'</tbody></table></div></div>';
+    // علاقات
+    var R=d.REL;
+    h+='<div class="box"><h3>العلاقات بين الأماكن</h3><div class="tblwrap"><table class="tbl"><thead><tr><th>المسار</th><th>رحلات</th><th>أطنان</th><th>مسافة طريق</th><th>زمن وسيط (س)</th></tr></thead><tbody>'+R.edges.slice(0,15).map(function(e){ return '<tr'+(e.suspect?' style="background:rgba(220,38,38,.08)"':'')+'><td>'+esc(e.from)+' ← '+esc(e.to)+(e.suspect?' '+inChip('راجع الإحداثيات','bad'):'')+'</td><td>'+e.n+'</td><td>'+e.tons+'</td><td>'+(e.km===null?'—':e.km+' كم')+'</td><td>'+(e.medHours===null?'—':Math.round(e.medHours*10)/10)+'</td></tr>'; }).join('')+'</tbody></table></div>'+
+      (R.suspects.length?'<div class="lint warn"><span>⚠</span><span class="grow">'+R.suspects.length+' مسار أسرع رحلة فيه تتطلب أكثر من 110 كم/س — أحد طرفيه غالبًا بإحداثيات خاطئة.</span></div>':'')+
+      '<h4>أدوار الأماكن</h4><div class="tblwrap"><table class="tbl"><thead><tr><th>المكان</th><th>الدور</th><th>أكثر وجهاته</th><th>أكثر مصادره</th></tr></thead><tbody>'+R.places.slice(0,10).map(function(p){ return '<tr><td>'+esc(p.name)+' <small>('+p.n+')</small></td><td>'+esc(p.role)+'</td><td>'+esc(p.topOut.map(function(x){ return x.name+' ('+x.n+')'; }).join('، '))+'</td><td>'+esc(p.topIn.map(function(x){ return x.name+' ('+x.n+')'; }).join('، '))+'</td></tr>'; }).join('')+'</tbody></table></div></div>';
+    return h;
+  }
+  function inLinks(){
+    var I=A.pl.intel, items=[], L=A.S.places.list;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-a="plx-in-row"]'),function(el){ if(el.value.trim()) items.push({name:el.getAttribute('data-n'),url:el.value.trim()}); });
+    String(I.txt||'').split(/\n/).forEach(function(l){ var m=l.split(/\s*[|\t]\s*/); if(m.length>=2&&m[0].trim()&&m[1].trim()) items.push({name:m[0].trim(),url:m.slice(1).join('|').trim()}); });
+    if(!items.length){ I.msg='الصق رابطًا أو إحداثيات أولًا'; aRender(); return; }
+    var local=[], remote=[];
+    items.forEach(function(it){ if(/^https?:/i.test(it.url)){ remote.push(it); return; } var g=geoParse(it.url); if(g) local.push({name:it.name,ok:true,lat:g.lat,lng:g.lng}); else local.push({name:it.name,err:true}); });
+    function finish(res){
+      var okN=0, bad=[];
+      res.forEach(function(r){ if(r.err||!r.ok){ bad.push(r.name); return; }
+        var rec=plRec(r.name); if(!rec||L.indexOf(rec)<0){ var k=plAddPlace(r.name); rec=k===null?null:L[k]; }
+        if(rec){ inSetGps(rec,r.lat,r.lng,'exact',''); okN++; } });
+      PLIDX=null; if(okN) touch(); I.busy=false; I.txt=''; I.msg='✓ اتحدد موقع '+okN+' مكان'+(bad.length?' · تعذر: '+bad.join('، '):'')+(okN?' — احفظ الإعدادات لتثبيتها':''); aRender();
+    }
+    if(!remote.length){ finish(local); return; }
+    if(needPin(function(m){ I.msg=m; aRender(); })) return;
+    I.busy=true; I.msg=''; aRender();
+    srv('api_geoResolve',[remote,pinVal()],function(r){ finish(local.concat(r.results||[])); },function(m){ I.busy=false; I.msg='تعذر حل الروابط: '+m; local.length?finish(local):aRender(); });
+  }
+  function inClick(t,a,S){
+    var I=A.pl.intel, d=INC||inData(), i=t.dataset.i!==undefined?+t.dataset.i:-1, L=S.places.list;
+    function done(msg){ PLIDX=null; touch(); I.msg=msg; aRender(); }
+    if(a==='plx-in-links'){ inLinks(); return true; }
+    if(a==='plx-in-alias'||a==='plx-in-near'||a==='plx-in-new'){
+      var s=d.sg[i]; if(!s) return true;
+      if(a==='plx-in-alias'){ var r1=plRec(s.target); if(r1){ inAddAliases(r1,s.members.map(function(m){ return m.name; })); done('✓ أُضيفت صيغ «'+s.target+'»'); } }
+      else if(a==='plx-in-near'){ var r2=plRec(s.near.name); if(r2){ inAddAliases(r2,s.members.map(function(m){ return m.name; })); done('✓ أُضيفت كصيغ لـ «'+s.near.name+'»'); } }
+      else { var k=plAddPlace(s.target), r3=k===null?null:L[k]; if(r3){ inAddAliases(r3,s.members.map(function(m){ return m.name; })); if(s.gaz&&!plHasGps(r3)) inSetGps(r3,s.gaz.lat,s.gaz.lng,'approx','مستنتج: '+s.gaz.why); done('✓ أُضيف «'+s.target+'»'); } }
+      return true;
+    }
+    if(a==='plx-in-alias-all'){ var n=0; d.sg.forEach(function(s){ if(s.type==='alias'){ var r=plRec(s.target); if(r){ inAddAliases(r,s.members.map(function(m){ return m.name; })); n++; } } }); done('✓ طُبّقت '+n+' صيغة'); return true; }
+    if(a==='plx-in-inf'||a==='plx-in-inf-all'){
+      var list=a==='plx-in-inf'?[d.I[i]]:d.I.filter(function(x){ return x.conf>=0.5; }), c=0;
+      list.forEach(function(x){ var r=x&&plRec(x.name); if(r&&!plHasGps(r)){ inSetGps(r,x.lat,x.lng,'approx','مستنتج: '+x.why); c++; } });
+      done('✓ اتحدد موقع تقريبي لـ '+c+' مكان'); return true;
+    }
+    if(a==='plx-in-merge'){
+      var m=d.DUP[i], ra=m&&plRec(m.a), rb=m&&plRec(m.b);
+      if(ra&&rb&&ra!==rb){ inAddAliases(ra,[rb.name].concat(rb.aliases||[])); ['kind','address','region','scale'].forEach(function(f){ if(!ra[f]&&rb[f]) ra[f]=rb[f]; }); if(!plHasGps(ra)&&plHasGps(rb)){ ra.lat=rb.lat; ra.lng=rb.lng; ra.geoQ=rb.geoQ; } L.splice(L.indexOf(rb),1); A.pl.open={}; done('✓ دُمج «'+m.b+'» في «'+m.a+'»'); }
+      return true;
+    }
+    return false;
+  }
+  function inChange(t,a){ if(a==='plx-in-txt'){ A.pl.intel.txt=t.value; return true; } if(a==='plx-in-row') return true; return false; }
+
     /* ================= دفتر الأسعار: استيراد ملف الأسعار من درايف + تحذيرات + تجربة سعر ================= */
   A.book={busy:false,msg:'',test:null};
   function bookSt(){ return D.book||null; }
@@ -3728,7 +4255,23 @@ function api_expenseDelete(id, pin) {
     srv(name,args,function(r){ A.book.busy=false; if(r&&r.book) D.book=r.book; A.book.msg=okMsg(r); aRender(); if(r&&r.book) reload(); },
       function(m){ A.book.busy=false; A.book.msg='تعذر التنفيذ: '+m; aRender(); });
   }
+  function bkMinDef(){ return {enabled:true,bigFromTon:1.5,jumboLarge:{trailer:20,tractor:24},jumboSmall:{trailer:24,tractor:28},ton:{trailer:40,tractor:45}}; }
+  function bkMinBox(B){
+    var M=B.minimums=B.minimums||bkMinDef(), inp=function(g,v,k){ return '<input class="inp" style="width:70px" type="number" min="0" step="any" data-a="book-min" data-g="'+g+'" data-v="'+v+'" value="'+(g==='bigFromTon'?M.bigFromTon:M[g][v])+'">'; };
+    return '<div class="box"><h3>الحد الأدنى للحساب</h3><label class="chk"><input type="checkbox" data-a="book-min-on"'+(M.enabled!==false?' checked':'')+'> تطبيق الحد الأدنى عند التسعير من الدفتر</label>'+
+      '<table class="tbl" style="margin-top:8px"><thead><tr><th>الحمولة</th><th>تريلا</th><th>جرار</th></tr></thead><tbody>'+
+      '<tr><td>جامب كبير (عدد)</td><td>'+inp('jumboLarge','trailer')+'</td><td>'+inp('jumboLarge','tractor')+'</td></tr>'+
+      '<tr><td>جامب صغير (عدد)</td><td>'+inp('jumboSmall','trailer')+'</td><td>'+inp('jumboSmall','tractor')+'</td></tr>'+
+      '<tr><td>بالطن (صب/غير شكاير)</td><td>'+inp('ton','trailer')+'</td><td>'+inp('ton','tractor')+'</td></tr></tbody></table>'+
+      '<p class="sub">الجامب يُعدّ «كبيرًا» لو متوسط وزنه ≥ <b>'+inp('bigFromTon','')+'</b> طن. أي حمولة فيها شكاير تُحسب بالطن بدون حد أدنى. احفظ الإعدادات لتطبيق التغيير.</p></div>';
+  }
   function bookAct(a){
+    if(a==='book-gap'){
+      var gc=priceGapCsv_(D.trips||[]);
+      if(!gc){ A.book.msg='كل الرحلات مسعّرة — مفيش حاجة ناقصة'; aRender(); return true; }
+      try{ var bb=new Blob(['\ufeff'+gc],{type:'text/csv;charset=utf-8'}), uu=URL.createObjectURL(bb), ee=document.createElement('a'); ee.href=uu; ee.download='اسعار-ناقصة.csv'; document.body.appendChild(ee); ee.click(); setTimeout(function(){ document.body.removeChild(ee); URL.revokeObjectURL(uu); },500); }catch(e){}
+      return true;
+    }
     if(a==='book-import'||a==='book-add'){ bookCall('api_bookImport',[(document.getElementById('bookFile')||{}).value||'',pinVal(),a==='book-add'?'add':'replace'],function(r){ var b=r.book&&r.book.meta||{}; return '✓ تم استيراد '+(b.total||0)+' سعر من '+((b.sheets||[]).length)+' شيت، وأُعيد بناء '+(r.trips||0)+' رحلة'; }); return true; }
     if(a==='book-test'){
       if(needPin(function(m){ A.book.msg=m; aRender(); })) return true;
@@ -3740,20 +4283,21 @@ function api_expenseDelete(id, pin) {
     return false;
   }
   function rBook(){
-    var b=bookSt(), B=(A.S.book=A.S.book||{enabled:true,combine:'max',approx:true,disabled:[]}), m=b&&b.meta;
+    var b=bookSt(), B=(A.S.book=A.S.book||{enabled:true,combine:'max',approx:true,byDistance:true,minimums:bkMinDef(),disabled:[]}), m=b&&b.meta;
     var h='<h2>دفتر الأسعار</h2><p class="lead">ملف الأسعار (Excel أو Google Sheet) يتحوّل لدفتر أسعار يُسعّر به النظام الرحلات تلقائيًا. الأولوية: السعر اليدوي ← القواعد ← الدفتر. الرحلة المسعّرة بالدفتر يظهر فيها اسم الشيت والمسار.</p>';
     if(A.book.msg) h+='<div class="pv"><b>'+esc(A.book.msg)+'</b></div>';
     h+='<div class="box"><h3>استيراد ملف الأسعار</h3><div class="row" style="align-items:flex-end"><label class="fld" style="min-width:300px;flex:1">رابط أو معرّف الملف في درايف<input id="bookFile" placeholder="https://drive.google.com/file/d/…"></label><button class="abtn pri" data-a="book-import"'+(A.book.busy?' disabled':'')+'>استيراد واستبدال الدفتر</button><button class="abtn" data-a="book-add"'+(A.book.busy?' disabled':'')+' title="يضيف الجداول من ملف آخر ويُبقي الباقي">إضافة ملف آخر (دمج)</button></div><p class="sub">ارفع الملف على درايف وشاركه مع حساب النظام ثم الصق رابطه. يقبل ملف الحسابات الأصلي والملف المرتَّب (دليل الأسعار). «استبدال» يمسح الدفتر ويبدأ من الملف ده، و«إضافة» يدمجه مع اللي موجود.</p></div>';
     if(!m) return h+'<div class="box"><p class="sub">لم يُستورد دفتر أسعار بعد.</p></div>';
     h+='<div class="box"><h3>الحالة</h3><div class="kvg"><div><small>الملف</small><b>'+esc(m.file||'')+'</b></div><div><small>عدد الأسعار</small><b>'+(m.total||0)+'</b></div><div><small>شيتات مستوردة</small><b>'+(m.sheets||[]).length+'</b></div><div><small>تنبيهات على الأسعار</small><b>'+(m.nWarnings||0)+'</b></div><div><small>تعريفات قديمة لم تُستورد</small><b>'+(m.oldSkipped||0)+'</b></div></div>'+
-      '<div class="row" style="margin-top:10px"><label class="chk"><input type="checkbox" data-a="book-on"'+(B.enabled!==false?' checked':'')+'> تفعيل التسعير من الدفتر</label><label class="chk"><input type="checkbox" data-a="book-approx"'+(B.approx!==false?' checked':'')+'> تسعير تقديري (تشابه إملائي / عكس الاتجاه) — يظهر كـ«تقدير»</label><label class="fld">لو سعر الطن وسعر الجامب مختلفين<select data-a="book-comb"><option value="max"'+(B.combine!=='min'?' selected':'')+'>الأعلى</option><option value="min"'+(B.combine==='min'?' selected':'')+'>الأقل</option></select></label></div>'+(A.dirty?'<p class="sub">احفظ الإعدادات لتطبيق التغيير.</p>':'')+'</div>';
+      '<div class="row" style="margin-top:10px"><label class="chk"><input type="checkbox" data-a="book-on"'+(B.enabled!==false?' checked':'')+'> تفعيل التسعير من الدفتر</label><label class="chk"><input type="checkbox" data-a="book-approx"'+(B.approx!==false?' checked':'')+'> تسعير تقديري (تشابه إملائي / عكس الاتجاه) — يظهر كـ«تقدير»</label><label class="chk"><input type="checkbox" data-a="book-dist"'+(B.byDistance!==false?' checked':'')+'> تقدير بالمسافة (يحتاج إحداثيات الأماكن)</label><label class="fld">لو سعر الطن وسعر الجامب مختلفين<select data-a="book-comb"><option value="max"'+(B.combine!=='min'?' selected':'')+'>الأعلى</option><option value="min"'+(B.combine==='min'?' selected':'')+'>الأقل</option></select></label></div>'+(A.dirty?'<p class="sub">احفظ الإعدادات لتطبيق التغيير.</p>':'')+'</div>';
+    h+=bkMinBox(B);
     h+='<div class="box"><h3>الشيتات</h3><div class="tblwrap"><table class="tbl"><thead><tr><th>استخدام</th><th>الشيت</th><th>أسعار</th><th>من</th><th>آخر سريان</th></tr></thead><tbody>'+(m.sheets||[]).map(function(s){ var off=(B.disabled||[]).indexOf(s.name)>=0; return '<tr><td><input type="checkbox" data-a="book-sheet" data-n="'+attr(s.name)+'"'+(off?'':' checked')+'></td><td><b>'+esc(s.name)+'</b></td><td>'+s.count+'</td><td>'+esc(s.from||'—')+'</td><td>'+esc(s.last||'—')+'</td></tr>'; }).join('')+'</tbody></table></div>'+((m.skipped||[]).length?'<p class="sub">شيتات مُتخطّاة: '+(m.skipped||[]).map(esc).join(' · ')+'</p>':'')+'</div>';
     if((m.warnings||[]).length) h+='<div class="box"><h3>أسعار تحتاج مراجعة في الملف ('+(m.nWarnings||0)+')</h3><p class="sub">قفزات كبيرة بين فترتين لنفس المسار — غالبًا خطأ إدخال في الملف الأصلي.</p><ul class="lst">'+m.warnings.slice(0,40).map(function(w){ return '<li>'+esc(typeof w==='string'?w:(w.sheet+' · '+w.from+' ← '+w.to+(w.veh?' ('+w.veh+')':'')+' : '+w.was+' ← '+w.now+(w.at?' من '+w.at:'')))+'</li>'; }).join('')+'</ul></div>';
     if((m.fees||[]).length) h+='<div class="box"><h3>دليل الرسوم (مرجع فقط — لا يدخل في التسعير)</h3><div class="tblwrap"><table class="tbl"><thead><tr><th>الموقع</th><th>المرحلة</th><th>النوع</th><th>القيمة</th></tr></thead><tbody>'+m.fees.map(function(f){ return '<tr><td>'+esc(f.place)+'</td><td>'+esc(f.stage)+'</td><td>'+esc(f.type)+'</td><td>'+esc(f.value)+'</td></tr>'; }).join('')+'</tbody></table></div></div>';
     if((m.rules||[]).length) h+='<div class="box"><h3>قواعد وإعدادات الحسابات (مرجع)</h3><ul class="lst">'+m.rules.map(function(x){ return '<li><b>'+esc(x.k)+'</b>: '+esc(String(x.v))+(x.note?'<div class="sub">'+esc(x.note)+'</div>':'')+'</li>'; }).join('')+'</ul></div>';
     var CV=computePriceCoverage_((D.trips||[]));
     h+='<div class="box"><h3>تغطية التسعير</h3><div class="kvg"><div><small>رحلات (غير الجارية)</small><b>'+CV.total+'</b></div><div><small>مسعّرة</small><b>'+CV.pricedPct+'٪</b></div><div><small>بسعر يدوي</small><b>'+CV.sources.manual+'</b></div><div><small>بقواعد</small><b>'+CV.sources.rules+'</b></div><div><small>من الدفتر</small><b>'+CV.sources.book+'</b></div><div><small>تقدير</small><b>'+(CV.sources.est||0)+'</b></div><div><small>بلا سعر</small><b>'+CV.unpriced+'</b></div><div><small>مكانها يحتاج مراجعة</small><b>'+CV.noPlace+'</b></div></div>'+
-      (CV.topUnpriced.length?'<h4>أكثر المسارات بلا سعر ('+CV.unpricedRoutes+' مسار)</h4><div class="tblwrap"><table class="tbl"><thead><tr><th>المسار [السيارة]</th><th>رحلات</th><th>أطنان</th><th>السبب</th></tr></thead><tbody>'+CV.topUnpriced.map(function(g){ return '<tr><td>'+esc(g.route)+'</td><td>'+g.trips+'</td><td>'+g.tons+'</td><td class="sub">'+esc(g.why)+'</td></tr>'; }).join('')+'</tbody></table></div><p class="sub">أضف سعر المسار في ملف الأسعار وأعد الاستيراد، أو اكتب سعر يدوي للكارتة من «مراجعة وتعديل يدوي».</p>':'<p class="sub">كل الرحلات المعروضة مسعّرة أو مكانها يحتاج مراجعة.</p>')+'</div>';
+      (CV.topUnpriced.length?'<div class="row" style="align-items:center"><h4 style="margin:0">أكثر المسارات بلا سعر ('+CV.unpricedRoutes+' مسار)</h4><span style="flex:1"></span><button class="abtn" data-a="book-gap">تنزيل قالب الأسعار الناقصة (CSV)</button></div><div class="tblwrap"><table class="tbl"><thead><tr><th>المسار [السيارة]</th><th>رحلات</th><th>أطنان</th><th>السبب</th></tr></thead><tbody>'+CV.topUnpriced.map(function(g){ return '<tr><td>'+esc(g.route)+'</td><td>'+g.trips+'</td><td>'+g.tons+'</td><td class="sub">'+esc(g.why)+'</td></tr>'; }).join('')+'</tbody></table></div><p class="sub">أضف سعر المسار في ملف الأسعار وأعد الاستيراد، أو اكتب سعر يدوي للكارتة من «مراجعة وتعديل يدوي».</p>':'<p class="sub">كل الرحلات المعروضة مسعّرة أو مكانها يحتاج مراجعة.</p>')+'</div>';
     h+='<div class="box"><h3>جرّب سعر</h3><div class="row" style="align-items:flex-end"><label class="fld">من<input id="bkFrom"></label><label class="fld">إلى<input id="bkTo"></label><label class="fld">نوع السيارة<input id="bkVeh" placeholder="تريلا / جامبو…"></label><label class="fld">الوزن (طن)<input id="bkW" inputmode="decimal"></label><label class="fld">عدد الجامبو<input id="bkP" inputmode="numeric"></label><label class="fld">التاريخ<input id="bkD" placeholder="2026-09-15"></label><label class="fld">نوع الصنف<input id="bkT" placeholder="تقاوي / محصول"></label><button class="abtn" data-a="book-test"'+(A.book.busy?' disabled':'')+'>احسب</button></div>';
     var t=A.book.test; if(t) h+='<div class="lkres">'+(t.error?'<span class="chip2 bad">'+esc(t.error)+'</span>':t.none?'<span class="chip2">لا يوجد سعر مطابق في الدفتر</span>':'<b>'+t.price+' ج.م</b> <span class="sub">'+esc(t.label)+'</span>')+'</div>';
     return h+'</div>';
@@ -3768,11 +4312,11 @@ function api_expenseDelete(id, pin) {
   function rSettle(){
     var R=stData(), EX=expSummary_(D.expenses||[],D.trips||[]), exBy={}; EX.list.forEach(function(g){ exBy[g.contractor]=g; }); var h='<h2>مستخلص المقاول</h2><p class="lead">مستحقات كل مقاول عن فترة: عدد الرحلات والأطنان ومجموع الأسعار. الرحلات الملغاة والمرفوضة والجارية لا تدخل، والرحلات بلا سعر تُعدّ ولا تُقدَّر. يُحسب من الرحلات المحمّلة في الصفحة (راجع «حدود العرض» لو الفترة طويلة).</p>';
     h+='<div class="box"><div class="row" style="align-items:flex-end"><label class="fld">من<input data-a="st-from" value="'+attr(A.st.from)+'" placeholder="2026-09-01"></label><label class="fld">إلى<input data-a="st-to" value="'+attr(A.st.to)+'" placeholder="2026-09-30"></label><label class="chk" style="align-self:center"><input type="checkbox" data-a="st-arc"'+(A.st.arc?' checked':'')+'> تضمين الأرشيف</label></div>'+(A.st.arcMsg?'<p class="sub">'+esc(A.st.arcMsg)+'</p>':'')+''+
-      '<div class="kvg" style="margin-top:10px"><div><small>رحلات</small><b>'+R.total.trips+'</b></div><div><small>أطنان</small><b>'+stFmt(R.total.tons)+'</b></div><div><small>المبلغ</small><b>'+stFmt(R.total.amount)+'</b></div><div><small>بلا سعر</small><b>'+R.total.unpriced+'</b></div><div><small>أسعار يدوية</small><b>'+R.total.manual+'</b></div></div></div>';
-    h+='<div class="box"><h3>المقاولون ('+R.contractors.length+')</h3>'+(R.contractors.length?'<div class="tblwrap"><table class="tbl"><thead><tr><th>المقاول</th><th>رحلات</th><th>أطنان</th><th>المبلغ</th><th>بلا سعر</th><th>غرامات عليه</th><th></th></tr></thead><tbody>'+R.contractors.map(function(g){ return '<tr><td>'+esc(g.name)+'</td><td>'+g.trips+'</td><td>'+stFmt(g.tons)+'</td><td>'+stFmt(g.amount)+'</td><td>'+(g.unpriced?'<span class="chip2 bad">'+g.unpriced+'</span>':'0')+'</td><td>'+(exBy[g.name]&&exBy[g.name].onContractor?stFmt(exBy[g.name].onContractor):'—')+'</td><td><button class="abtn sm" data-a="st-pick" data-n="'+attr(g.name)+'">التفاصيل</button></td></tr>'; }).join('')+'</tbody></table></div>':'<div class="empty">لا توجد رحلات في هذه الفترة.</div>')+'</div>';
+      '<div class="kvg" style="margin-top:10px"><div><small>رحلات</small><b>'+R.total.trips+'</b></div><div><small>أطنان</small><b>'+stFmt(R.total.tons)+'</b></div><div><small>المبلغ</small><b>'+stFmt(R.total.amount)+'</b></div>'+(R.total.est?'<div><small>منه تقديري</small><b>'+stFmt(R.total.est)+'</b></div>':'')+'<div><small>بلا سعر</small><b>'+R.total.unpriced+'</b></div><div><small>أسعار يدوية</small><b>'+R.total.manual+'</b></div></div></div>';
+    h+='<div class="box"><div class="row" style="align-items:center"><h3 style="margin:0">المقاولون ('+R.contractors.length+')</h3><span style="flex:1"></span><button class="abtn" data-a="st-week">الأسبوع الماضي (سبت–جمعة)</button><button class="abtn pri" data-a="st-all">تنزيل تقرير كل المقاولين CSV</button></div>'+(R.contractors.length?'<div class="tblwrap"><table class="tbl"><thead><tr><th>المقاول</th><th>رحلات</th><th>أطنان</th><th>المبلغ</th><th>بلا سعر</th><th>غرامات عليه</th><th></th></tr></thead><tbody>'+R.contractors.map(function(g){ return '<tr><td>'+esc(g.name)+'</td><td>'+g.trips+'</td><td>'+stFmt(g.tons)+'</td><td>'+stFmt(g.amount)+'</td><td>'+(g.unpriced?'<span class="chip2 bad">'+g.unpriced+'</span>':'0')+'</td><td>'+(exBy[g.name]&&exBy[g.name].onContractor?stFmt(exBy[g.name].onContractor):'—')+'</td><td><button class="abtn sm" data-a="st-pick" data-n="'+attr(g.name)+'">التفاصيل</button></td></tr>'; }).join('')+'</tbody></table></div>':'<div class="empty">لا توجد رحلات في هذه الفترة.</div>')+'</div>';
     var g=R.selected;
     if(g){
-      h+='<div class="box"><div class="row" style="align-items:center"><h3 style="margin:0">'+esc(g.name)+'</h3><span style="flex:1"></span><button class="abtn pri" data-a="st-csv">تنزيل المستخلص CSV</button></div>'+
+      h+='<div class="box"><div class="row" style="align-items:center"><h3 style="margin:0">'+esc(g.name)+'</h3><span style="flex:1"></span><button class="abtn" data-a="st-print">طباعة / PDF</button><button class="abtn pri" data-a="st-csv">تنزيل المستخلص CSV</button></div>'+
         '<h4>حسب المسار</h4><div class="tblwrap"><table class="tbl"><thead><tr><th>المسار</th><th>رحلات</th><th>أطنان</th><th>المبلغ</th><th>بلا سعر</th></tr></thead><tbody>'+g.routeList.map(function(r){ return '<tr><td>'+esc(r.route)+'</td><td>'+r.trips+'</td><td>'+stFmt(r.tons)+'</td><td>'+stFmt(r.amount)+'</td><td>'+r.unpriced+'</td></tr>'; }).join('')+'</tbody></table></div>'+
         '<h4>الرحلات ('+g.lines.length+')</h4><div class="tblwrap"><table class="tbl"><thead><tr><th>التاريخ</th><th>كارتة</th><th>السيارة</th><th>المسار</th><th>الوزن</th><th>السعر</th><th>المصدر</th></tr></thead><tbody>'+g.lines.slice(0,300).map(function(l){ return '<tr><td class="ph">'+esc(l.date)+'</td><td class="ph">'+esc(l.card)+'</td><td>'+esc(l.plate||'—')+'</td><td>'+esc(l.route)+'</td><td>'+stFmt(l.weight)+'</td><td>'+stFmt(l.price)+'</td><td class="sub">'+esc(l.rule||'')+'</td></tr>'; }).join('')+'</tbody></table></div>'+(g.lines.length>300?'<p class="sub">المعروض أول 300 رحلة؛ ملف CSV فيه الكل.</p>':'')+'</div>';
     }
@@ -3780,6 +4324,19 @@ function api_expenseDelete(id, pin) {
   }
   function stAct(a,t){
     if(a==='st-pick'){ A.st.who=t.dataset.n; aRender(); return true; }
+    if(a==='st-all'){
+      var Rs=stData(), csv=settlementAllCsv_(Rs,expSummary_(D.expenses||[],D.trips||[]));
+      try{ var b2=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}), u2=URL.createObjectURL(b2), e2=document.createElement('a'); e2.href=u2; e2.download='تقرير-المقاولين-'+(Rs.from||'كل')+'_'+(Rs.to||'الفترات')+'.csv'; document.body.appendChild(e2); e2.click(); setTimeout(function(){ document.body.removeChild(e2); URL.revokeObjectURL(u2); },500); }catch(e){}
+      return true;
+    }
+    if(a==='st-week'){ var dn=new Date(), dow=(dn.getDay()+1)%7, end=new Date(dn.getTime()-(dow+1)*864e5), st=new Date(end.getTime()-6*864e5), iso=function(x){ return x.getFullYear()+'-'+('0'+(x.getMonth()+1)).slice(-2)+'-'+('0'+x.getDate()).slice(-2); }; A.st.from=iso(st); A.st.to=iso(end); aRender(); return true; }
+    if(a==='st-print'){
+      var gp=stData().selected; if(!gp) return true;
+      var fl=(D.expenses||[]).filter(function(x){ var tr=(D.trips||[]).filter(function(q){ return String(q.card)===String(x.card); })[0]; return tr&&tr.contractor===gp.name; });
+      var html=settlementHtml_(gp,fl,{from:A.st.from,to:A.st.to,company:'DALTEX'});
+      try{ var w=window.open('','_blank'); if(w){ w.document.open(); w.document.write(html); w.document.close(); setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} },400); } else { A.st.arcMsg='المتصفح منع النافذة — اسمح بالنوافذ المنبثقة'; aRender(); } }catch(e){}
+      return true;
+    }
     if(a==='st-csv'){
       var g=stData().selected; if(!g) return true;
       try{ var b=new Blob(['﻿'+settlementCsv_(g)],{type:'text/csv;charset=utf-8'}), u=URL.createObjectURL(b), el=document.createElement('a'); el.href=u; el.download='مستخلص-'+g.name+'.csv'; document.body.appendChild(el); el.click(); setTimeout(function(){ document.body.removeChild(el); URL.revokeObjectURL(u); },500); }catch(e){}
@@ -3791,10 +4348,26 @@ function api_expenseDelete(id, pin) {
     /* ================= قراءة صور المستندات (Gemini) ================= */
   A.dc={items:[],busy:false,msg:''};
   var DCF=[['card','كارتة الشحن'],['paper','الكارتة الورقية'],['op','رقم العملية'],['date','التاريخ'],['plate','السيارة'],['trailer','المقطورة'],['driver','السائق'],['contractor','المقاول'],['from','من'],['to','إلى'],['crop','المحصول'],['variety','الصنف'],['itemType','نوع الصنف'],['pack','التعبئة'],['count','العدد'],['grossKg','الإجمالي (كجم)'],['tareKg','الفارغ (كجم)'],['netKg','الصافي (كجم)'],['deductionKg','الخصم (كجم)'],['amount','المبلغ (ج.م)'],['issuer','الجهة']];
+  /* تحسين خفيف للصورة: تمديد التباين (ضبط المستويات) ليظهر الحبر الباهت وخط اليد */
+  function dcEnhance(cx,w,h){
+    var im=cx.getImageData(0,0,w,h), d=im.data, hist=new Array(256).fill(0), i, n=d.length/4;
+    for(i=0;i<d.length;i+=4) hist[(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)|0]++;
+    var lo=0,hi=255,acc=0; while(lo<255&&acc+hist[lo]<n*0.01){ acc+=hist[lo]; lo++; } acc=0; while(hi>0&&acc+hist[hi]<n*0.01){ acc+=hist[hi]; hi--; }
+    if(hi-lo<40||hi-lo>235) return;
+    var k=255/(hi-lo);
+    for(i=0;i<d.length;i+=4){ d[i]=Math.max(0,Math.min(255,(d[i]-lo)*k)); d[i+1]=Math.max(0,Math.min(255,(d[i+1]-lo)*k)); d[i+2]=Math.max(0,Math.min(255,(d[i+2]-lo)*k)); }
+    cx.putImageData(im,0,0);
+  }
+  /* قواميس الأسماء المعروفة من بيانات النظام لتصحيح ما تقرؤه الصورة */
+  function dcDict(){
+    var all=(D.trips||[]).concat(D.live||[]), u=function(f){ var m={},o=[]; all.forEach(function(t){ var v=t[f]; if(v&&!m[v]){ m[v]=1; o.push(v); } }); return o; };
+    var pl=u('loadPlace').concat(u('unloadPlace')).filter(function(v,i,a){ return a.indexOf(v)===i; });
+    return {contractor:u('contractor'),driver:u('driver'),from:pl,to:pl,plate:u('plate')};
+  }
   function dcShrink(file,cb,fail){
     var fr=new FileReader(); fr.onerror=function(){ fail('تعذرت قراءة الملف'); };
     fr.onload=function(){ var im=new Image(); im.onerror=function(){ fail('الملف ليس صورة صالحة'); };
-      im.onload=function(){ var mx=1800, k=Math.min(1,mx/Math.max(im.width,im.height)), c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext('2d').drawImage(im,0,0,c.width,c.height); cb(c.toDataURL('image/jpeg',0.85).split(',')[1]); };
+      im.onload=function(){ var mx=2400, k=Math.min(1,mx/Math.max(im.width,im.height)), c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); var cx=c.getContext('2d'); cx.drawImage(im,0,0,c.width,c.height); try{ dcEnhance(cx,c.width,c.height); }catch(e){} cb(c.toDataURL('image/jpeg',0.9).split(',')[1]); };
       im.src=fr.result; };
     fr.readAsDataURL(file);
   }
@@ -3806,7 +4379,7 @@ function api_expenseDelete(id, pin) {
       var it={name:f.name||'صورة',status:'wait',doc:null,matches:[],err:''}; A.dc.items.unshift(it); aRender();
       dcShrink(f,function(b64){
         it.status='run'; aRender();
-        srv('api_docRead',[b64,'image/jpeg',pinVal()],function(r){ it.status='ok'; it.doc=r.doc; it.matches=docMatchTrips_(r.doc,(D.trips||[]).concat(D.live||[])); aRender(); },
+        srv('api_docRead',[b64,'image/jpeg',pinVal()],function(r){ it.status='ok'; it.doc=docSnap_(r.doc,dcDict()); it.matches=docMatchTrips_(it.doc,(D.trips||[]).concat(D.live||[])); aRender(); },
           function(m){ it.status='err'; it.err=m; aRender(); });
       },function(m){ it.status='err'; it.err=m; aRender(); });
     });
@@ -3826,7 +4399,7 @@ function api_expenseDelete(id, pin) {
     var h='<div class="box"><div class="row" style="align-items:center"><b>'+esc(it.name)+'</b><span style="flex:1"></span>'+(it.status==='ok'?'<span class="chip2">'+esc(DOC_KINDS_[it.doc.kind]||'')+'</span>':'')+'</div>';
     if(it.status==='wait'||it.status==='run') return h+'<p class="sub">جارٍ '+(it.status==='wait'?'تجهيز':'قراءة')+' الصورة…</p></div>';
     if(it.status==='err') return h+'<p class="sub"><span class="chip2 bad">'+esc(it.err)+'</span></p></div>';
-    var d=it.doc, cells=DCF.filter(function(f){ return d[f[0]]!==''&&d[f[0]]!==undefined; }).map(function(f){ return '<div><small>'+f[1]+'</small><b>'+esc(String(d[f[0]]))+'</b></div>'; }).join('');
+    var d=it.doc, cells=DCF.filter(function(f){ return d[f[0]]!==''&&d[f[0]]!==undefined; }).map(function(f){ var un=(d.unsure||[]).indexOf(f[0])>=0, sn=d.snapped&&d.snapped[f[0]]; return '<div><small>'+f[1]+(un?' ⚠':'')+(sn?' ✎':'')+'</small><b'+(un?' style="color:#b45309"':'')+(sn?' title="كانت: '+esc(sn.was)+'"':'')+'>'+esc(String(d[f[0]]))+'</b></div>'; }).join('');
     h+='<div class="kvg">'+(cells||'<div><small>لم تُقرأ حقول</small><b>—</b></div>')+'</div>';
     (d.flags||[]).forEach(function(x){ h+='<div class="lint warn"><span>⚠</span><span class="grow">'+esc(x)+'</span></div>'; });
     if(d.netTons!==''){
