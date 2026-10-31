@@ -1844,14 +1844,48 @@ function ecApplyPatch(q, patch, S) {
       '<div class="row" style="gap:10px;margin-top:8px;align-items:flex-end"><label class="fld2" style="min-width:240px">اسم القاعدة<input data-a="pk-label" value="'+attr(A.pk.label)+'" placeholder="مثال: أسعار العبوات العامة"></label><label class="fld2" style="min-width:220px">لمقاول محدد (اختياري)<input list="dlCo" data-a="pk-co" value="'+attr(A.pk.contractor)+'"></label><button class="abtn pri" data-a="pk-make">إنشاء القاعدة من الأسعار المكتوبة</button><button class="abtn" data-a="pk-close">إغلاق</button></div></div>';
     return h;
   }
+  function prPriceTxt(r){
+    if(r.parts&&r.parts.length) return (r.parts.length>1?({sum:'مجموع: ',max:'الأعلى من: ',min:'الأقل من: '}[r.combine||'sum']):'')+r.parts.map(function(x){ return x.price+({trip:' للرحلة',ton:' للطن',pkg:' للعبوة'}[x.unit]); }).join(' · ')+' ج.م';
+    return r.price+' ج.م '+({trip:'للرحلة',ton:'للطن',pkg:'للعبوة'}[r.unit])+(r.mode==='add'?' (إضافة)':'');
+  }
+  /* لوحة موحّدة: القواعد التلقائية + قواعد العقد السارية + مجموعات الدفتر (ملخص قابل للتعديل من مكانه) */
+  function prBoard(){
+    var P=A.S.pricing, C=A.S.contract||{}, G=(A.S.places&&A.S.places.groups)||[], auto=P.rules.filter(function(r){return r.auto}).length, off=P.rules.filter(function(r){return !r.enabled}).length;
+    var h='<div class="box"><h3>لوحة القواعد</h3><div class="kvg"><div><small>قواعد تلقائية</small><b>'+auto+'</b></div><div><small>قواعدك اليدوية</small><b>'+(P.rules.length-auto)+'</b></div><div><small>معطّلة</small><b>'+off+'</b></div><div><small>مجموعات الدفتر</small><b>'+G.length+'</b></div></div>'+
+      '<div class="row" style="margin-top:10px;gap:8px;align-items:center"><button class="abtn pri" data-a="pr-regen"'+((A.book&&A.book.busy)?' disabled':'')+'>إعادة توليد القواعد التلقائية من الدفتر</button><span class="sub" style="margin:0">ترتيب التسعير: سعر يدوي ← قاعدة ← دفتر الأسعار (مطابقة بالاسم ← مجموعات الدفتر ← تقدير). احفظ التعديلات قبل إعادة التوليد.</span></div></div>';
+    if(!C.detour) return h;
+    var sw=function(p){ return swIn(p,''); }, n=function(p,v){ return inp(p,'n',v,'0'); };
+    var rows=[
+      ['التحويلة بحري ↔ العوينات (مستلزمات/أسمدة بتريلا/جرار عبر مريم)',sw('contract.detour.enabled'),n('contract.detour.amount',C.detour.amount)+' ج.م'],
+      ['المبيت (بعد '+C.overnight.fromHours+' ساعة انتظار، لكل ليلة) — تريلا/جرار',sw('contract.overnight.enabled'),n('contract.overnight.rates.trailer',C.overnight.rates.trailer)+' ج.م'],
+      ['يومية الفرداني عند توزيع الأسمدة/البيفوت ('+(C.pivotFert.places||[]).join('، ')+')',sw('contract.pivotFert.enabled'),n('contract.pivotFert.dailyRate',C.pivotFert.dailyRate)+' ج.م'],
+      ['رجعة الفرزة/العادم من مصنع الجيش — تريلا/جرار',sw('contract.rejectReturn.enabled'),n('contract.rejectReturn.big',C.rejectReturn.big)+' ج.م'],
+      ['مبيت المصانع (أول مبيت ثم أنصاف نولون تراكمية)',sw('contract.factoryNight.enabled'),n('contract.factoryNight.base',C.factoryNight.base)+' ج.م'],
+      ['إكرامية الموالح — تريلا/جرار (الفرداني '+C.fees.citrusFardani+')','<span class="sub" style="margin:0">دائمة</span>',n('contract.fees.citrusBig',C.fees.citrusBig)+' ج.م'],
+      ['إكرامية الميناء (لا تُضاف لو للمكان رسم خاص)','<span class="sub" style="margin:0">دائمة</span>',n('contract.fees.portGratuity',C.fees.portGratuity)+' ج.م'],
+      ['رسوم الموازين والإكراميات حسب المكان','<span class="sub" style="margin:0">'+(C.fees.placeFees||[]).length+' مكان</span>','<span class="sub" style="margin:0">من «قواعد العقد»</span>'],
+      ['معادلات الأسعار: الطن = الجامبو ÷ '+C.formulas.tonDivisor+' · الكبير = ×'+C.formulas.bigJumboFactor+' · التريلا = '+C.formulas.trailerJumbos+' جامبو · الجرار = '+C.formulas.tractorJumbos+' · الفرداني '+C.formulas.fardaniPct+'٪','<span class="sub" style="margin:0">دائمة</span>','<span class="sub" style="margin:0">من «قواعد العقد»</span>']
+    ];
+    h+='<div class="box"><h3>قواعد العقد السارية (تُحسب تلقائيًا فوق السعر الأساسي)</h3><p class="sub">هذه الإضافات والمعادلات مستنتجة من عقد النقل وملف الأسعار وهي <b>مفعّلة الآن</b>. تظهر في المستخلص كبنود منفصلة ولا تغيّر سعر الرحلة المخزَّن. عدّل القيمة أو أوقف البند من هنا، والتفاصيل الكاملة في قسم «قواعد العقد».</p><div class="tblwrap"><table class="tbl"><thead><tr><th>القاعدة</th><th>مفعّلة</th><th>القيمة</th></tr></thead><tbody>'+rows.map(function(r){ return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'; }).join('')+'</tbody></table></div></div>';
+    return h;
+  }
   function newPriceRule(){ return {packMode:'contains',packExclude:[],minKg:null,maxKg:null,minKm:null,maxKm:null,label:'',enabled:true,mode:'set',unit:'trip',price:0,contractors:[],loads:[],unloads:[],crops:[],packTypes:[],vehicles:[],minPkg:null,maxPkg:null,minTons:null,maxTons:null,from:'',to:'',priority:0,parts:[],combine:'sum'}; }
   function rPricing(){
     var P=A.S.pricing, h='<h2>أسعار النقلات</h2><p class="lead">أنشئ قواعد تحسب عمود «السعر (ج.م)» لكل رحلة. كل قاعدة لها شروط اختيارية (المقاول، مكان التحميل أو التفريغ، المحصول، نوع العبوة وعددها، نوع السيارة، نطاق الوزن، فترة سريان)، وما تتركه فارغًا يعني «أي قيمة». لو انطبقت عدة قواعد «سعر أساسي» يفوز <b>الأعلى أولوية ثم الأخص</b> (الأكثر شروطًا)، وقواعد «إضافة» تُجمع فوق السعر الأساسي. السعر اليدوي على الرحلة يتفوق على كل القواعد.</p>';
     h+='<div class="box'+(P.enabled?'':' off')+'"><div class="row">'+swt('pricing.enabled','تفعيل حساب الأسعار','عند التعطيل يختفي العمود من الواجهة ولا تُحسب أسعار.')+'<span class="sub" style="margin:0">'+P.rules.length+' قاعدة</span></div></div>';
+    if(A.book&&A.book.msg) h+='<div class="pv"><b>'+esc(A.book.msg)+'</b></div>';
+    h+=prBoard();
+    var lastKind='';
     P.rules.forEach(function(r,i){
-      var b='pricing.rules.'+i;
+      var b='pricing.rules.'+i, kind=r.auto?'a':'m';
+      if(kind!==lastKind){ lastKind=kind; var cnt=P.rules.filter(function(x){return !!x.auto===(kind==='a')}).length; h+='<h3 style="margin:16px 0 6px">'+(kind==='a'?'قواعد تلقائية مستنتجة':'قواعدك اليدوية')+' <span class="cnt-pill">'+cnt+'</span></h3>'+(kind==='a'?'<p class="sub">مولَّدة من دفتر الأسعار وعلاقات الأماكن لمسارات حقيقية غير منشورة بحروفها. كل قاعدة موثَّقة بمصدرها، <b>مفعّلة</b>، وأولويتها أقل من قواعدك اليدوية. «تثبيت» يحوّلها إلى قاعدة يدوية لا تتغير عند إعادة التوليد.</p>':''); }
+      if(r.auto&&!(A.prOpen&&A.prOpen[i])){
+        h+='<div class="rbox'+(r.enabled?'':' off')+'"><div class="rh"><b style="flex:1;min-width:180px">'+esc(r.label)+'</b>'+(r.est?'<span class="chip2 info">تقدير</span>':'')+swIn(b+'.enabled','مفعّلة')+'<button class="abtn sm" data-a="pr-open" data-i="'+i+'">تفاصيل</button><button class="abtn sm" data-a="pr-pin" data-i="'+i+'" title="يحوّلها إلى قاعدة يدوية لا تتغير عند إعادة التوليد">تثبيت</button><button class="abtn sm bad" data-a="list-del" data-p="pricing.rules" data-i="'+i+'" title="حذف" aria-label="حذف القاعدة">✕</button></div>'+
+          '<div class="sub">'+esc(ruleSummary(r))+' ← <b>'+esc(prPriceTxt(r))+'</b></div>'+(r.src?'<div class="sub">المصدر: '+esc(r.src)+'</div>':'')+'</div>';
+        return;
+      }
       h+='<div class="rbox'+(r.enabled?'':' off')+'"><div class="rh"><input type="text" data-a="set" data-t="s" data-p="'+b+'.label" value="'+attr(r.label)+'" placeholder="اسم القاعدة (مثال: النور ← مريم لشركة الحمد)" aria-label="اسم القاعدة">'+
-        swIn(b+'.enabled','مفعّلة')+toolsHtml('pricing.rules',i,P.rules.length)+'</div>';
+        swIn(b+'.enabled','مفعّلة')+(r.auto?'<button class="abtn sm" data-a="pr-open" data-i="'+i+'">إخفاء التفاصيل</button><button class="abtn sm" data-a="pr-pin" data-i="'+i+'" title="يحوّلها إلى قاعدة يدوية لا تتغير عند إعادة التوليد">تثبيت</button>':'')+toolsHtml('pricing.rules',i,P.rules.length)+'</div>'+(r.auto&&r.src?'<div class="sub">المصدر: '+esc(r.src)+'</div>':'');
       h+='<div class="fgrid"><label class="fld2">نوع القاعدة<select data-a="set" data-t="s" data-p="'+b+'.mode">'+selOpts([['set','سعر أساسي'],['add','إضافة فوق السعر']],r.mode)+'</select></label>'+
         '<label class="fld2">يُحسب<select data-a="set" data-t="s" data-p="'+b+'.unit">'+selOpts([['trip','لكل رحلة'],['ton','لكل طن'],['pkg','لكل عبوة']],r.unit)+'</select></label>'+
         '<label class="fld2">المبلغ (ج.م)'+inp(b+'.price','n',r.price,'0')+'</label><label class="fld2">الأولوية (0 عادي، أعلى يفوز)'+inp(b+'.priority','n',r.priority,'0')+'</label></div>';
@@ -2127,6 +2161,8 @@ function ecApplyPatch(q, patch, S) {
       if(!parts.length){ A.msg='اكتب سعرًا لنوع عبوة واحد على الأقل'; aRender(); return; }
       var nr0=newPriceRule(); nr0.label=A.pk.label||('أسعار العبوات'+(A.pk.contractor?' — '+A.pk.contractor:'')); nr0.parts=parts; nr0.combine='sum'; if(A.pk.contractor) nr0.contractors=[A.pk.contractor];
       S.pricing.rules.unshift(nr0); S.pricing.enabled=true; A.pk.price={}; A.pk.open=false; touch(); aRender(); return; }
+    if(a==='pr-open'){ A.prOpen=A.prOpen||{}; A.prOpen[+t.dataset.i]=!A.prOpen[+t.dataset.i]; aRender(); return; }
+    if(a==='pr-pin'){ var pr1=S.pricing.rules[+t.dataset.i]; if(pr1){ pr1.auto=false; pr1.est=false; pr1.key=''; touch(); aRender(); } return; }
     if(a==='pr-add'){ S.pricing.rules.push(newPriceRule()); touch(); aRender(); return; }
     if(a==='pr-from'){ var u=A.pv.pricing.topUnpriced[+t.dataset.i], nr=newPriceRule(); if(u.load) nr.loads=[u.load]; if(u.unload) nr.unloads=[u.unload]; if(u.contractor) nr.contractors=[u.contractor]; nr.label=(u.load||'')+' ← '+(u.unload||''); S.pricing.rules.push(nr); S.pricing.enabled=true; touch(); aRender(); return; }
     if(a==='cond-add'){ aArr(t.dataset.p).push({field:t.dataset.p.indexOf('email.')===0?'sector':t.dataset.p.indexOf('live.stateRules')===0?'cls':'type',op:'contains',value:''}); touch(); aRender(); return; }
@@ -3045,6 +3081,26 @@ function geoFmt(p) { return p && geoValid(p.lat, p.lng) ? geoRound(p.lat) + ', '
     arr.sort(function(a,b){ return a[0]-b[0]; });
     return arr.slice(0,3).map(function(x){ return '<span class="plnear">'+esc(x[1].name)+' · <b dir="ltr">'+x[0].toFixed(1)+'</b> كم</span>'; }).join('');
   }
+  /* ---------- مجموعات الدفتر: علاقات الأماكن ↔ كلمات المناطق في دفتر الأسعار ---------- */
+  function plGroupsOf(p){
+    var G=(A.S.places&&A.S.places.groups)||[], nm=nz(p.name), rg=nz(p.region), out=[];
+    G.forEach(function(g){ if(g.enabled===false) return; if((g.members||[]).some(function(m){ var k=nz(m); return k&&(k===nm||(rg&&k===rg)); })) out.push(g.name); });
+    return out;
+  }
+  function plGroupMembers(g){
+    return A.S.places.list.filter(function(p){ return (g.members||[]).some(function(m){ var k=nz(m); return k&&(k===nz(p.name)||(nz(p.region)&&k===nz(p.region))); }); });
+  }
+  function plGroups(){
+    var G=A.S.places.groups=A.S.places.groups||[];
+    var h='<div class="box"><h3>مجموعات الدفتر <span class="cnt-pill'+(G.length?'':' zero')+'">'+G.length+'</span></h3><p class="sub">دفتر الأسعار لا يسعّر بأسماء الأماكن دائمًا بل بكلمات مناطق مثل «بحرى» و«العوينات». كل مجموعة هنا اسمها = الكلمة كما هي في الدفتر، وأعضاؤها = أسماء أماكن أو محافظات. أي رحلة مكانها عضو في المجموعة تُسعَّر بمسارات الدفتر المكتوبة بهذه الكلمة. الاسم المطابق للمسار يفوز دائمًا على المجموعة.</p>';
+    G.forEach(function(g,i){
+      var b='places.groups.'+i, mem=plGroupMembers(g);
+      h+='<div class="rbox'+(g.enabled===false?' off':'')+'"><div class="rh"><input type="text" data-a="set" data-t="s" data-p="'+b+'.name" value="'+attr(g.name)+'" placeholder="الكلمة كما في دفتر الأسعار" aria-label="اسم المجموعة">'+swIn(b+'.enabled','مفعّلة')+'<button class="abtn sm bad" data-a="list-del" data-p="places.groups" data-i="'+i+'" title="حذف" aria-label="حذف المجموعة">✕</button></div>'+
+        (g.note?'<div class="sub">'+esc(g.note)+'</div>':'')+'<div class="sec-l">الأعضاء (اسم مكان أو محافظة)</div>'+tagEd(b+'.members','اسم مكان أو محافظة ثم Enter','dlPlaces')+
+        '<div class="sub" style="margin-top:6px">أماكن مسجّلة داخل المجموعة: <b>'+mem.length+'</b>'+(mem.length?' — '+mem.slice(0,14).map(function(p){ return esc(p.name); }).join('، ')+(mem.length>14?'…':''):'')+'</div></div>';
+    });
+    return h+'<div class="row"><button class="abtn pri" data-a="plx-grp-add">+ مجموعة جديدة</button></div></div>';
+  }
   function plCard(p,i){
     var open=!!A.pl.open[i], b='places.list.'+i, h='<div class="plc'+(open?' open':'')+'" id="plc'+i+'"><div class="plh" data-a="plx-tog" data-i="'+i+'" role="button" tabindex="0" aria-expanded="'+open+'"><b class="pln">'+esc(p.name)+'</b><span class="plbs">'+plBadge(p)+'</span><span class="pls">'+esc(p.address||p.region||'')+'</span><span class="plchev">'+(open?'▾':'◂')+'</span></div>';
     if(!open) return h+'</div>';
@@ -3055,6 +3111,7 @@ function geoFmt(p) { return p && geoValid(p.lat, p.lng) ? geoRound(p.lat) + ', '
       '<label class="fld"><span>المحافظة / المنطقة</span><input data-a="set" data-t="s" data-p="'+b+'.region" value="'+attr(p.region||'')+'" placeholder="مثال: البحيرة – وادي النطرون"></label>'+
       '<label class="fld plwide"><span>العنوان</span><input data-a="set" data-t="s" data-p="'+b+'.address" value="'+attr(p.address||'')+'" placeholder="العنوان بالتفصيل أو وصف الطريق"></label></div>'+
       '<div class="fld" style="margin-top:8px"><span>صيغ أخرى لنفس المكان (كما تُكتب في ملاحظات المحطة والملفات)</span>'+tagEd('PL:'+i,'أضف صيغة ثم Enter')+'</div>'+
+      (function(){ var gs=plGroupsOf(p); return gs.length?'<div class="sub" style="margin-top:6px">🔗 مجموعات الدفتر: '+gs.map(function(x){ return '<span class="chip2 info">'+esc(x)+'</span>'; }).join(' ')+' — تُسعَّر مساراتها بالكلمة المقابلة في دفتر الأسعار</div>':''; })()+
       '<div class="plgps"><div class="fld plwide"><span>📍 الموقع (GPS) — الصق «lat, lng» أو رابط خرائط جوجل أو إحداثيات بالدرجات</span><div class="row" style="gap:6px"><input data-a="plx-gps" data-i="'+i+'" value="'+attr(g)+'" placeholder="مثال: 30.5678, 30.1234" dir="ltr" style="flex:1;min-width:220px" aria-label="الإحداثيات">'+
       '<button class="abtn sm" data-a="plx-here" data-i="'+i+'" title="استخدم موقعي الحالي">📡 موقعي</button>'+(g&&p.geoQ==='approx'?'<button class="abtn sm" data-a="plx-exact" data-i="'+i+'" title="اعتمد الإحداثيات كدقيقة بعد مراجعتها">✓ اعتماد كدقيقة</button>':'')+(g?'<a class="abtn sm" href="'+attr(geoUrl(p.lat,p.lng))+'" target="_blank" rel="noopener">🗺 خرائط جوجل</a><button class="abtn sm" data-a="plx-copy" data-i="'+i+'">نسخ</button><button class="abtn sm bad" data-a="plx-gpsclr" data-i="'+i+'" aria-label="مسح الإحداثيات">✕</button>':'')+'</div>'+
       '<div class="sub" style="margin:4px 0 0">'+(g?'✓ خط العرض <b dir="ltr">'+p.lat+'</b> · خط الطول <b dir="ltr">'+p.lng+'</b>'+(p.geoQ==='approx'?' <span class="chip2 info">تقريبي — على مستوى المدينة/المنطقة، صحّحه بإحداثيات المكان الفعلية</span>':''):'لا توجد إحداثيات بعد. يمكنك لصق رابط الموقع من خرائط جوجل مباشرة.')+(A.pl.geoMsg&&A.pl.geoFor===i?' <span class="chip2 bad">'+esc(A.pl.geoMsg)+'</span>':'')+'</div></div>'+
@@ -3173,12 +3230,13 @@ function geoFmt(p) { return p && geoValid(p.lat, p.lng) ? geoRound(p.lat) + ', '
     h+='<div class="plbar"><div class="chips">'+plChip('all','الكل',st.all)+plChip('gps','بإحداثيات',st.gps)+plChip('nogps','بلا إحداثيات',st.all-st.gps)+plChip('scale','لها ميزان',st.scale)+plChip('unset','ميزان غير محدد',st.unk)+plChip('noscale','بلا ميزان',plFilterCount('no'))+plChip('noload','لا تحميل',A.S.places.list.filter(function(p){ return p.noLoad; }).length)+'</div>'+
       '<div class="row" style="gap:8px;align-items:center;margin-top:8px"><input type="search" data-a="plx-q" value="'+attr(P.q)+'" placeholder="ابحث بالاسم أو الصيغة أو العنوان…" style="flex:1;min-width:200px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit" aria-label="بحث">'+
       '<select data-a="plx-kind" aria-label="النوع"><option value="">كل الأنواع</option>'+PLK.map(function(k){ return '<option value="'+k[0]+'"'+(P.kind===k[0]?' selected':'')+'>'+k[1]+'</option>'; }).join('')+'</select>'+
-      '<span class="seg">'+[['list','البطاقات'],['map','خريطة النقاط'],['dist','المسافات والمسارات'],['intel','ذكاء الأماكن'],['io','استيراد / تصدير']].map(function(v){ return '<button data-a="plx-view" data-v="'+v[0]+'" aria-pressed="'+(P.view===v[0])+'">'+v[1]+'</button>'; }).join('')+'</span></div></div>';
+      '<span class="seg">'+[['list','البطاقات'],['map','خريطة النقاط'],['dist','المسافات والمسارات'],['groups','مجموعات الدفتر'],['intel','ذكاء الأماكن'],['io','استيراد / تصدير']].map(function(v){ return '<button data-a="plx-view" data-v="'+v[0]+'" aria-pressed="'+(P.view===v[0])+'">'+v[1]+'</button>'; }).join('')+'</span></div></div>';
     if(P.view==='list'){
       h+='<div class="row" style="gap:8px;margin:10px 0"><input id="plxNew" placeholder="+ اسم مكان جديد ثم Enter" style="flex:1;max-width:340px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit" aria-label="مكان جديد"><button class="abtn pri" data-a="plx-add">إضافة</button><span class="sub" style="margin:0">'+list.length+' مكان</span></div>';
       h+=plOrphanBox();
       h+='<div class="pllist">'+shown.map(function(x){ return plCard(x[0],x[1]); }).join('')+'</div>'+(list.length>shown.length?'<div class="row" style="margin-top:10px"><button class="abtn" data-a="plx-more">عرض المزيد ('+(list.length-shown.length)+')</button></div>':'')+(list.length?'':'<div class="empty">لا نتائج.</div>');
     } else if(P.view==='map') h+='<div class="box">'+plMap(list)+'</div>';
+    else if(P.view==='groups') h+=plGroups();
     else if(P.view==='intel') h+=rIntel();
     else if(P.view==='dist') h+=plDist()+plRoutes();
     else h+=plImport();
@@ -3242,6 +3300,7 @@ function geoFmt(p) { return p && geoValid(p.lat, p.lng) ? geoRound(p.lat) + ', '
       navigator.geolocation.getCurrentPosition(function(r){ p.lat=geoRound(r.coords.latitude); p.lng=geoRound(r.coords.longitude); p.geoQ='exact'; A.pl.geoMsg=''; touch(); aRender(); },function(){ A.pl.geoFor=i; A.pl.geoMsg='تعذّر تحديد الموقع (اسمح للمتصفح بالوصول للموقع)'; aRender(); },{enableHighAccuracy:true,timeout:15000}); return true; }
     if(a==='plx-sradd'){ (S.live.stateRules=S.live.stateRules||[]).push({label:'',enabled:true,action:'enter',mode:'all',when:[{field:'cls',op:'equals',value:'نقلة داخلية'}],maxHours:72}); touch(); aRender(); return true; }
     if(a==='plx-srtpl'){ var T={daily:{label:'النقلات الداخلية المفتوحة تدخل',action:'enter',when:[{field:'cls',op:'equals',value:'نقلة داخلية'}],maxHours:24},old:{label:'أي رحلة أقدم من 48 ساعة تخرج',action:'exit',when:[{field:'ageH',op:'gt',value:'48'}],maxHours:0},loadonly:{label:'تحميل فقط من مكان بميزان',action:'enter',when:[{field:'kind',op:'equals',value:'تحميل فقط'},{field:'loadScale',op:'equals',value:'نعم'}],maxHours:48}}[t.dataset.k]; if(T){ (S.live.stateRules=S.live.stateRules||[]).push(Object.assign({enabled:true,mode:'all'},T)); touch(); aRender(); } return true; }
+    if(a==='plx-grp-add'){ (S.places.groups=S.places.groups||[]).push({name:'',enabled:true,note:'',members:[]}); touch(); aRender(); return true; }
     if(a==='plx-export'){ plCsvExport(); return true; }
     if(a==='plx-doimp'){ var ta=document.querySelector('[data-a="plx-imp"]'); A.pl.imp=ta?ta.value:A.pl.imp; A.pl.impMsg=plCsvImport(A.pl.imp); A.pl.imp=''; aRender(); return true; }
     if(a==='plx-orph'){ var o=plOrphans()[+t.dataset.i]; if(o){ var k2=plAddPlace(o.name); if(k2!==null&&o.scale) S.places.list[k2].scale='yes'; aRender(); } return true; }
@@ -4933,6 +4992,12 @@ function askDescribe_(spec) {
       var gc=priceGapCsv_(D.trips||[]);
       if(!gc){ A.book.msg='كل الرحلات مسعّرة — مفيش حاجة ناقصة'; aRender(); return true; }
       try{ var bb=new Blob(['\ufeff'+gc],{type:'text/csv;charset=utf-8'}), uu=URL.createObjectURL(bb), ee=document.createElement('a'); ee.href=uu; ee.download='اسعار-ناقصة.csv'; document.body.appendChild(ee); ee.click(); setTimeout(function(){ document.body.removeChild(ee); URL.revokeObjectURL(uu); },500); }catch(e){}
+      return true;
+    }
+    if(a==='pr-regen'){
+      if(needPin(function(m){ A.book.msg=m; aRender(); })) return true;
+      A.book.busy=true; A.book.msg='جارٍ توليد القواعد من دفتر الأسعار الحالي…'; aRender();
+      srv('api_autoRules',[pinVal(),true],function(r){ A.book.busy=false; if(r&&r.pricing){ A.S.pricing=clone(r.pricing); if(D.settings) D.settings.pricing=clone(r.pricing); } A.book.msg='✓ تم توليد '+((r&&r.count)||0)+' قاعدة تلقائية'+((r&&r.missing&&r.missing.length)?' — مسارات لا مرجع لها في الدفتر الحالي: '+r.missing.join('، '):''); aRender(); reload(); },function(m){ A.book.busy=false; A.book.msg='تعذر التوليد: '+m; aRender(); });
       return true;
     }
     if(a==='book-import'||a==='book-add'){ bookCall('api_bookImport',[(document.getElementById('bookFile')||{}).value||'',pinVal(),a==='book-add'?'add':'replace'],function(r){ var b=r.book&&r.book.meta||{}; return '✓ تم استيراد '+(b.total||0)+' سعر من '+((b.sheets||[]).length)+' شيت، وأُعيد بناء '+(r.trips||0)+' رحلة'; }); return true; }
