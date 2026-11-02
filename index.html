@@ -1546,9 +1546,9 @@ function ecApplyPatch(q, patch, S) {
   }
 
 
-  var SRCLBL={notes:['ملاحظات المحطة (مكان صريح)','ثلاجة / محطة / اسم من القاموس / «بيفوت 380 توشكا»'],supplier:['العميل المورد','إن كان اسمًا حقيقيًا وليس عامًا'],outLoc:['موقع الصادر (وارد)','إن لم يكن من المواقع العامة'],rule:['قاعدة «وارد في ميزان معيّن»','المكان الثابت المحدد بالأسفل'],weak:['استنتاج ضعيف من الملاحظات','مثل «وارد من X» — ثقة أقل'],sourceLoc:['عمود «موقع المصدر»','مثل مزرعة الدلتا الجديدة — يُنظَّف من «قطاع/بيفوت»'],sourceName:['عمود «اسم المصدر»','غالبًا رقم بيفوت أو زون — معطّل افتراضيًا']};
+  var SRCLBL={scaleNotes:['ملاحظات الميزان','جزء «وارد X» أو مكان معروف داخل الملاحظة (تُستخرج منها أيضًا الكارتة الورقية وكارتة الصادر)'],notes:['ملاحظات المحطة (مكان صريح)','ثلاجة / محطة / اسم من القاموس / «بيفوت 380 توشكا»'],supplier:['العميل المورد','إن كان اسمًا حقيقيًا وليس عامًا'],outLoc:['موقع الصادر (وارد)','إن لم يكن من المواقع العامة'],rule:['قاعدة «وارد في ميزان معيّن»','المكان الثابت المحدد بالأسفل'],weak:['استنتاج ضعيف من الملاحظات','مثل «وارد من X» — ثقة أقل'],sourceLoc:['عمود «موقع المصدر»','مثل مزرعة الدلتا الجديدة — يُنظَّف من «قطاع/بيفوت»'],sourceName:['عمود «اسم المصدر»','غالبًا رقم بيفوت أو زون — معطّل افتراضيًا']};
   function srcOrderUi(){
-    var O=A.S.loading.sourceOrder||(A.S.loading.sourceOrder=[{k:'notes',on:true},{k:'supplier',on:true},{k:'outLoc',on:true},{k:'rule',on:true},{k:'weak',on:true},{k:'sourceLoc',on:true},{k:'sourceName',on:false}]), n=O.length;
+    var O=A.S.loading.sourceOrder||(A.S.loading.sourceOrder=[{k:'notes',on:true},{k:'scaleNotes',on:true},{k:'supplier',on:true},{k:'outLoc',on:true},{k:'rule',on:true},{k:'weak',on:true},{k:'sourceLoc',on:true},{k:'sourceName',on:false}]), n=O.length;
     return '<div class="sub" style="margin:12px 0 6px">رتّب مصادر مكان التحميل (من الأعلى للأسفل: أول مصدر يعطي مكانًا يحسم) ويمكنك تعطيل أي مصدر:</div>'+O.map(function(x,i){
       var d=SRCLBL[x.k]||[x.k,'']; return '<div class="rbox'+(x.on===false?' off':'')+'" style="display:flex;gap:10px;align-items:center;padding:6px 10px"><b style="min-width:22px">'+(i+1)+'</b><span style="flex:1"><b>'+d[0]+'</b><div class="sub" style="margin:0">'+d[1]+'</div></span>'+
         '<label class="sw2"><input type="checkbox" data-a="set" data-t="b" data-p="loading.sourceOrder.'+i+'.on"'+(x.on!==false?' checked':'')+'><i></i><span>مفعّل</span></label>'+
