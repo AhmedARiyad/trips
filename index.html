@@ -164,6 +164,7 @@ kbd{font-family:var(--f-mono);font-size:.8em;border:1px solid var(--line);border
 .tx-cols{display:flex;flex-direction:column;gap:4px}
 .tx-col{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:3px 6px;background:var(--surface2)}
 .txq-list{display:flex;flex-direction:column;gap:6px;margin:8px 0}.txq-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface2)}.txq-n{display:flex;flex-direction:column}.txq-n small{color:var(--muted,#7c8782)}.txq-b{display:flex;gap:6px;flex-wrap:wrap}
+.dr-rep .row{flex-wrap:wrap}.dr-src{font-size:.8rem;background:rgba(29,122,77,.12);color:var(--accent,#1d7a4d);border-radius:8px;padding:2px 8px;white-space:nowrap}.dr-cols{margin-top:6px;padding:8px;border:1px dashed var(--line);border-radius:8px}.dr-cols .dcol{display:flex;align-items:center;gap:8px;padding:2px 8px!important;margin:2px 0!important;min-height:0;font-size:.88rem}.dr-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:5px 8px;background:var(--surface)}.dr-chip{display:inline-flex;align-items:center;gap:4px;background:rgba(29,122,77,.12);border-radius:14px;padding:2px 4px 2px 10px;font-size:.86rem}.dr-chip small{color:var(--muted,#6b7770);direction:ltr}.dr-chip button{border:0;background:transparent;cursor:pointer;font-size:1rem;line-height:1;padding:0 4px;color:inherit}.dr-in{border:0!important;outline:0;background:transparent;flex:1;min-width:200px;box-shadow:none!important}.dr-f{margin-top:6px}.dr-ct{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:3px 0}.dr-ct input{max-width:160px}
 .dnd-grip{cursor:grab;touch-action:none;user-select:none;padding:2px 6px;font-size:1.15rem;line-height:1;color:var(--muted,#7c8782);border-radius:6px;flex:0 0 auto}.dnd-grip:hover{background:rgba(0,0,0,.07)}.dnd-grip:active{cursor:grabbing}[data-dnd-row].dnd-drag{opacity:.55;outline:2px dashed var(--accent,#1d7a4d);background:rgba(29,122,77,.10)}body.dnd-on{cursor:grabbing;user-select:none}body.dnd-on *{cursor:grabbing!important}
 .tx-col .tx-cn{flex:0 0 118px;font-weight:600;font-size:.86rem}.tx-col input[data-txh]{flex:1;min-width:70px}
 @media (max-width:900px){.tx-body{grid-template-columns:1fr}.tx-pane{max-height:none}}
@@ -1697,13 +1698,7 @@ function ecApplyPatch(q, patch, S) {
     h+='<div class="box"><h3>اسم السائق</h3><p class="sub">يظهر الاسم مختصرًا، والاسم الكامل محفوظ في عمود التفاصيل ويُبحث به.</p><div class="row" style="align-items:flex-end"><label class="fld">عدد أجزاء الاسم<select data-a="numsel" data-p="driver.words">'+[1,2,3,4].map(function(n){return '<option value="'+n+'"'+(S.driver.words===n?' selected':'')+'>'+n+(n===2?' (ثنائي)':'')+'</option>'}).join('')+'</select></label></div><div class="fld" style="margin-top:10px">بادئات تُدمج مع الكلمة التالية (عبد العزيز، أبو بكر…)'+tagEd('driver.compoundPrefixes')+'</div></div>';
     var cn=D.counts||{}, dp=Object.assign({maxTrips:2500,maxLive:600,maxRejected:6000,maxEmails:200},S.display||{}), ar=Object.assign({enabled:true,afterDays:45,keepDays:730},S.archive||{}), as=D.archive||{rows:0}, dx=Object.assign({enabled:false,folderId:'',everyMin:30},S.dailyExport||{}), dm=Object.assign({enabled:false,to:'',cc:'',time:'17:00',subject:'بيانات/تقارير/ نظام النقل — {date}',greeting:'السلام عليكم،',uiUrl:'',sheetLink:true,skipEmpty:false},S.dailyMail||{});
     h+='<div class="box"><h3>حدود العرض في الصفحة</h3><p class="sub">أقصى عدد يُحمَّل ويُعرض في الصفحة (الشيت نفسه يحتفظ بكل الرحلات). الأحدث أولًا. رفع الأرقام كثيرًا يبطّئ تحميل الصفحة. بعد التغيير اضغط «حفظ» ثم حدّث الصفحة.</p><div class="row" style="align-items:flex-end;gap:14px;flex-wrap:wrap"><label class="fld" style="max-width:200px">الرحلات المعروضة<input type="number" min="100" max="30000" step="100" data-a="numdisp" data-k="maxTrips" value="'+dp.maxTrips+'"></label><label class="fld" style="max-width:200px">الرحلات الجارية<input type="number" min="50" max="5000" step="50" data-a="numdisp" data-k="maxLive" value="'+dp.maxLive+'"></label><label class="fld" style="max-width:200px">الكارتات المرفوضة<input type="number" min="100" max="30000" step="100" data-a="numdisp" data-k="maxRejected" value="'+dp.maxRejected+'"></label><label class="fld" style="max-width:200px">الإيميلات المعروضة<input type="number" min="10" max="5000" step="10" data-a="numdisp" data-k="maxEmails" value="'+dp.maxEmails+'"></label></div><p class="sub" style="margin-top:8px">الموجود فعليًا في الشيت: رحلات <b>'+(cn.trips||0)+'</b> · جارية <b>'+(cn.live||0)+'</b> · مرفوضة <b>'+(cn.rejected||0)+'</b>'+(cn.trips>(D.trips||[]).length?' — معروض الآن <b>'+(D.trips||[]).length+'</b> من الرحلات فقط':'')+'</p></div>';
-    h+='<div class="box"><h3>✉ إيميل يومي تلقائي بالتقارير واللينكات</h3><p class="sub">كل يوم بعد الساعة اللي تحددها، النظام يبعت إيميل واحد فيه ملخص اليوم ولينك الواجهة ولينك الشيت، ومعاه Excel للرحلات المكتملة والجارية وطلبات النقل. بيتبعت من حساب Gmail اللي ناشر النظام. أول مرة لازم تدوس «إرسال تجربة» ووافق على صلاحية الإرسال.</p>'+
-      '<div class="row" style="align-items:flex-end"><label class="chk" style="align-self:center"><input type="checkbox" data-a="dm-on"'+(dm.enabled?' checked':'')+'> تفعيل الإيميل اليومي</label><label class="fld" style="max-width:130px">وقت الإرسال<input type="time" data-a="dm-f" data-k="time" value="'+attr(dm.time)+'"></label>'+
-      '<label class="chk" style="align-self:center"><input type="checkbox" data-a="dm-sheet"'+(dm.sheetLink!==false?' checked':'')+'> لينك الشيت</label><label class="chk" style="align-self:center"><input type="checkbox" data-a="dm-skip"'+(dm.skipEmpty?' checked':'')+'> لا ترسل لو مفيش بيانات</label></div>'+
-      '<div class="row" style="margin-top:8px"><label class="fld grow" style="flex:1;min-width:260px">إلى (إيميلات مفصولة بفاصلة)<input data-a="dm-f" data-k="to" value="'+attr(dm.to)+'" placeholder="name@daltexcorp.com, other@daltexcorp.com"></label><label class="fld grow" style="flex:1;min-width:260px">نسخة (CC)<input data-a="dm-f" data-k="cc" value="'+attr(dm.cc)+'"></label></div>'+
-      '<div class="row" style="margin-top:8px"><label class="fld grow" style="flex:1;min-width:260px">الموضوع ({date} = تاريخ اليوم)<input data-a="dm-f" data-k="subject" value="'+attr(dm.subject)+'"></label><label class="fld grow" style="flex:1;min-width:260px">رابط الواجهة (GitHub Pages مع #المفتاح)<input data-a="dm-f" data-k="uiUrl" value="'+attr(dm.uiUrl)+'" placeholder="https://…github.io/trips/#AKfy…"></label></div>'+
-      '<div class="row" style="margin-top:8px"><label class="fld grow" style="flex:1">التحية في أول الإيميل<input data-a="dm-f" data-k="greeting" value="'+attr(dm.greeting)+'"></label><button class="abtn" data-a="dm-test">📨 إرسال تجربة الآن</button></div><p class="sub" id="dmMsg" style="margin:6px 0 0">'+esc(A.dmMsg||'')+'</p></div>';
-    h+='<div class="box"><h3>📁 تقرير يومي تلقائي على Drive</h3><p class="sub">النظام بيحفظ لوحده ملف CSV باسم اليوم (DALTEX_رحلات-مكتملة_التاريخ وDALTEX_رحلات-جارية_التاريخ) داخل فولدر تحدده، ويحدّثه مع كل دورة. افتح فولدر على Drive والصق رابطه هنا. الأسماء بتتكرر كل يوم بملف جديد فتلاقي أرشيف يومي منظم.</p><div class="row" style="align-items:flex-end"><label class="chk" style="align-self:center"><input type="checkbox" data-a="dx-on"'+(dx.enabled?' checked':'')+'> تفعيل التقرير اليومي</label><label class="fld" style="min-width:300px;flex:1">رابط أو رقم فولدر Drive<input data-a="dx-folder" value="'+attr(dx.folderId)+'" placeholder="https://drive.google.com/drive/folders/…"></label><label class="fld" style="max-width:160px">حدّث كل (دقيقة)<input type="number" min="10" max="720" data-a="dx-min" value="'+dx.everyMin+'"></label></div></div>';
+    h+=rDaily();
     h+='<div class="box"><h3>الاحتفاظ والأرشيف</h3><p class="sub">صفوف JDE بتتحذف من المخزن بعد المدة دي (والرحلات المبنية منها بتختفي من الشيت). الأرشيف بينسخ الرحلات المكتملة القديمة لورقة <b>Trip_Archive</b> قبل ما تختفي، وتفضل فيها المدة اللي تحددها. القيمة 0 = للأبد. بعد التغيير اضغط «حفظ».</p><div class="row" style="align-items:flex-end;gap:14px;flex-wrap:wrap">'+
       '<label class="fld" style="max-width:220px">أيام الاحتفاظ بصفوف JDE (7–1095)<input type="number" min="7" max="1095" data-a="numret" data-k="retentionDays" value="'+S.retentionDays+'"></label>'+
       '<label class="chk" style="align-self:center"><input type="checkbox" data-a="arc-on"'+(ar.enabled!==false?' checked':'')+'> تفعيل الأرشيف</label>'+
@@ -2142,6 +2137,7 @@ function ecApplyPatch(q, patch, S) {
   function adminClick(e){
     var t=e.target.closest('[data-a]'); if(!t) return; var a=t.dataset.a, S=A.S;
     if(a.indexOf('em-')===0&&emAdminClick(t,a,S)) return;
+    if(a.indexOf('dr-')===0&&drClick(t,a)) return;
     if(a.indexOf('ui-')===0&&uiClick(t,a)) return;
     if(a.indexOf('plx-')===0&&plClick(t,a,S)) return;
     if(a.indexOf('lad-')===0&&ladClick(t,a)) return;
@@ -2177,7 +2173,6 @@ function ecApplyPatch(q, patch, S) {
     if(a==='pr-from'){ var u=A.pv.pricing.topUnpriced[+t.dataset.i], nr=newPriceRule(); if(u.load) nr.loads=[u.load]; if(u.unload) nr.unloads=[u.unload]; if(u.contractor) nr.contractors=[u.contractor]; nr.label=(u.load||'')+' ← '+(u.unload||''); S.pricing.rules.push(nr); S.pricing.enabled=true; touch(); aRender(); return; }
     if(a==='cond-add'){ aArr(t.dataset.p).push({field:t.dataset.p.indexOf('email.')===0?'sector':t.dataset.p.indexOf('live.stateRules')===0?'cls':'type',op:'contains',value:''}); touch(); aRender(); return; }
     if(a==='list-del'){ var la=aArr(t.dataset.p); if(t.dataset.p.slice(-5)==='.when'&&la.length<=1&&t.dataset.p.indexOf('email.actions')!==0){ A.msg='لازم يبقى شرط واحد على الأقل'; aRender(); return; } la.splice(+t.dataset.i,1); touch(); aRender(); return; }
-    if(a==='dm-test'){ if(A.dirty){ A.dmMsg='احفظ الإعدادات أولًا ثم جرّب'; aRender(); return; } A.dmMsg='جارٍ الإرسال…'; aRender(); srv('api_dailyMailTest',[pinVal()],function(r){ A.dmMsg='✓ أُرسل إلى '+r.to+' · '+r.files.length+' مرفقات ('+r.done+' مكتملة، '+r.live+' جارية، '+r.req+' طلب)'; aRender(); },function(x){ A.dmMsg='تعذر: '+x; aRender(); }); }
     if(a==='list-mv'){ var lm=aArr(t.dataset.p), i0=+t.dataset.i, j0=i0+(+t.dataset.d); if(j0>=0&&j0<lm.length){ var tmp=lm[i0]; lm[i0]=lm[j0]; lm[j0]=tmp; touch(); aRender(); } return; }
     if(a==='list-dup'){ var ld=aArr(t.dataset.p), c0=clone(ld[+t.dataset.i]); if(c0.label) c0.label+=' (نسخة)'; ld.splice(+t.dataset.i+1,0,c0); touch(); aRender(); return; }
     if(a==='preview'){ aPreview(); return; }
@@ -2200,6 +2195,7 @@ function ecApplyPatch(q, patch, S) {
   function adminChange(e){
     var t=e.target.closest('[data-a]'); if(!t) return; var a=t.dataset.a;
     if(a.indexOf('em-')===0&&emAdminChange(t,a,A.S)) return;
+    if(a.indexOf('dr-')===0&&drChange(t,a)) return;
     if(a.indexOf('ui-')===0&&uiChange(t,a)) return;
     if(a.indexOf('plx-')===0&&plChange(t,a,A.S)) return;
     if(a==='ask-q'){ A.ask.q=t.value; return; }
@@ -2222,8 +2218,6 @@ function ecApplyPatch(q, patch, S) {
     else if(a==='book-sheet'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; var dl=A.S.book.disabled=A.S.book.disabled||[], n=t.dataset.n, ix=dl.indexOf(n); if(t.checked&&ix>=0) dl.splice(ix,1); if(!t.checked&&ix<0) dl.push(n); touch(); aRender(); }
     else if(a==='numret'){ var kk=t.dataset.k, R={retentionDays:[7,1095,60],'archive.afterDays':[7,1095,45],'archive.keepDays':[0,3650,730],emailKeepDays:[0,3650,0]}[kk], v=+t.value; if(!isFinite(v)) v=R[2]; v=Math.max(R[0],Math.min(R[1],Math.round(v))); if(kk.indexOf('archive.')===0){ A.S.archive=A.S.archive||{enabled:true,afterDays:45,keepDays:730}; A.S.archive[kk.slice(8)]=v; } else A.S[kk]=v; touch(); aRender(); }
     else if(a==='st-arc'){ A.st.arc=t.checked; stLoadArc(); }
-    else if(a==='dm-on'||a==='dm-f'||a==='dm-sheet'||a==='dm-skip'){ var DM=A.S.dailyMail=A.S.dailyMail||{}; if(a==='dm-on') DM.enabled=t.checked; else if(a==='dm-sheet') DM.sheetLink=t.checked; else if(a==='dm-skip') DM.skipEmpty=t.checked; else DM[t.dataset.k]=t.value.trim(); touch(); if(a!=='dm-f') aRender(); }
-    else if(a==='dx-on'||a==='dx-folder'||a==='dx-min'){ var DX=A.S.dailyExport=A.S.dailyExport||{enabled:false,folderId:'',everyMin:30}; if(a==='dx-on') DX.enabled=t.checked; else if(a==='dx-folder') DX.folderId=t.value.trim(); else DX.everyMin=Math.max(10,Math.min(720,Math.round(+t.value)||30)); touch(); aRender(); }
     else if(a==='arc-on'){ A.S.archive=A.S.archive||{enabled:true,afterDays:45,keepDays:730}; A.S.archive.enabled=t.checked; touch(); aRender(); }
     else if(a==='numdisp'){ var lim={maxTrips:[100,30000],maxLive:[50,5000],maxRejected:[100,30000],maxEmails:[10,5000]}[t.dataset.k]; A.S.display=A.S.display||{}; A.S.display[t.dataset.k]=Math.max(lim[0],Math.min(lim[1],+t.value||lim[0])); touch(); aRender(); }
     else if(a==='numint'){ sp(t.dataset.p,Math.max(7,Math.min(365,+t.value||60))); touch(); aRender(); }
@@ -5157,6 +5151,96 @@ function askDescribe_(spec) {
     h+='<div class="box"><div class="row" style="align-items:center"><label class="abtn pri" style="cursor:pointer">📷 اختر صور المستندات<input type="file" accept="image/*" multiple capture="environment" data-a="dc-file" style="display:none"></label>'+(A.dc.items.length?'<button class="abtn" data-a="dc-clear">مسح القائمة</button>':'')+'</div><p class="sub">لحد 12 صورة مرة واحدة. تحتاج رقم المحرّر أو الإدارة في أعلى الصفحة. الصور بتتبعت لـ Gemini للقراءة ولا بتتخزن.</p></div>';
     return h+A.dc.items.map(dcItem).join('');
   }
+
+    /* ================= التقارير اليومية التلقائية: الأنواع والصيغ والأعمدة والمستلمون (إيميل + Drive) ================= */
+  A.dr=A.dr||{open:{},msg:'',tmsg:''};
+  var DRF=[['xls','Excel (.xls)'],['pdf','PDF'],['csv','CSV'],['html','HTML (صفحة)']], DRG=[['','بدون تجميع'],['contractor','حسب المقاول'],['loadPlace','حسب مكان التحميل'],['unloadPlace','حسب مكان التفريغ'],['cropVar','حسب الصنف'],['plate','حسب السيارة']], DRDAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'], DREXT={xls:'xls',pdf:'pdf',csv:'csv',html:'html'}, DRSRC={done:'رحلات مكتملة',live:'رحلات جارية',req:'طلبات النقل'};
+  function drDM(){ var S=A.S; S.dailyMail=Object.assign({enabled:false,to:'',cc:'',bcc:'',contacts:[],days:[],time:'17:00',subject:'بيانات/تقارير/ نظام النقل — {date}',greeting:'السلام عليكم،',uiUrl:'',sheetLink:true,skipEmpty:false},S.dailyMail||{}); if(!Array.isArray(S.dailyMail.contacts)) S.dailyMail.contacts=[]; if(!Array.isArray(S.dailyMail.days)) S.dailyMail.days=[]; return S.dailyMail; }
+  function drReps(){ return Array.isArray(A.S.dailyReports)?A.S.dailyReports:(A.S.dailyReports=[]); }
+  function drColsOf(src){ return (D.drCols&&D.drCols[src])||[]; }
+  function drLbl(src,k){ var c=drColsOf(src).filter(function(x){ return x[0]===k; })[0]; return c?c[1]:k; }
+  function drCtName(email){ var c=drDM().contacts.filter(function(x){ return x.email.toLowerCase()===String(email).toLowerCase(); })[0]; return c&&c.name?c.name:email.split('@')[0]; }
+  function drMailsOf(v){ return String(v||'').split(/[,;\s،؛]+/).map(function(x){ return x.trim(); }).filter(function(x){ return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x); }); }
+  function drList(f){ return drMailsOf(drDM()[f]); }
+  function drSetList(f,arr){ var seen={}; drDM()[f]=arr.filter(function(x){ var k=x.toLowerCase(); if(seen[k]) return false; seen[k]=1; return true; }).join(','); }
+  function drRemember(email){ var dm=drDM(); if(!dm.contacts.some(function(c){ return c.email.toLowerCase()===email.toLowerCase(); })) dm.contacts.push({name:email.split('@')[0],email:email}); }
+  function drChips(f,label,ph){
+    return '<div class="fld dr-f"><span>'+label+'</span><div class="dr-chips">'+drList(f).map(function(e){ return '<span class="dr-chip" title="'+attr(e)+'">'+esc(drCtName(e))+' <small>'+esc(e)+'</small><button data-a="dr-rm" data-f="'+f+'" data-e="'+attr(e)+'" aria-label="حذف">×</button></span>'; }).join('')+'<input class="dr-in" data-a="dr-add" data-f="'+f+'" list="drCt" placeholder="'+attr(ph||'اكتب إيميل واضغط Enter')+'"></div></div>';
+  }
+  function drRepHtml(r,i,n){
+    var o=!!A.dr.open[r.id], fn='DALTEX_'+r.name+'_YYYY-MM-DD.'+DREXT[r.fmt];
+    var h='<div class="rbox dr-rep'+(r.on?'':' off')+'"><div class="row" style="align-items:center;gap:8px"><span class="dnd-grip" data-dnd-grip="list" data-p="dailyReports" title="اسحب لتغيير الترتيب" aria-label="اسحب لتغيير الترتيب">⠿</span>'+
+      '<label class="sw2"><input type="checkbox" data-a="dr-chk" data-i="'+i+'" data-k="on"'+(r.on?' checked':'')+'><i></i></label>'+
+      '<b class="dr-src">'+esc(DRSRC[r.src]||r.src)+'</b><input data-a="dr-f" data-i="'+i+'" data-k="name" value="'+attr(r.name)+'" aria-label="اسم الملف" style="flex:1;min-width:130px">'+
+      '<select data-a="dr-f" data-i="'+i+'" data-k="fmt" aria-label="الصيغة">'+DRF.map(function(x){ return '<option value="'+x[0]+'"'+(r.fmt===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select>'+
+      (r.src==='req'?'':'<select data-a="dr-f" data-i="'+i+'" data-k="group" aria-label="التجميع">'+DRG.map(function(x){ return '<option value="'+x[0]+'"'+(r.group===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select>')+
+      '<label class="chk"><input type="checkbox" data-a="dr-chk" data-i="'+i+'" data-k="mail"'+(r.mail?' checked':'')+'> إيميل</label><label class="chk"><input type="checkbox" data-a="dr-chk" data-i="'+i+'" data-k="drive"'+(r.drive?' checked':'')+'> Drive</label>'+
+      '<button class="abtn sm" data-a="dr-open" data-id="'+attr(r.id)+'" aria-expanded="'+o+'">الأعمدة ('+r.cols.length+') '+(o?'▴':'▾')+'</button><button class="abtn sm" data-a="dr-dup" data-i="'+i+'" title="نسخ">⧉</button><button class="abtn sm bad" data-a="dr-del" data-i="'+i+'" title="حذف">✕</button></div>'+
+      '<div class="sub" style="margin:2px 0 0">اسم الملف: <bdi dir="ltr">'+esc(fn)+'</bdi></div>';
+    if(o){
+      var all=drColsOf(r.src), on={}; r.cols.forEach(function(k){ on[k]=1; });
+      h+='<div class="dr-cols"><div class="sub" style="margin:6px 0 4px">اسحب ⠿ لترتيب الأعمدة. الترتيب هنا هو ترتيب الأعمدة في الملف.</div>'+
+        r.cols.map(function(k){ return '<div class="rbox dcol"><span class="dnd-grip" data-dnd-grip="list" data-p="dailyReports.'+i+'.cols" aria-label="اسحب">⠿</span><span style="flex:1">'+esc(drLbl(r.src,k))+'</span><button class="abtn sm" data-a="dr-colrm" data-i="'+i+'" data-k="'+attr(k)+'" aria-label="إزالة">×</button></div>'; }).join('')+
+        '<div class="sub" style="margin:8px 0 4px">أضف عمودًا: <button class="abtn sm" data-a="dr-preset" data-i="'+i+'" data-k="brief">مختصر</button> <button class="abtn sm" data-a="dr-preset" data-i="'+i+'" data-k="all">كل الأعمدة</button></div><div class="row" style="gap:5px">'+
+        all.filter(function(c){ return !on[c[0]]; }).map(function(c){ return '<button class="abtn sm" data-a="dr-coladd" data-i="'+i+'" data-k="'+attr(c[0])+'">+ '+esc(c[1])+'</button>'; }).join('')+'</div></div>';
+    }
+    return h+'</div>';
+  }
+  function rDaily(){
+    var dm=drDM(), reps=drReps(), dx=Object.assign({enabled:false,folderId:'',everyMin:30},A.S.dailyExport||{}), h='';
+    h+='<datalist id="drCt">'+dm.contacts.map(function(c){ return '<option value="'+attr(c.email)+'">'+esc(c.name)+'</option>'; }).join('')+'</datalist>';
+    h+='<div class="box"><h3>🗂 التقارير اليومية: النوع والصيغة والأعمدة</h3><p class="sub">كل بطاقة تقرير بتتولّد تلقائيًا كل يوم. اختار صيغة الملف (Excel / PDF / CSV / صفحة HTML)، والتجميع، وأي الأعمدة وبأي ترتيب، وتبعته بالإيميل و/أو تحفظه في Drive. اسحب ⠿ لترتيب التقارير. التقرير الفاضي (مفيش بيانات) بيتخطّى.</p>'+
+      reps.map(function(r,i){ return drRepHtml(r,i,reps.length); }).join('')+
+      '<div class="row" style="margin-top:8px;gap:8px;align-items:center"><select id="drNewSrc" aria-label="نوع التقرير الجديد"><option value="done">رحلات مكتملة اليوم</option><option value="live">الرحلات الجارية</option><option value="req">طلبات النقل اليوم</option></select><button class="abtn" data-a="dr-addrep">＋ تقرير جديد</button></div></div>';
+    h+='<div class="box"><h3>✉ الإيميل اليومي</h3><p class="sub">بيتبعت من حساب Gmail اللي ناشر النظام، مرة واحدة يوميًا بعد الوقت المحدد، ومعاه التقارير المعلّمة «إيميل» + لينك الواجهة ولينك الشيت.</p>'+
+      '<div class="row" style="align-items:flex-end;gap:12px"><label class="chk" style="align-self:center"><input type="checkbox" data-a="dr-dmchk" data-k="enabled"'+(dm.enabled?' checked':'')+'> تفعيل الإيميل اليومي</label><label class="fld" style="max-width:130px">الوقت<input type="time" data-a="dr-dm" data-k="time" value="'+attr(dm.time)+'"></label>'+
+      '<label class="chk" style="align-self:center"><input type="checkbox" data-a="dr-dmchk" data-k="sheetLink"'+(dm.sheetLink!==false?' checked':'')+'> لينك الشيت</label><label class="chk" style="align-self:center"><input type="checkbox" data-a="dr-dmchk" data-k="skipEmpty"'+(dm.skipEmpty?' checked':'')+'> لا ترسل لو مفيش بيانات</label></div>'+
+      '<div class="fld" style="margin-top:8px"><span>أيام الإرسال (بدون اختيار = كل الأيام)</span><div class="row" style="gap:4px 12px">'+DRDAYS.map(function(d,i){ return '<label class="chk"><input type="checkbox" data-a="dr-day" data-k="'+i+'"'+(dm.days.indexOf(i)>=0?' checked':'')+'> '+d+'</label>'; }).join('')+'</div></div>'+
+      '<div style="margin-top:8px">'+drChips('to','إلى (To)','اكتب إيميل واضغط Enter أو اختار من المحفوظين')+drChips('cc','نسخة (CC)','')+drChips('bcc','نسخة مخفية (BCC)','')+'</div>'+
+      '<div class="fld" style="margin-top:8px"><span>جهات الاتصال المحفوظة (أي إيميل تكتبه بيتحفظ هنا تلقائيًا؛ اضغط لإضافته بسرعة)</span>'+(dm.contacts.length?dm.contacts.map(function(c,i){ return '<div class="dr-ct"><input data-a="dr-ctname" data-i="'+i+'" value="'+attr(c.name)+'" aria-label="الاسم"><bdi dir="ltr" class="sub" style="margin:0">'+esc(c.email)+'</bdi><button class="abtn sm" data-a="dr-ct" data-f="to" data-e="'+attr(c.email)+'">+ إلى</button><button class="abtn sm" data-a="dr-ct" data-f="cc" data-e="'+attr(c.email)+'">+ CC</button><button class="abtn sm" data-a="dr-ct" data-f="bcc" data-e="'+attr(c.email)+'">+ BCC</button><button class="abtn sm bad" data-a="dr-ctdel" data-i="'+i+'" aria-label="حذف من المحفوظين">✕</button></div>'; }).join(''):'<div class="sub">لسه مفيش — اكتب إيميلات في الخانات فوق وهتتحفظ.</div>')+'</div>'+
+      '<div class="row" style="margin-top:8px"><label class="fld grow" style="flex:1;min-width:260px">الموضوع ({date} = تاريخ اليوم)<input data-a="dr-dm" data-k="subject" value="'+attr(dm.subject)+'"></label><label class="fld grow" style="flex:1;min-width:260px">رابط الواجهة (GitHub Pages مع #المفتاح)<input data-a="dr-dm" data-k="uiUrl" value="'+attr(dm.uiUrl)+'" placeholder="https://…github.io/trips/#AKfy…"></label></div>'+
+      '<div class="row" style="margin-top:8px"><label class="fld grow" style="flex:1">التحية في أول الإيميل<input data-a="dr-dm" data-k="greeting" value="'+attr(dm.greeting)+'"></label><button class="abtn" data-a="dr-test">📨 إرسال تجربة الآن</button></div><p class="sub" style="margin:6px 0 0">'+esc(A.dr.tmsg||'')+'</p></div>';
+    h+='<div class="box"><h3>📁 حفظ تلقائي على Drive</h3><p class="sub">التقارير المعلّمة «Drive» بتتحفظ باسم اليوم داخل فولدر تحدده، وبتتحدّث مع كل دورة (ملف جديد لكل يوم).</p><div class="row" style="align-items:flex-end"><label class="chk" style="align-self:center"><input type="checkbox" data-a="dr-dxchk"'+(dx.enabled?' checked':'')+'> تفعيل الحفظ على Drive</label><label class="fld" style="min-width:300px;flex:1">رابط أو رقم فولدر Drive<input data-a="dr-dx" data-k="folderId" value="'+attr(dx.folderId)+'" placeholder="https://drive.google.com/drive/folders/…"></label><label class="fld" style="max-width:160px">حدّث كل (دقيقة)<input type="number" min="10" max="720" data-a="dr-dx" data-k="everyMin" value="'+dx.everyMin+'"></label></div></div>';
+    return h;
+  }
+  function drClick(t,a){
+    var dm=drDM(), reps=drReps(), i=+t.dataset.i, r=reps[i];
+    if(a==='dr-rm'){ drSetList(t.dataset.f,drList(t.dataset.f).filter(function(x){ return x.toLowerCase()!==t.dataset.e.toLowerCase(); })); touch(); aRender(); return true; }
+    if(a==='dr-ct'){ var f=t.dataset.f, e=t.dataset.e; ['to','cc','bcc'].forEach(function(g){ if(g!==f) drSetList(g,drList(g).filter(function(x){ return x.toLowerCase()!==e.toLowerCase(); })); }); drSetList(f,drList(f).concat([e])); touch(); aRender(); return true; }
+    if(a==='dr-ctdel'){ dm.contacts.splice(i,1); touch(); aRender(); return true; }
+    if(a==='dr-open'){ A.dr.open[t.dataset.id]=!A.dr.open[t.dataset.id]; aRender(); return true; }
+    if(a==='dr-del'){ if(reps.length<=1){ A.dr.tmsg='لازم يفضل تقرير واحد على الأقل'; aRender(); return true; } reps.splice(i,1); touch(); aRender(); return true; }
+    if(a==='dr-dup'){ var c=clone(r); c.id=r.id+'c'+Date.now().toString(36).slice(-3); c.name=r.name+'-2'; reps.splice(i+1,0,c); touch(); aRender(); return true; }
+    if(a==='dr-colrm'){ if(r.cols.length>1){ r.cols=r.cols.filter(function(k){ return k!==t.dataset.k; }); touch(); aRender(); } return true; }
+    if(a==='dr-coladd'){ if(r.cols.indexOf(t.dataset.k)<0) r.cols.push(t.dataset.k); touch(); aRender(); return true; }
+    if(a==='dr-preset'){ var all=drColsOf(r.src).map(function(c){ return c[0]; }); r.cols=t.dataset.k==='all'?all:all.filter(function(k){ return (D.drBrief&&D.drBrief[r.src]||[]).indexOf(k)>=0; }).sort(function(x,y){ var b=D.drBrief[r.src]; return b.indexOf(x)-b.indexOf(y); }); if(!r.cols.length) r.cols=all.slice(0,8); touch(); aRender(); return true; }
+    if(a==='dr-addrep'){ var src=(document.getElementById('drNewSrc')||{}).value||'done', b=(D.drBrief&&D.drBrief[src])||drColsOf(src).slice(0,8).map(function(c){ return c[0]; }); var nid='r'+Date.now().toString(36).slice(-4); reps.push({id:nid,on:true,src:src,name:(DRSRC[src]||src).replace(/\s+/g,'-'),fmt:'xls',cols:b.slice(),group:'',mail:true,drive:false}); A.dr.open[nid]=true; touch(); aRender(); return true; }
+    if(a==='dr-test'){
+      if(A.dirty){ A.dr.tmsg='احفظ الإعدادات أولًا ثم جرّب'; aRender(); return true; }
+      A.dr.tmsg='جارٍ الإرسال…'; aRender();
+      srv('api_dailyMailTest',[pinVal()],function(x){ A.dr.tmsg='✓ أُرسل إلى '+x.to+(x.cc?' · نسخة: '+x.cc:'')+(x.bcc?' · BCC: '+x.bcc:'')+' · '+x.files.length+' مرفقات ('+x.done+' مكتملة، '+x.live+' جارية، '+x.req+' طلب)'; aRender(); },function(m){ A.dr.tmsg='تعذر: '+m; aRender(); });
+      return true;
+    }
+    return false;
+  }
+  function drChange(t,a){
+    var dm=drDM(), reps=drReps(), i=+t.dataset.i, r=reps[i];
+    if(a==='dr-add'){
+      var f=t.dataset.f, txt=t.value.trim(); if(!txt) return true;
+      var ok=drMailsOf(txt), bad=txt.split(/[,;\s،؛]+/).filter(Boolean).length-ok.length;
+      if(ok.length){ ok.forEach(drRemember); drSetList(f,drList(f).concat(ok)); touch(); }
+      A.dr.tmsg=bad>0?'⚠ '+bad+' عنوان مش صالح اتتجاهل':''; aRender(); var inp=document.querySelector('input[data-a="dr-add"][data-f="'+f+'"]'); if(inp) inp.focus(); return true;
+    }
+    if(a==='dr-f'&&r){ var k=t.dataset.k; r[k]=k==='name'?t.value.replace(/[\\\/:*?"<>|]+/g,' ').trim().replace(/\s+/g,'-')||r.name:t.value; touch(); aRender(); return true; }
+    if(a==='dr-chk'&&r){ r[t.dataset.k]=t.checked; touch(); aRender(); return true; }
+    if(a==='dr-dm'){ dm[t.dataset.k]=t.value.trim(); touch(); return true; }
+    if(a==='dr-dmchk'){ dm[t.dataset.k]=t.checked; touch(); aRender(); return true; }
+    if(a==='dr-day'){ var d=+t.dataset.k, ix=dm.days.indexOf(d); if(t.checked&&ix<0) dm.days.push(d); if(!t.checked&&ix>=0) dm.days.splice(ix,1); dm.days.sort(); touch(); return true; }
+    if(a==='dr-ctname'){ dm.contacts[i].name=t.value.trim().slice(0,60); touch(); aRender(); return true; }
+    if(a==='dr-dx'||a==='dr-dxchk'){ var DX=A.S.dailyExport=A.S.dailyExport||{enabled:false,folderId:'',everyMin:30}; if(a==='dr-dxchk') DX.enabled=t.checked; else if(t.dataset.k==='folderId') DX.folderId=t.value.trim(); else DX.everyMin=Math.max(10,Math.min(720,Math.round(+t.value)||30)); touch(); if(a==='dr-dxchk') aRender(); return true; }
+    return false;
+  }
+  document.addEventListener('keydown',function(e){ if(e.key==='Enter'&&e.target&&e.target.dataset&&e.target.dataset.a==='dr-add'){ e.preventDefault(); e.target.blur(); } });
 
     /* ================= مصروفات وغرامات الرحلات ================= */
   A.xp={msg:'',who:''};
