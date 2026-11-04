@@ -163,6 +163,8 @@ kbd{font-family:var(--f-mono);font-size:.8em;border:1px solid var(--line);border
 .tx-act{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
 .tx-cols{display:flex;flex-direction:column;gap:4px}
 .tx-col{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:3px 6px;background:var(--surface2)}
+.txq-list{display:flex;flex-direction:column;gap:6px;margin:8px 0}.txq-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface2)}.txq-n{display:flex;flex-direction:column}.txq-n small{color:var(--muted,#7c8782)}.txq-b{display:flex;gap:6px;flex-wrap:wrap}
+.dnd-grip{cursor:grab;touch-action:none;user-select:none;padding:2px 6px;font-size:1.15rem;line-height:1;color:var(--muted,#7c8782);border-radius:6px;flex:0 0 auto}.dnd-grip:hover{background:rgba(0,0,0,.07)}.dnd-grip:active{cursor:grabbing}[data-dnd-row].dnd-drag{opacity:.55;outline:2px dashed var(--accent,#1d7a4d);background:rgba(29,122,77,.10)}body.dnd-on{cursor:grabbing;user-select:none}body.dnd-on *{cursor:grabbing!important}
 .tx-col .tx-cn{flex:0 0 118px;font-weight:600;font-size:.86rem}.tx-col input[data-txh]{flex:1;min-width:70px}
 @media (max-width:900px){.tx-body{grid-template-columns:1fr}.tx-pane{max-height:none}}
 /* ===== كثافة المظهر (شخصي) ===== */
@@ -484,7 +486,7 @@ body.dens-wide .rbox,body.dens-wide .box{margin-block:14px}
       <select id="fRange" aria-label="الفترة">
         <option value="3">آخر 3 أيام</option><option value="7">آخر 7 أيام</option><option value="14">آخر 14 يوم</option><option value="0">كل الفترة</option>
       </select>
-      <button class="abtn" data-tx-open="trips" title="تصدير أو طباعة الرحلات">⬇ تصدير / 🖨 طباعة</button>
+      <button class="btn" data-tx-quick="1" title="تقارير اليوم بنقرة واحدة">⚡ تقارير اليوم</button><button class="abtn" data-tx-open="trips" title="تصدير أو طباعة الرحلات">⬇ تصدير / 🖨 طباعة</button>
     </div>
     <div id="days"></div>
     <div class="legend">
@@ -502,7 +504,7 @@ body.dens-wide .rbox,body.dens-wide .box{margin-block:14px}
     <p class="hint">رحلات في أماكن لها ميزان يدخل بياناته في النظام: وصلت ولم توزن، أو وزنة أولى فقط، أو حُمّلت ولم تُفرَّغ. غياب بيانات التحميل أو التعتيق وحده لا يجعل الرحلة جارية، والنقلات الداخلية لا تظهر هنا. تُضبط من «لوحة التحكم ← الرحلات الجارية».</p>
     <div class="kpis" id="lkpis"></div>
     <div class="chips" id="lchips"></div>
-    <div class="tools"><button class="abtn" data-tx-open="live" title="تصدير أو طباعة الرحلات الجارية">⬇ تصدير / 🖨 طباعة</button></div>
+    <div class="tools"><button class="btn" data-tx-quick="1" title="تقارير اليوم بنقرة واحدة">⚡ تقارير اليوم</button><button class="abtn" data-tx-open="live" title="تصدير أو طباعة الرحلات الجارية">⬇ تصدير / 🖨 طباعة</button></div>
     <div id="ldays"></div>
   </section>
 
@@ -1552,7 +1554,7 @@ function ecApplyPatch(q, patch, S) {
     return '<div class="sub" style="margin:12px 0 6px">رتّب مصادر مكان التحميل (من الأعلى للأسفل: أول مصدر يعطي مكانًا يحسم) ويمكنك تعطيل أي مصدر:</div>'+O.map(function(x,i){
       var d=SRCLBL[x.k]||[x.k,'']; return '<div class="rbox'+(x.on===false?' off':'')+'" style="display:flex;gap:10px;align-items:center;padding:6px 10px"><b style="min-width:22px">'+(i+1)+'</b><span style="flex:1"><b>'+d[0]+'</b><div class="sub" style="margin:0">'+d[1]+'</div></span>'+
         '<label class="sw2"><input type="checkbox" data-a="set" data-t="b" data-p="loading.sourceOrder.'+i+'.on"'+(x.on!==false?' checked':'')+'><i></i><span>مفعّل</span></label>'+
-        '<button class="abtn sm" data-a="list-mv" data-p="loading.sourceOrder" data-i="'+i+'" data-d="-1"'+(i===0?' disabled':'')+' aria-label="أعلى">↑</button><button class="abtn sm" data-a="list-mv" data-p="loading.sourceOrder" data-i="'+i+'" data-d="1"'+(i===n-1?' disabled':'')+' aria-label="أسفل">↓</button></div>'; }).join('')+
+        '<span class="dnd-grip" data-dnd-grip="list" data-p="loading.sourceOrder" title="اسحب لتغيير الترتيب" aria-label="اسحب لتغيير الترتيب">⠿</span><button class="abtn sm" data-a="list-mv" data-p="loading.sourceOrder" data-i="'+i+'" data-d="-1"'+(i===0?' disabled':'')+' aria-label="أعلى">↑</button><button class="abtn sm" data-a="list-mv" data-p="loading.sourceOrder" data-i="'+i+'" data-d="1"'+(i===n-1?' disabled':'')+' aria-label="أسفل">↓</button></div>'; }).join('')+
       '<div class="sub" style="margin-top:6px">أي عمود قيمته «لا مكان» (دالتكس للتطوير الزراعي، خارج الشركة، عميل خارجي/داخلي، none، فاضي، رموز) يُتخطى للعمود التالي؛ ولو لم يتحقق أي مصدر ← «تحتاج مراجعة». الافتراضي: ملاحظات ← مورد ← موقع الصادر ← قاعدة الميزان ← استنتاج ضعيف ← موقع المصدر.</div>';
   }
   function rLoading(){
@@ -1693,8 +1695,15 @@ function ecApplyPatch(q, patch, S) {
   function rGeneral(){
     var S=A.S, h='<h2>السائق والإعدادات العامة</h2>';
     h+='<div class="box"><h3>اسم السائق</h3><p class="sub">يظهر الاسم مختصرًا، والاسم الكامل محفوظ في عمود التفاصيل ويُبحث به.</p><div class="row" style="align-items:flex-end"><label class="fld">عدد أجزاء الاسم<select data-a="numsel" data-p="driver.words">'+[1,2,3,4].map(function(n){return '<option value="'+n+'"'+(S.driver.words===n?' selected':'')+'>'+n+(n===2?' (ثنائي)':'')+'</option>'}).join('')+'</select></label></div><div class="fld" style="margin-top:10px">بادئات تُدمج مع الكلمة التالية (عبد العزيز، أبو بكر…)'+tagEd('driver.compoundPrefixes')+'</div></div>';
-    var cn=D.counts||{}, dp=Object.assign({maxTrips:2500,maxLive:600,maxRejected:6000,maxEmails:200},S.display||{}), ar=Object.assign({enabled:true,afterDays:45,keepDays:730},S.archive||{}), as=D.archive||{rows:0};
+    var cn=D.counts||{}, dp=Object.assign({maxTrips:2500,maxLive:600,maxRejected:6000,maxEmails:200},S.display||{}), ar=Object.assign({enabled:true,afterDays:45,keepDays:730},S.archive||{}), as=D.archive||{rows:0}, dx=Object.assign({enabled:false,folderId:'',everyMin:30},S.dailyExport||{}), dm=Object.assign({enabled:false,to:'',cc:'',time:'17:00',subject:'بيانات/تقارير/ نظام النقل — {date}',greeting:'السلام عليكم،',uiUrl:'',sheetLink:true,skipEmpty:false},S.dailyMail||{});
     h+='<div class="box"><h3>حدود العرض في الصفحة</h3><p class="sub">أقصى عدد يُحمَّل ويُعرض في الصفحة (الشيت نفسه يحتفظ بكل الرحلات). الأحدث أولًا. رفع الأرقام كثيرًا يبطّئ تحميل الصفحة. بعد التغيير اضغط «حفظ» ثم حدّث الصفحة.</p><div class="row" style="align-items:flex-end;gap:14px;flex-wrap:wrap"><label class="fld" style="max-width:200px">الرحلات المعروضة<input type="number" min="100" max="30000" step="100" data-a="numdisp" data-k="maxTrips" value="'+dp.maxTrips+'"></label><label class="fld" style="max-width:200px">الرحلات الجارية<input type="number" min="50" max="5000" step="50" data-a="numdisp" data-k="maxLive" value="'+dp.maxLive+'"></label><label class="fld" style="max-width:200px">الكارتات المرفوضة<input type="number" min="100" max="30000" step="100" data-a="numdisp" data-k="maxRejected" value="'+dp.maxRejected+'"></label><label class="fld" style="max-width:200px">الإيميلات المعروضة<input type="number" min="10" max="5000" step="10" data-a="numdisp" data-k="maxEmails" value="'+dp.maxEmails+'"></label></div><p class="sub" style="margin-top:8px">الموجود فعليًا في الشيت: رحلات <b>'+(cn.trips||0)+'</b> · جارية <b>'+(cn.live||0)+'</b> · مرفوضة <b>'+(cn.rejected||0)+'</b>'+(cn.trips>(D.trips||[]).length?' — معروض الآن <b>'+(D.trips||[]).length+'</b> من الرحلات فقط':'')+'</p></div>';
+    h+='<div class="box"><h3>✉ إيميل يومي تلقائي بالتقارير واللينكات</h3><p class="sub">كل يوم بعد الساعة اللي تحددها، النظام يبعت إيميل واحد فيه ملخص اليوم ولينك الواجهة ولينك الشيت، ومعاه Excel للرحلات المكتملة والجارية وطلبات النقل. بيتبعت من حساب Gmail اللي ناشر النظام. أول مرة لازم تدوس «إرسال تجربة» ووافق على صلاحية الإرسال.</p>'+
+      '<div class="row" style="align-items:flex-end"><label class="chk" style="align-self:center"><input type="checkbox" data-a="dm-on"'+(dm.enabled?' checked':'')+'> تفعيل الإيميل اليومي</label><label class="fld" style="max-width:130px">وقت الإرسال<input type="time" data-a="dm-f" data-k="time" value="'+attr(dm.time)+'"></label>'+
+      '<label class="chk" style="align-self:center"><input type="checkbox" data-a="dm-sheet"'+(dm.sheetLink!==false?' checked':'')+'> لينك الشيت</label><label class="chk" style="align-self:center"><input type="checkbox" data-a="dm-skip"'+(dm.skipEmpty?' checked':'')+'> لا ترسل لو مفيش بيانات</label></div>'+
+      '<div class="row" style="margin-top:8px"><label class="fld grow" style="flex:1;min-width:260px">إلى (إيميلات مفصولة بفاصلة)<input data-a="dm-f" data-k="to" value="'+attr(dm.to)+'" placeholder="name@daltexcorp.com, other@daltexcorp.com"></label><label class="fld grow" style="flex:1;min-width:260px">نسخة (CC)<input data-a="dm-f" data-k="cc" value="'+attr(dm.cc)+'"></label></div>'+
+      '<div class="row" style="margin-top:8px"><label class="fld grow" style="flex:1;min-width:260px">الموضوع ({date} = تاريخ اليوم)<input data-a="dm-f" data-k="subject" value="'+attr(dm.subject)+'"></label><label class="fld grow" style="flex:1;min-width:260px">رابط الواجهة (GitHub Pages مع #المفتاح)<input data-a="dm-f" data-k="uiUrl" value="'+attr(dm.uiUrl)+'" placeholder="https://…github.io/trips/#AKfy…"></label></div>'+
+      '<div class="row" style="margin-top:8px"><label class="fld grow" style="flex:1">التحية في أول الإيميل<input data-a="dm-f" data-k="greeting" value="'+attr(dm.greeting)+'"></label><button class="abtn" data-a="dm-test">📨 إرسال تجربة الآن</button></div><p class="sub" id="dmMsg" style="margin:6px 0 0">'+esc(A.dmMsg||'')+'</p></div>';
+    h+='<div class="box"><h3>📁 تقرير يومي تلقائي على Drive</h3><p class="sub">النظام بيحفظ لوحده ملف CSV باسم اليوم (DALTEX_رحلات-مكتملة_التاريخ وDALTEX_رحلات-جارية_التاريخ) داخل فولدر تحدده، ويحدّثه مع كل دورة. افتح فولدر على Drive والصق رابطه هنا. الأسماء بتتكرر كل يوم بملف جديد فتلاقي أرشيف يومي منظم.</p><div class="row" style="align-items:flex-end"><label class="chk" style="align-self:center"><input type="checkbox" data-a="dx-on"'+(dx.enabled?' checked':'')+'> تفعيل التقرير اليومي</label><label class="fld" style="min-width:300px;flex:1">رابط أو رقم فولدر Drive<input data-a="dx-folder" value="'+attr(dx.folderId)+'" placeholder="https://drive.google.com/drive/folders/…"></label><label class="fld" style="max-width:160px">حدّث كل (دقيقة)<input type="number" min="10" max="720" data-a="dx-min" value="'+dx.everyMin+'"></label></div></div>';
     h+='<div class="box"><h3>الاحتفاظ والأرشيف</h3><p class="sub">صفوف JDE بتتحذف من المخزن بعد المدة دي (والرحلات المبنية منها بتختفي من الشيت). الأرشيف بينسخ الرحلات المكتملة القديمة لورقة <b>Trip_Archive</b> قبل ما تختفي، وتفضل فيها المدة اللي تحددها. القيمة 0 = للأبد. بعد التغيير اضغط «حفظ».</p><div class="row" style="align-items:flex-end;gap:14px;flex-wrap:wrap">'+
       '<label class="fld" style="max-width:220px">أيام الاحتفاظ بصفوف JDE (7–1095)<input type="number" min="7" max="1095" data-a="numret" data-k="retentionDays" value="'+S.retentionDays+'"></label>'+
       '<label class="chk" style="align-self:center"><input type="checkbox" data-a="arc-on"'+(ar.enabled!==false?' checked':'')+'> تفعيل الأرشيف</label>'+
@@ -1714,6 +1723,7 @@ function ecApplyPatch(q, patch, S) {
     return h;
   }
 
+  document.addEventListener('dnd-drop',function(e){ var g=e.detail.grip; if(g.dataset.dndGrip!=='list') return; var lm=aArr(g.dataset.p); if(!lm) return; var mv=lm.splice(e.detail.from,1)[0]; lm.splice(e.detail.to,0,mv); touch(); aRender(); });
   function aRender(){
     if(!A.S) return;
     function navBtn(s){
@@ -1767,7 +1777,7 @@ function ecApplyPatch(q, patch, S) {
     return h+'<button class="abtn sm" data-a="cond-add" data-p="'+base+'.when">+ شرط</button>';
   }
   function toolsHtml(listPath,i,n){
-    return '<span class="tools2"><button class="abtn sm" data-a="list-mv" data-p="'+listPath+'" data-i="'+i+'" data-d="-1"'+(i===0?' disabled':'')+' title="أعلى" aria-label="أعلى">↑</button><button class="abtn sm" data-a="list-mv" data-p="'+listPath+'" data-i="'+i+'" data-d="1"'+(i===n-1?' disabled':'')+' title="أسفل" aria-label="أسفل">↓</button><button class="abtn sm" data-a="list-dup" data-p="'+listPath+'" data-i="'+i+'" title="نسخ" aria-label="نسخ">⧉</button><button class="abtn sm bad" data-a="list-del" data-p="'+listPath+'" data-i="'+i+'" title="حذف" aria-label="حذف">✕</button></span>';
+    return '<span class="tools2"><span class="dnd-grip" data-dnd-grip="list" data-p="'+listPath+'" title="اسحب لتغيير الترتيب" aria-label="اسحب لتغيير الترتيب">⠿</span><button class="abtn sm" data-a="list-mv" data-p="'+listPath+'" data-i="'+i+'" data-d="-1"'+(i===0?' disabled':'')+' title="أعلى" aria-label="أعلى">↑</button><button class="abtn sm" data-a="list-mv" data-p="'+listPath+'" data-i="'+i+'" data-d="1"'+(i===n-1?' disabled':'')+' title="أسفل" aria-label="أسفل">↓</button><button class="abtn sm" data-a="list-dup" data-p="'+listPath+'" data-i="'+i+'" title="نسخ" aria-label="نسخ">⧉</button><button class="abtn sm bad" data-a="list-del" data-p="'+listPath+'" data-i="'+i+'" title="حذف" aria-label="حذف">✕</button></span>';
   }
   function swIn(p,label){ return '<label class="sw2"><input type="checkbox" data-a="set" data-t="b" data-p="'+p+'"'+(gp(p)?' checked':'')+'><i></i><span>'+label+'</span></label>'; }
 
@@ -2167,6 +2177,7 @@ function ecApplyPatch(q, patch, S) {
     if(a==='pr-from'){ var u=A.pv.pricing.topUnpriced[+t.dataset.i], nr=newPriceRule(); if(u.load) nr.loads=[u.load]; if(u.unload) nr.unloads=[u.unload]; if(u.contractor) nr.contractors=[u.contractor]; nr.label=(u.load||'')+' ← '+(u.unload||''); S.pricing.rules.push(nr); S.pricing.enabled=true; touch(); aRender(); return; }
     if(a==='cond-add'){ aArr(t.dataset.p).push({field:t.dataset.p.indexOf('email.')===0?'sector':t.dataset.p.indexOf('live.stateRules')===0?'cls':'type',op:'contains',value:''}); touch(); aRender(); return; }
     if(a==='list-del'){ var la=aArr(t.dataset.p); if(t.dataset.p.slice(-5)==='.when'&&la.length<=1&&t.dataset.p.indexOf('email.actions')!==0){ A.msg='لازم يبقى شرط واحد على الأقل'; aRender(); return; } la.splice(+t.dataset.i,1); touch(); aRender(); return; }
+    if(a==='dm-test'){ if(A.dirty){ A.dmMsg='احفظ الإعدادات أولًا ثم جرّب'; aRender(); return; } A.dmMsg='جارٍ الإرسال…'; aRender(); srv('api_dailyMailTest',[pinVal()],function(r){ A.dmMsg='✓ أُرسل إلى '+r.to+' · '+r.files.length+' مرفقات ('+r.done+' مكتملة، '+r.live+' جارية، '+r.req+' طلب)'; aRender(); },function(x){ A.dmMsg='تعذر: '+x; aRender(); }); }
     if(a==='list-mv'){ var lm=aArr(t.dataset.p), i0=+t.dataset.i, j0=i0+(+t.dataset.d); if(j0>=0&&j0<lm.length){ var tmp=lm[i0]; lm[i0]=lm[j0]; lm[j0]=tmp; touch(); aRender(); } return; }
     if(a==='list-dup'){ var ld=aArr(t.dataset.p), c0=clone(ld[+t.dataset.i]); if(c0.label) c0.label+=' (نسخة)'; ld.splice(+t.dataset.i+1,0,c0); touch(); aRender(); return; }
     if(a==='preview'){ aPreview(); return; }
@@ -2211,6 +2222,8 @@ function ecApplyPatch(q, patch, S) {
     else if(a==='book-sheet'){ A.S.book=A.S.book||{enabled:true,combine:'max',disabled:[]}; var dl=A.S.book.disabled=A.S.book.disabled||[], n=t.dataset.n, ix=dl.indexOf(n); if(t.checked&&ix>=0) dl.splice(ix,1); if(!t.checked&&ix<0) dl.push(n); touch(); aRender(); }
     else if(a==='numret'){ var kk=t.dataset.k, R={retentionDays:[7,1095,60],'archive.afterDays':[7,1095,45],'archive.keepDays':[0,3650,730],emailKeepDays:[0,3650,0]}[kk], v=+t.value; if(!isFinite(v)) v=R[2]; v=Math.max(R[0],Math.min(R[1],Math.round(v))); if(kk.indexOf('archive.')===0){ A.S.archive=A.S.archive||{enabled:true,afterDays:45,keepDays:730}; A.S.archive[kk.slice(8)]=v; } else A.S[kk]=v; touch(); aRender(); }
     else if(a==='st-arc'){ A.st.arc=t.checked; stLoadArc(); }
+    else if(a==='dm-on'||a==='dm-f'||a==='dm-sheet'||a==='dm-skip'){ var DM=A.S.dailyMail=A.S.dailyMail||{}; if(a==='dm-on') DM.enabled=t.checked; else if(a==='dm-sheet') DM.sheetLink=t.checked; else if(a==='dm-skip') DM.skipEmpty=t.checked; else DM[t.dataset.k]=t.value.trim(); touch(); if(a!=='dm-f') aRender(); }
+    else if(a==='dx-on'||a==='dx-folder'||a==='dx-min'){ var DX=A.S.dailyExport=A.S.dailyExport||{enabled:false,folderId:'',everyMin:30}; if(a==='dx-on') DX.enabled=t.checked; else if(a==='dx-folder') DX.folderId=t.value.trim(); else DX.everyMin=Math.max(10,Math.min(720,Math.round(+t.value)||30)); touch(); aRender(); }
     else if(a==='arc-on'){ A.S.archive=A.S.archive||{enabled:true,afterDays:45,keepDays:730}; A.S.archive.enabled=t.checked; touch(); aRender(); }
     else if(a==='numdisp'){ var lim={maxTrips:[100,30000],maxLive:[50,5000],maxRejected:[100,30000],maxEmails:[10,5000]}[t.dataset.k]; A.S.display=A.S.display||{}; A.S.display[t.dataset.k]=Math.max(lim[0],Math.min(lim[1],+t.value||lim[0])); touch(); aRender(); }
     else if(a==='numint'){ sp(t.dataset.p,Math.max(7,Math.min(365,+t.value||60))); touch(); aRender(); }
@@ -5332,6 +5345,36 @@ function askDescribe_(spec) {
     /* ================= تصدير وطباعة الرحلات =================
      نافذة تحكم كاملة بمعاينة حيّة: النطاق (أيام/مقاول/حالة/بحث) · الأعمدة (ترتيب وأسماء وعروض) · الشكل (جدول، مجمّع بإجماليات، كروت، قائمة، ملخص)
      · التنسيق (ألوان وخطوط وحدود وزيبرا) · الصفحة (حجم واتجاه وهوامش وترويسة وتذييل وترقيم) · قوالب محفوظة. الصيغ: طباعة/PDF، HTML، Excel، CSV، JSON، نسخ للّصق. */
+  /* ---------- سحب وإفلات عام (ماوس + لمس): مقبض [data-dnd-grip] داخل صف [data-dnd-row]؛ عند الإفلات يُطلق الحدث dnd-drop {grip,from,to} ---------- */
+  (function(){
+    if(window.__dndInit) return; window.__dndInit=true;
+    var st=null;
+    function rowsOf(row){ return Array.prototype.filter.call(row.parentNode.children,function(x){ return x.hasAttribute('data-dnd-row'); }); }
+    function scroller(el){ while(el&&el!==document.body){ var cs=getComputedStyle(el); if(/(auto|scroll)/.test(cs.overflowY)&&el.scrollHeight>el.clientHeight) return el; el=el.parentNode; } return document.scrollingElement||document.documentElement; }
+    document.addEventListener('pointerdown',function(e){
+      var g=e.target.closest&&e.target.closest('[data-dnd-grip]'); if(!g||(e.button!==undefined&&e.button!==0)) return;
+      var row=g.closest('[data-dnd-row]');
+      if(!row&&g.dataset.dndGrip==='list'){ row=g.closest('.rbox'); if(row){ Array.prototype.forEach.call(row.parentNode.children,function(x){ var gg=x.querySelector&&x.querySelector('[data-dnd-grip="list"]'); if(gg&&gg.dataset.p===g.dataset.p) x.setAttribute('data-dnd-row','1'); }); } }
+      if(!row) return; e.preventDefault();
+      st={g:g,row:row,from:rowsOf(row).indexOf(row),sc:scroller(row),y:e.clientY,id:e.pointerId}; row.classList.add('dnd-drag'); document.body.classList.add('dnd-on');
+      try{ g.setPointerCapture(e.pointerId); }catch(x){}
+    });
+    document.addEventListener('pointermove',function(e){
+      if(!st) return; st.y=e.clientY;
+      var el=document.elementFromPoint(e.clientX,e.clientY), over=el&&el.closest&&el.closest('[data-dnd-row]');
+      if(over&&over!==st.row&&over.parentNode===st.row.parentNode){ var r=over.getBoundingClientRect(); if(e.clientY<r.top+r.height/2) over.parentNode.insertBefore(st.row,over); else over.parentNode.insertBefore(st.row,over.nextSibling); }
+    });
+    var tick=setInterval(function(){ if(!st) return; var r=st.sc.getBoundingClientRect?st.sc.getBoundingClientRect():{top:0,bottom:innerHeight}, top=st.sc===document.scrollingElement?0:r.top, bot=st.sc===document.scrollingElement?innerHeight:r.bottom; if(st.y<top+36) st.sc.scrollTop-=12; else if(st.y>bot-36) st.sc.scrollTop+=12; },30);
+    function end(e,cancel){
+      if(!st) return; var s=st; st=null; s.row.classList.remove('dnd-drag'); document.body.classList.remove('dnd-on');
+      var to=rowsOf(s.row).indexOf(s.row);
+      if(cancel||to===s.from) return;
+      document.dispatchEvent(new CustomEvent('dnd-drop',{detail:{grip:s.g,from:s.from,to:to}}));
+    }
+    document.addEventListener('pointerup',function(e){ end(e,false); });
+    document.addEventListener('pointercancel',function(e){ end(e,true); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&st){ end(e,true); } });
+  })();
   var TXW=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'], TXWE=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var TXM=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'], TXME=['January','February','March','April','May','June','July','August','September','October','November','December'];
   var TXK={'كاملة':['Complete','#1d7a4d'],'تحميل فقط':['Loading only','#b07a00'],'وارد فقط':['Inbound only','#1b6a82'],'تعارض':['Conflict','#7a4fc2'],'ملغاة':['Cancelled','#7c8782']};
@@ -5481,7 +5524,7 @@ function askDescribe_(spec) {
       'tr.gh td{background:'+th.group+';font-weight:700;color:#111;border-top:2px solid '+th.accent+'}tr.gs td{font-weight:700;background:'+th.zebra+'}tr.gt td{font-weight:800;background:'+th.group+';border-top:2px solid '+th.accent+'}'+
       '.kd{display:inline-block;padding:0 6px;border-radius:9px;font-size:'+Math.max(6.5,fs-1.5)+'pt;color:#fff;white-space:nowrap}.kd.o{background:none!important;color:#111;padding:0}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-inline-end:4px}'+
       '.pb{break-before:page;page-break-before:always}.sec{margin:0 0 10px}.sec h2{font-size:'+(fs+2)+'pt;margin:10px 0 4px;color:'+th.accent+';border-bottom:1px solid '+th.line+'}'+
-      '.cards{display:grid;grid-template-columns:repeat('+(Number(o.cardCols)||3)+',1fr);gap:8px}.cd{border:'+bd+';border-inline-start:5px solid '+th.accent+';border-radius:6px;padding:'+dens+';break-inside:avoid;page-break-inside:avoid}.cd header{display:flex;justify-content:space-between;gap:6px;margin-bottom:3px;font-weight:700}.cd .g{display:grid;grid-template-columns:1fr 1fr;gap:1px 8px}.cd small{display:block;color:#666;font-size:'+Math.max(6,fs-2.5)+'pt}.cd .w{grid-column:1/-1}'+
+      '.cards{font-size:0;margin:0 -4px}.cd{display:inline-block;vertical-align:top;font-size:'+fs+'pt;width:calc(100%/'+(Number(o.cardCols)||3)+' - 8px);margin:0 4px 8px;border:'+bd+';border-inline-start:5px solid '+th.accent+';border-radius:6px;padding:'+dens+';break-inside:avoid;page-break-inside:avoid}.cd header{display:flex;justify-content:space-between;gap:6px;margin-bottom:3px;font-weight:700}.cd .g{font-size:0}.cd .g>div{display:inline-block;vertical-align:top;width:calc(50% - 4px);margin:0 2px 1px;font-size:'+fs+'pt}.cd small{display:block;color:#666;font-size:'+Math.max(6,fs-2.5)+'pt}.cd .g>div.w{width:calc(100% - 4px)}'+
       '.ls{border-bottom:1px solid '+th.line+';padding:'+dens+';display:flex;gap:10px;align-items:baseline;break-inside:avoid}.ls .a{font-weight:700;min-width:70px}.ls .s{flex:1}.ls .e{white-space:nowrap;font-variant-numeric:tabular-nums}'+
       'tr.hl td{background:#fde2e2!important}.sgs{display:flex;gap:18px;margin-top:26px;break-inside:avoid}.sgs div{flex:1;text-align:center;border-top:1px solid #333;padding-top:4px;font-weight:700}.endn{margin-top:10px;white-space:pre-wrap;border:1px dashed '+th.line+';padding:6px 8px;border-radius:6px}.wm{position:fixed;top:40%;left:0;right:0;text-align:center;font-size:90pt;font-weight:800;color:rgba(0,0,0,.07);transform:rotate(-25deg);z-index:0;pointer-events:none}.hd img.lg{max-height:46px;max-width:140px}'+
       '.foot{position:fixed;bottom:0;left:0;right:0;text-align:center;color:#666;font-size:'+Math.max(6,fs-3)+'pt}.none{color:#777;text-align:center;padding:20px}';
@@ -5594,7 +5637,7 @@ function askDescribe_(spec) {
     var sg=String(o.signs||'').split(/[,،\n]/).map(function(x){ return x.trim(); }).filter(Boolean); if(sg.length) body+='<div class="sgs">'+sg.map(function(x){ return '<div>'+esc(x)+'</div>'; }).join('')+'</div>';
     if(o.watermark) body='<div class="wm">'+esc(o.watermark)+'</div>'+body;
     if(o.footer) body+='<div class="foot">'+esc(o.footer)+'</div>';
-    return '<!doctype html><html lang="'+(en?'en':'ar')+'" dir="'+(en?'ltr':'rtl')+'"><head><meta charset="utf-8"><title>'+esc(o.title)+'</title>'+(f.link?'<link rel="stylesheet" href="'+f.link+'">':'')+'<style>'+txCss(o,false)+'</style></head><body>'+body+'</body></html>';
+    return '<!doctype html><html lang="'+(en?'en':'ar')+'" dir="'+(en?'ltr':'rtl')+'"><head><meta charset="utf-8"><title>'+esc(o.docTitle||o.title)+'</title>'+(f.link?'<link rel="stylesheet" href="'+f.link+'">':'')+'<style>'+txCss(o,false)+'</style></head><body>'+body+'</body></html>';
   }
   /* ---------- مخرجات ---------- */
   function txDownload(name,mime,text){ var b=new Blob(['\ufeff'+text],{type:mime+';charset=utf-8'}), a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },600); }
@@ -5613,23 +5656,53 @@ function askDescribe_(spec) {
   function txPrintFrame(html){
     var f=document.createElement('iframe'); f.setAttribute('aria-hidden','true'); f.style.cssText='position:fixed;width:0;height:0;border:0;right:0;bottom:0'; document.body.appendChild(f);
     var d=f.contentWindow.document; d.open(); d.write(html); d.close();
-    setTimeout(function(){ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ TX.msg='تعذرت الطباعة من المتصفح'; txDlg(); } setTimeout(function(){ f.remove(); },5000); },450);
+    var done=false; function go(){ if(done) return; done=true; setTimeout(function(){ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ TX.msg='تعذرت الطباعة من المتصفح — جرّب «معاينة في تبويب» ثم Ctrl+P'; txDlg(); } setTimeout(function(){ f.remove(); },60000); },250); } f.onload=go; setTimeout(go,1500);
+  }
+  /* ---------- أسماء الملفات: DALTEX_نوع-التقرير_الفترة[_المقاول][_الساعة للجارية] — أو قالبك بالرموز {type} {period} {date} {contractor} {count} {time} ---------- */
+  function txClean(x){ return String(x==null?'':x).replace(/[\\\/:*?"<>|\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim().replace(/ /g,'-').slice(0,60); }
+  function txTypeName(o){
+    if(o.presetName) return o.presetName;
+    var src=o.source==='live'?'رحلات-جارية':o.source==='both'?'رحلات-كل':'رحلات';
+    var lay={table:'',grouped:'',cards:'كروت',list:'قائمة',summary:'ملخص',matrix:'مصفوفة'}[o.layout]||'';
+    return src+(lay?'-'+lay:'');
+  }
+  function txPeriodName(o,rows){
+    var rg=txRange(o), a=rg[0], b=rg[1];
+    if(!a&&!b){ var ds=rows.map(function(t){ return String(t.lastDate||''); }).filter(Boolean).sort(); a=ds[0]||TODAY||''; b=ds[ds.length-1]||a; }
+    if(o.range==='today'||o.range==='yesterday') return a;
+    if(o.range==='screen'&&o.source==='live') return TODAY||a;
+    return !b||a===b?a:a+'_إلى_'+b;
+  }
+  function txFileBase(o,rows){
+    var cs=o.contractors&&o.contractors.length===1?o.contractors[0]:'';
+    if(!cs){ var u={}; rows.forEach(function(t){ u[t.contractor||'']=1; }); var ks=Object.keys(u); if(ks.length===1&&ks[0]) cs=ks[0]; }
+    var tm=''; try{ var n=new Date(); tm=('0'+n.getHours()).slice(-2)+('0'+n.getMinutes()).slice(-2); }catch(e){}
+    var tpl=String(o.fileName||'').trim()||'DALTEX_{type}_{period}'+(cs?'_{contractor}':'')+(o.source==='live'?'_{time}':'');
+    var name=tpl.replace(/\{type\}/g,txClean(txTypeName(o))).replace(/\{period\}/g,txClean(txPeriodName(o,rows))).replace(/\{date\}/g,txClean(TODAY||'')).replace(/\{contractor\}/g,txClean(cs||'كل-المقاولين')).replace(/\{count\}/g,String(rows.length)).replace(/\{time\}/g,tm);
+    return txClean(name).replace(/-{2,}/g,'-')||('trips-'+(TODAY||'export'));
+  }
+  function txXlsHtml(o,rows){
+    var en=txEn(o), th=txTheme(o);
+    return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"><style>table{border-collapse:collapse}th{background:'+th.head+';color:'+th.headFg+';font-weight:bold}td,th{border:1px solid '+th.line+';padding:3px 6px;vertical-align:top}tr.gh td{background:'+th.group+';font-weight:bold}tr.gs td,tr.gt td{font-weight:bold;background:'+th.zebra+'}'+(o.zebra?'tbody tr:nth-child(even) td{background:'+th.zebra+'}':'')+'</style></head><body dir="'+(en?'ltr':'rtl')+'"><h3>'+esc(o.title)+'</h3>'+(o.layout==='summary'?txSummaryHtml(rows,o):o.layout==='matrix'?txMatrixHtml(rows,o):txTableHtml(rows,Object.assign({},o,{layout:o.layout==='grouped'?'grouped':'table',pageBreakGroup:false}),true))+'</body></html>';
+  }
+  /* يبني ملفًا جاهزًا للتنزيل بدون أي نافذة: {name,mime,text} */
+  function txMake(fmt,o,rows){
+    var base=txFileBase(o,rows);
+    if(fmt==='html') return {name:base+'.html',mime:'text/html',text:txBuild(Object.assign({},o,{docTitle:base}),rows,true)};
+    if(fmt==='csv') return {name:base+'.csv',mime:'text/csv',text:txCsv(rows,o)};
+    if(fmt==='xls') return {name:base+'.xls',mime:'application/vnd.ms-excel',text:txXlsHtml(o,rows)};
+    if(fmt==='json'){ var cols=o.cols.filter(function(k){ return TXN[k]; }); return {name:base+'.json',mime:'application/json',text:JSON.stringify(rows.map(function(t){ var x={}; cols.forEach(function(k){ var r=txRaw(t,k); x[txL(k,o)]=r!=null?r:txVal(t,k,o); }); return x; }),null,2)}; }
+    return null;
   }
   function txRun(fmt){
     var o=TX.o, rows=txRows(o), en=txEn(o);
     if(!rows.length){ TX.msg=en?'No trips in the chosen scope':'لا توجد رحلات في النطاق المختار'; txDlg(); return; }
     if(!o.cols.filter(function(k){ return TXN[k]; }).length&&o.layout!=='summary'){ TX.msg=en?'Pick at least one column':'اختر عمودًا واحدًا على الأقل'; txDlg(); return; }
-    txSave(); var base='trips-'+(TODAY||'export'), th=txTheme(o);
-    if(fmt==='print'||fmt==='pdf'){ txPrintFrame(txBuild(o,rows,true)); TX.msg=fmt==='pdf'?'اختر «حفظ كـ PDF» من نافذة الطباعة':'جارٍ فتح الطباعة…'; }
-    else if(fmt==='html'){ txDownload(base+'.html','text/html',txBuild(o,rows,true)); TX.msg='✓ تم تنزيل صفحة HTML'; }
-    else if(fmt==='csv'){ txDownload(base+'.csv','text/csv',txCsv(rows,o)); TX.msg='✓ تم تنزيل CSV'; }
-    else if(fmt==='xls'){
-      var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"><style>table{border-collapse:collapse}th{background:'+th.head+';color:'+th.headFg+';font-weight:bold}td,th{border:1px solid '+th.line+';padding:3px 6px;vertical-align:top}tr.gh td{background:'+th.group+';font-weight:bold}tr.gs td,tr.gt td{font-weight:bold;background:'+th.zebra+'}'+(o.zebra?'tbody tr:nth-child(even) td{background:'+th.zebra+'}':'')+'</style></head><body dir="'+(en?'ltr':'rtl')+'"><h3>'+esc(o.title)+'</h3>'+(o.layout==='summary'?txSummaryHtml(rows,o):o.layout==='matrix'?txMatrixHtml(rows,o):txTableHtml(rows,Object.assign({},o,{layout:o.layout==='grouped'?'grouped':'table',pageBreakGroup:false}),true))+'</body></html>';
-      txDownload(base+'.xls','application/vnd.ms-excel',html); TX.msg='✓ تم تنزيل Excel';
-    }
-    else if(fmt==='json'){ var cols=o.cols.filter(function(k){ return TXN[k]; }); txDownload(base+'.json','application/json',JSON.stringify(rows.map(function(t){ var x={}; cols.forEach(function(k){ var r=txRaw(t,k); x[txL(k,o)]=r!=null?r:txVal(t,k,o); }); return x; }),null,2)); TX.msg='✓ تم تنزيل JSON'; }
+    txSave();
+    if(fmt==='print'||fmt==='pdf'){ var nm=txFileBase(o,rows); txPrintFrame(txBuild(Object.assign({},o,{docTitle:nm}),rows,true)); TX.msg=fmt==='pdf'?'اختر «حفظ كـ PDF» من نافذة الطباعة — الاسم المقترح: '+nm:'جارٍ فتح الطباعة…'; }
     else if(fmt==='copy'){ txCopy(txTsv(rows,o)); TX.msg='✓ تم النسخ — الصقه في Excel أو Google Sheets'; }
-    else if(fmt==='tab'){ var w=window.open('','_blank'); if(w){ w.document.open(); w.document.write(txBuild(o,rows,true)); w.document.close(); } else TX.msg='المتصفح منع فتح نافذة جديدة'; }
+    else if(fmt==='tab'){ var w=window.open('','_blank'); if(w){ w.document.open(); w.document.write(txBuild(Object.assign({},o,{docTitle:txFileBase(o,rows)}),rows,true)); w.document.close(); } else TX.msg='المتصفح منع فتح نافذة جديدة'; }
+    else { var f=txMake(fmt,o,rows); if(f){ txDownload(f.name,f.mime,f.text); TX.msg='✓ تم تنزيل '+f.name; } }
     txToast();
   }
   function txToast(){ var m=document.getElementById('txMsg'); if(m) m.textContent=TX.msg||''; }
@@ -5644,6 +5717,90 @@ function askDescribe_(spec) {
     var c=document.getElementById('txCount'); if(c) c.innerHTML='<b>'+all.length+'</b> '+(txEn(o)?'trips':'رحلة')+(all.length>60?' <span class="sub" style="margin:0">(المعاينة تعرض أول 60)</span>':'');
   }
   function txPreviewSoon(){ clearTimeout(TX.pt); TX.pt=setTimeout(txPreview,220); }
+  /* ================= تقارير اليوم بنقرة واحدة + حزمة ZIP ================= */
+  var TXQ=[
+    {id:'today',ic:'📅',n:'رحلات اليوم',p:'daily',ov:{range:'today',layout:'table',groupBy:'none',title:'رحلات اليوم {date}'}},
+    {id:'yest',ic:'⏪',n:'رحلات أمس',p:'daily',ov:{range:'yesterday',layout:'table',groupBy:'none',title:'رحلات أمس {period}'}},
+    {id:'bycon',ic:'Σ',n:'ملخص اليوم بالمقاول',p:'summary',ov:{range:'today',title:'ملخص اليوم بالمقاول {date}'}},
+    {id:'live',ic:'⏱',n:'الرحلات الجارية الآن',p:'follow',ov:{title:'الرحلات الجارية {date}'}},
+    {id:'slips',ic:'🪪',n:'كروت سائقين للأمن (الجارية)',p:'slips',ov:{}},
+    {id:'req',ic:'📨',n:'طلبات النقل اليوم',req:true}
+  ];
+  var TXREQC=[['receivedAt','وقت الاستلام'],['sector','القطاع'],['subject','الموضوع'],['emailClass','التصنيف'],['requestedAt','الموعد المطلوب'],['loading','التحميل'],['unloading','التفريغ'],['crop','الصنف'],['packaging','العبوات'],['quantity','الكمية'],['vehicle','السيارات'],['contractor','المقاول'],['notes','ملاحظات'],['missing','ناقص'],['requestId','رقم الطلب']];
+  function txQOpts(q){
+    var d=txDefaults(), pr=TXPRESETS[q.p]; if(pr){ d=Object.assign(d,JSON.parse(JSON.stringify(pr.o))); if(pr.o.cols) d.cols=pr.o.cols.slice(); }
+    Object.keys(q.ov||{}).forEach(function(k){ d[k]=q.ov[k]; }); d.presetName=txClean(q.n); return d;
+  }
+  function txReqRows(day){ return (D.emails||[]).filter(function(r){ return String(r.receivedAt||'').slice(0,10)===day; }); }
+  function txReqHtml(rows,title,full){
+    var h='<table border="1" style="border-collapse:collapse"><thead><tr>'+TXREQC.map(function(c){ return '<th style="background:#1d7a4d;color:#fff">'+esc(c[1])+'</th>'; }).join('')+'</tr></thead><tbody>'+rows.map(function(r){ return '<tr>'+TXREQC.map(function(c){ return '<td>'+esc(r[c[0]]==null?'':r[c[0]])+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table>';
+    return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"><title>'+esc(title)+'</title></head><body dir="rtl"><h3>'+esc(title)+'</h3>'+h+'</body></html>';
+  }
+  function txReqCsv(rows){ function q(v){ v=String(v==null?'':v); return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; } return [TXREQC.map(function(c){ return q(c[1]); }).join(',')].concat(rows.map(function(r){ return TXREQC.map(function(c){ return q(r[c[0]]); }).join(','); })).join('\r\n'); }
+  /* يبني ملف تقرير سريع: {name,mime,text,html,n} أو null لو مفيش بيانات */
+  function txQuickFile(q,fmt){
+    if(q.req){
+      var rows=txReqRows(TODAY); if(!rows.length) return null; var base='DALTEX_طلبات-النقل_'+TODAY;
+      if(fmt==='csv') return {name:base+'.csv',mime:'text/csv',text:txReqCsv(rows),n:rows.length};
+      var title='طلبات النقل '+TODAY, html=txReqHtml(rows,base,true);
+      return {name:base+'.xls',mime:'application/vnd.ms-excel',text:txReqHtml(rows,title),html:html,n:rows.length};
+    }
+    var o=txQOpts(q), rows2=txRows(o); if(!rows2.length) return null;
+    if(fmt==='print'){ var nm=txFileBase(o,rows2); return {name:nm,html:txBuild(Object.assign({},o,{docTitle:nm}),rows2,true),n:rows2.length}; }
+    var f=txMake(fmt==='csv'?'csv':'xls',o,rows2); f.n=rows2.length; return f;
+  }
+  /* ZIP بدون ضغط (store) — يكفي لملفات نصية صغيرة ويفتح في أي نظام */
+  var TXCRC=null;
+  function txCrc(b){ if(!TXCRC){ TXCRC=[]; for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; TXCRC[n]=c>>>0; } } var c2=0xFFFFFFFF; for(var i=0;i<b.length;i++) c2=TXCRC[(c2^b[i])&255]^(c2>>>8); return (c2^0xFFFFFFFF)>>>0; }
+  function txZip(files){
+    var enc=new TextEncoder(), parts=[], cd=[], off=0, now=new Date(), dt=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1))&0xFFFF, dd=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())&0xFFFF;
+    function u16(v){ return [v&255,(v>>>8)&255]; } function u32(v){ return [v&255,(v>>>8)&255,(v>>>16)&255,(v>>>24)&255]; }
+    files.forEach(function(f){
+      var nm=enc.encode(f.name), data=enc.encode('﻿'+f.text), crc=txCrc(data);
+      var lh=[0x50,0x4b,3,4].concat(u16(20),u16(0x0800),u16(0),u16(dt),u16(dd),u32(crc),u32(data.length),u32(data.length),u16(nm.length),u16(0));
+      parts.push(new Uint8Array(lh),nm,data);
+      cd.push([0x50,0x4b,1,2].concat(u16(20),u16(20),u16(0x0800),u16(0),u16(dt),u16(dd),u32(crc),u32(data.length),u32(data.length),u16(nm.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(off)),nm);
+      off+=lh.length+nm.length+data.length;
+    });
+    var cdLen=0; cd.forEach(function(x){ var a=x instanceof Uint8Array?x:new Uint8Array(x); parts.push(a); cdLen+=a.length; });
+    parts.push(new Uint8Array([0x50,0x4b,5,6].concat(u16(0),u16(0),u16(files.length),u16(files.length),u32(cdLen),u32(off),u16(0))));
+    return new Blob(parts,{type:'application/zip'});
+  }
+  function txSaveBlob(name,blob){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },800); }
+  var TXQM='';
+  function txQuickDlg(open){
+    txLoad(); var ov=document.getElementById('txQuick');
+    if(open===false){ if(ov) ov.hidden=true; return; }
+    if(!ov){ ov=document.createElement('div'); ov.id='txQuick'; ov.className='ov'; document.body.appendChild(ov); ov.addEventListener('click',txQuickClick); }
+    ov.hidden=false;
+    var cnt=function(q){ try{ return q.req?txReqRows(TODAY).length:txRows(txQOpts(q)).length; }catch(e){ return 0; } };
+    var mine=Object.keys(TX.presets||{});
+    ov.innerHTML='<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="txqT" style="max-width:640px"><div class="tx-top"><h2 id="txqT">⚡ تقارير اليوم — <bdi dir="ltr">'+esc(TODAY||'')+'</bdi></h2><button class="abtn sm" data-txq="close" aria-label="إغلاق">✕</button></div>'+
+      '<p class="sub">نقرة واحدة = ملف جاهز باسم مناسب (DALTEX_نوع-التقرير_التاريخ). الإعدادات والأعمدة المحفوظة في «تصدير وطباعة» تُستخدم كما هي.</p>'+
+      '<div class="txq-list">'+TXQ.map(function(q){ var n=cnt(q); return '<div class="txq-row"><span class="txq-n"><b>'+q.ic+' '+esc(q.n)+'</b><small>'+n+(q.req?' طلب':' رحلة')+'</small></span><span class="txq-b">'+
+        '<button class="btn sm" data-txq="xls" data-id="'+q.id+'"'+(n?'':' disabled')+'>Excel</button>'+(q.req?'':'<button class="abtn sm" data-txq="print" data-id="'+q.id+'"'+(n?'':' disabled')+'>PDF / طباعة</button>')+'<button class="abtn sm" data-txq="csv" data-id="'+q.id+'"'+(n?'':' disabled')+'>CSV</button></span></div>'; }).join('')+
+      mine.map(function(k){ return '<div class="txq-row"><span class="txq-n"><b>⭐ '+esc(k)+'</b><small>قالب محفوظ</small></span><span class="txq-b"><button class="btn sm" data-txq="mine" data-fmt="xls" data-id="'+attr(k)+'">Excel</button><button class="abtn sm" data-txq="mine" data-fmt="print" data-id="'+attr(k)+'">PDF / طباعة</button></span></div>'; }).join('')+'</div>'+
+      '<div class="tx-act"><button class="btn" data-txq="zip">📦 حزمة اليوم (ملف ZIP واحد بكل التقارير)</button><button class="abtn" data-txq="full">⚙ تصدير مخصّص</button><span id="txqMsg" class="sub" style="margin:0">'+esc(TXQM)+'</span></div></div>';
+  }
+  function txQuickClick(e){
+    var b=e.target.closest('[data-txq]'), t=e.target; if(t.id==='txQuick'){ txQuickDlg(false); return; } if(!b) return;
+    var a=b.dataset.txq, id=b.dataset.id, q=TXQ.filter(function(x){ return x.id===id; })[0], msg=function(m){ TXQM=m; var el=document.getElementById('txqMsg'); if(el) el.textContent=m; };
+    if(a==='close'){ txQuickDlg(false); return; }
+    if(a==='full'){ txQuickDlg(false); txOpen('trips'); return; }
+    if(a==='mine'){ var s=TX.presets[id]; if(!s) return; var o=Object.assign(txDefaults(),JSON.parse(JSON.stringify(s))); o.presetName=txClean(id); var rows=txRows(o); if(!rows.length){ msg('لا توجد رحلات في هذا القالب'); return; }
+      if(b.dataset.fmt==='print'){ var nm=txFileBase(o,rows); txPrintFrame(txBuild(Object.assign({},o,{docTitle:nm}),rows,true)); msg('جارٍ فتح الطباعة — الاسم المقترح: '+nm); } else { var f=txMake('xls',o,rows); txDownload(f.name,f.mime,f.text); msg('✓ '+f.name); } return; }
+    if(a==='zip'){
+      var files=[], names={};
+      TXQ.filter(function(x){ return x.id!=='slips'; }).forEach(function(x){ var f=txQuickFile(x,'xls'); if(f&&!names[f.name]){ names[f.name]=1; files.push(f); } });
+      if(!files.length){ msg('لا توجد بيانات اليوم لتجميعها'); return; }
+      txSaveBlob('DALTEX_تقارير-اليوم_'+TODAY+'.zip',txZip(files)); msg('✓ تم تنزيل ZIP فيه '+files.length+' ملفات'); return;
+    }
+    if(!q) return; var f2=txQuickFile(q,a); if(!f2){ msg('لا توجد بيانات'); return; }
+    if(a==='print'){ txPrintFrame(f2.html); msg('جارٍ فتح الطباعة — الاسم المقترح: '+f2.name); }
+    else { txDownload(f2.name,f2.mime,f2.text); msg('✓ '+f2.name); }
+  }
+  document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-tx-quick]'); if(b){ TXQM=''; txQuickDlg(true); } });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ var ov=document.getElementById('txQuick'); if(ov&&!ov.hidden) ov.hidden=true; } });
   /* ---------- الواجهة ---------- */
   function txOpen(src){ txLoad(); if(src){ TX.o.source=src; } TX.open=true; TX.msg=''; txDlg(); }
   function txSel(k,label,opts,w){ var o=TX.o; return '<label class="fld em-f"'+(w?' style="min-width:'+w+'px"':'')+'><span>'+label+'</span><select data-tx="'+k+'">'+opts.map(function(x){ return '<option value="'+attr(x[0])+'"'+(String(o[k])===String(x[0])?' selected':'')+'>'+esc(x[1])+'</option>'; }).join('')+'</select></label>'; }
@@ -5662,8 +5819,8 @@ function askDescribe_(spec) {
   }
   function txTabCols(){
     var o=TX.o, on=o.cols.filter(function(k){ return TXN[k]; }), off=TXC.map(function(c){ return c[0]; }).filter(function(k){ return on.indexOf(k)<0; }), en=txEn(o);
-    var h='<p class="sub">اختر الأعمدة وترتيبها، وغيّر اسم العمود في التقرير أو عرضه (٪ من العرض).</p><div class="tx-cols">';
-    on.forEach(function(k,i){ h+='<div class="tx-col"><label class="sw2"><input type="checkbox" data-txc="'+k+'" checked><i></i></label><span class="tx-cn">'+esc(TXN[k][en?2:1])+'</span><input data-txh="'+k+'" value="'+attr((o.hdr&&o.hdr[k])||'')+'" placeholder="'+attr(TXN[k][en?2:1])+'" aria-label="اسم العمود"><input type="number" data-txw="'+k+'" min="3" max="60" value="'+attr((o.wid&&o.wid[k])||'')+'" placeholder="%" aria-label="العرض" style="width:62px"><span class="tools2"><button class="abtn sm" data-tx-a="up" data-k="'+k+'"'+(i===0?' disabled':'')+' aria-label="أعلى">↑</button><button class="abtn sm" data-tx-a="down" data-k="'+k+'"'+(i===on.length-1?' disabled':'')+' aria-label="أسفل">↓</button></span></div>'; });
+    var h='<p class="sub">اختر الأعمدة، <b>اسحب المقبض ⠿ بالماوس أو بإصبعك</b> لتغيير الترتيب (أو استخدم ↑ ↓)، وغيّر اسم العمود في التقرير أو عرضه (٪ من العرض).</p><div class="tx-cols">';
+    on.forEach(function(k,i){ h+='<div class="tx-col" data-dnd-row="1"><span class="dnd-grip" data-dnd-grip="txcols" title="اسحب لتغيير الترتيب" aria-label="اسحب لتغيير الترتيب">⠿</span><label class="sw2"><input type="checkbox" data-txc="'+k+'" checked><i></i></label><span class="tx-cn">'+esc(TXN[k][en?2:1])+'</span><input data-txh="'+k+'" value="'+attr((o.hdr&&o.hdr[k])||'')+'" placeholder="'+attr(TXN[k][en?2:1])+'" aria-label="اسم العمود"><input type="number" data-txw="'+k+'" min="3" max="60" value="'+attr((o.wid&&o.wid[k])||'')+'" placeholder="%" aria-label="العرض" style="width:62px"><span class="tools2"><button class="abtn sm" data-tx-a="up" data-k="'+k+'"'+(i===0?' disabled':'')+' aria-label="أعلى">↑</button><button class="abtn sm" data-tx-a="down" data-k="'+k+'"'+(i===on.length-1?' disabled':'')+' aria-label="أسفل">↓</button></span></div>'; });
     h+='</div><div class="sub" style="margin:8px 0 4px">أعمدة متاحة:</div><div class="row" style="gap:6px">'+off.map(function(k){ return '<button class="abtn sm" data-tx-a="on" data-k="'+k+'">+ '+esc(TXN[k][en?2:1])+'</button>'; }).join('')+'</div>';
     return h;
   }
@@ -5692,6 +5849,7 @@ function askDescribe_(spec) {
     var o=TX.o;
     return '<div class="row" style="gap:10px;align-items:flex-end">'+txSel('page','حجم الورقة',[['A4','A4'],['A3','A3'],['A5','A5'],['Letter','Letter']],110)+txSel('orient','الاتجاه',[['landscape','أفقي'],['portrait','رأسي']],110)+txNumIn('margin','الهوامش (مم)',0,30,1,100)+'</div>'+
       '<div class="row" style="gap:10px;margin-top:10px">'+txTxt('title','عنوان التقرير')+txTxt('subtitle','عنوان فرعي','اختياري')+'</div><div class="row" style="gap:10px;margin-top:10px">'+txTxt('logo','اسم الجهة / الشعار النصي','مثال: دالتكس · قسم النقل')+txTxt('footer','تذييل كل صفحة','اختياري')+'</div>'+
+      '<div class="row" style="gap:10px;margin-top:10px">'+txTxt('fileName','قالب اسم الملف (اتركه فارغًا للتلقائي)','DALTEX_{type}_{period}_{contractor}')+'</div><div class="sub" style="margin:2px 0 0">الرموز: {type} نوع التقرير · {period} الفترة · {date} تاريخ اليوم · {contractor} المقاول · {count} العدد · {time} الساعة. مثال التلقائي: DALTEX_تقرير-اليوم_2026-11-03.xls</div>'+
       '<div class="row" style="margin-top:10px">'+txSw('pageNumbers','ترقيم الصفحات (يظهر في كروم وإيدج الحديثين)')+'</div>';
   }
   function txTabPresets(){
@@ -5739,8 +5897,8 @@ function askDescribe_(spec) {
     else if(a==='up'||a==='down'){ i=o.cols.indexOf(k); var j=i+(a==='up'?-1:1); if(i>=0&&j>=0&&j<o.cols.length){ var tmp=o.cols[i]; o.cols[i]=o.cols[j]; o.cols[j]=tmp; } }
     else if(a==='theme'){ o.theme=k; o.headBg=''; o.headFg=''; }
     else if(a==='resetcolors'){ o.headBg=''; o.headFg=''; }
-    else if(a==='preset'){ var d=txDefaults(), p=TXPRESETS[k].o; TX.o=Object.assign(d,JSON.parse(JSON.stringify(p))); if(p.cols) TX.o.cols=p.cols.slice(); }
-    else if(a==='mine'){ var s=TX.presets[k]; if(s) TX.o=Object.assign(txDefaults(),JSON.parse(JSON.stringify(s))); }
+    else if(a==='preset'){ var d=txDefaults(), p=TXPRESETS[k].o; TX.o=Object.assign(d,JSON.parse(JSON.stringify(p))); if(p.cols) TX.o.cols=p.cols.slice(); TX.o.presetName=txClean(TXPRESETS[k].n); }
+    else if(a==='mine'){ var s=TX.presets[k]; if(s){ TX.o=Object.assign(txDefaults(),JSON.parse(JSON.stringify(s))); TX.o.presetName=txClean(k); } }
     else if(a==='mine-del'){ delete TX.presets[k]; }
     else if(a==='ed-clear'){ TX.ed={cells:{},excl:{},glabel:{},extra:[]}; }
     else if(a==='ex-add'){ TX.ed.extra.push({}); }
@@ -5766,8 +5924,13 @@ function askDescribe_(spec) {
     else o[k]=t.type==='checkbox'?t.checked:(t.type==='number'?(Number(t.value)||0):t.value);
     if(k==='cardCols') o[k]=+t.value;
     txSave();
+    if(k==='source'||k==='layout') o.presetName='';
     if(k==='source'||k==='range'||k==='layout'||k==='lang') txDlg(); else txPreviewSoon();
   }
+  document.addEventListener('dnd-drop',function(e){
+    var d=e.detail, g=d.grip; if(g.dataset.dndGrip!=='txcols') return;
+    var o=TX.o, on=o.cols.filter(function(k){ return TXN[k]; }), mv=on.splice(d.from,1)[0]; on.splice(d.to,0,mv); o.cols=on; txSave(); txPreviewSoon();
+  });
   function txInput(e){ var t=e.target; if(t.type==='text'||t.type==='search'||t.type==='number'||t.type==='color'){ if(t.dataset.tx||t.dataset.txh!==undefined||t.dataset.txw!==undefined) txChange(e); } }
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&TX.open){ TX.open=false; txDlg(); } });
   document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-tx-open]'); if(b){ txOpen(b.dataset.txOpen); } });
