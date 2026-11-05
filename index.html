@@ -5157,8 +5157,6 @@ function askDescribe_(spec) {
   var DRF=[['xls','Excel (.xls)'],['pdf','PDF'],['csv','CSV'],['html','HTML (صفحة)']], DRG=[['','بدون تجميع'],['contractor','حسب المقاول'],['loadPlace','حسب مكان التحميل'],['unloadPlace','حسب مكان التفريغ'],['cropVar','حسب الصنف'],['plate','حسب السيارة']], DRDAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'], DREXT={xls:'xls',pdf:'pdf',csv:'csv',html:'html'}, DRP=[['today','اليوم'],['yesterday','أمس'],['week','هذا الأسبوع (من السبت)'],['last7','آخر 7 أيام'],['last30','آخر 30 يومًا'],['month','هذا الشهر'],['prevmonth','الشهر الماضي'],['lastN','آخر … يوم (تحدده)']], DRSRC={done:'رحلات مكتملة',live:'رحلات جارية',req:'طلبات النقل'};
   function drDM(){ var S=A.S; S.dailyMail=Object.assign({enabled:false,to:'',cc:'',bcc:'',contacts:[],days:[],time:'17:00',subject:'بيانات/تقارير/ نظام النقل — {date}',greeting:'السلام عليكم،',uiUrl:'',sheetLink:true,skipEmpty:false},S.dailyMail||{}); if(!Array.isArray(S.dailyMail.contacts)) S.dailyMail.contacts=[]; if(!Array.isArray(S.dailyMail.days)) S.dailyMail.days=[]; return S.dailyMail; }
   function drReps(){ return Array.isArray(A.S.dailyReports)?A.S.dailyReports:(A.S.dailyReports=[]); }
-  function drColsOf(src){ return (D.drCols&&D.drCols[src])||[]; }
-  function drLbl(src,k){ var c=drColsOf(src).filter(function(x){ return x[0]===k; })[0]; return c?c[1]:k; }
   function drCtName(email){ var c=drDM().contacts.filter(function(x){ return x.email.toLowerCase()===String(email).toLowerCase(); })[0]; return c&&c.name?c.name:email.split('@')[0]; }
   function drMailsOf(v){ return String(v||'').split(/[,;\s،؛]+/).map(function(x){ return x.trim(); }).filter(function(x){ return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x); }); }
   function drList(f){ return drMailsOf(drDM()[f]); }
@@ -5167,32 +5165,28 @@ function askDescribe_(spec) {
   function drChips(f,label,ph){
     return '<div class="fld dr-f"><span>'+label+'</span><div class="dr-chips">'+drList(f).map(function(e){ return '<span class="dr-chip" title="'+attr(e)+'">'+esc(drCtName(e))+' <small>'+esc(e)+'</small><button data-a="dr-rm" data-f="'+f+'" data-e="'+attr(e)+'" aria-label="حذف">×</button></span>'; }).join('')+'<input class="dr-in" data-a="dr-add" data-f="'+f+'" list="drCt" placeholder="'+attr(ph||'اكتب إيميل واضغط Enter')+'"></div></div>';
   }
+  var DRSRCN={trips:'الرحلات',live:'الرحلات الجارية',requests:'طلبات النقل',emails:'طلبات النقل',screen:'الشاشة'}, DRLAY={table:'جدول',grouped:'مجمّع',summary:'ملخص',matrix:'مصفوفة',cards:'كروت',list:'قائمة'}, DREXT={xls:'xls',csv:'csv',pdf:'pdf',html:'html'};
+  function drRName(r){ var o=r.o||{}; return o.presetName||o.title||'تقرير'; }
+  function drPer(o){ try{ return (window.TXAPI&&TXAPI.periodLabel(o))||String(o.range||'today'); }catch(e){ return String(o.range||''); } }
+  function drFile(r){ var b=''; try{ b=window.TXAPI?TXAPI.fileBase(r.o):''; }catch(e){} return (b||('DALTEX_'+drRName(r)))+'.'+(DREXT[r.fmt]||'xls'); }
   function drRepHtml(r,i,n){
-    var o=!!A.dr.open[r.id], fn='DALTEX_'+r.name+'_'+(r.src==='live'||!r.period||r.period==='today'?'YYYY-MM-DD':'من_إلى')+'.'+DREXT[r.fmt];
-    var h='<div class="rbox dr-rep'+(r.on?'':' off')+'"><div class="row" style="align-items:center;gap:8px"><span class="dnd-grip" data-dnd-grip="list" data-p="dailyReports" title="اسحب لتغيير الترتيب" aria-label="اسحب لتغيير الترتيب">⠿</span>'+
+    var o=r.o||{};
+    return '<div class="rbox dr-rep'+(r.on?'':' off')+'"><div class="row" style="align-items:center;gap:8px"><span class="dnd-grip" data-dnd-grip="list" data-p="dailyReports" title="اسحب لتغيير الترتيب" aria-label="اسحب لتغيير الترتيب">⠿</span>'+
       '<label class="sw2"><input type="checkbox" data-a="dr-chk" data-i="'+i+'" data-k="on"'+(r.on?' checked':'')+'><i></i></label>'+
-      '<b class="dr-src">'+esc(DRSRC[r.src]||r.src)+'</b><input data-a="dr-f" data-i="'+i+'" data-k="name" value="'+attr(r.name)+'" aria-label="اسم الملف" style="flex:1;min-width:130px">'+
+      '<b style="flex:1;min-width:140px">'+esc(drRName(r))+'</b>'+
+      '<span class="dr-src">'+esc(DRSRCN[o.source]||o.source||'')+'</span><span class="dr-src">'+esc(drPer(o))+'</span><span class="dr-src">'+esc(DRLAY[o.layout]||o.layout||'')+'</span>'+
       '<select data-a="dr-f" data-i="'+i+'" data-k="fmt" aria-label="الصيغة">'+DRF.map(function(x){ return '<option value="'+x[0]+'"'+(r.fmt===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select>'+
-      (r.src==='live'?'<span class="sub" style="margin:0">لحظي (الآن)</span>':'<select data-a="dr-f" data-i="'+i+'" data-k="period" aria-label="الفترة">'+DRP.map(function(x){ return '<option value="'+x[0]+'"'+((r.period||'today')===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select>'+(r.period==='lastN'?'<input type="number" min="1" max="366" data-a="dr-f" data-i="'+i+'" data-k="lastDays" value="'+(r.lastDays||7)+'" style="width:72px" aria-label="عدد الأيام"> يوم':''))+
-      (r.src==='req'?'':'<select data-a="dr-f" data-i="'+i+'" data-k="group" aria-label="التجميع">'+DRG.map(function(x){ return '<option value="'+x[0]+'"'+(r.group===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select>')+
       '<label class="chk"><input type="checkbox" data-a="dr-chk" data-i="'+i+'" data-k="mail"'+(r.mail?' checked':'')+'> إيميل</label><label class="chk"><input type="checkbox" data-a="dr-chk" data-i="'+i+'" data-k="drive"'+(r.drive?' checked':'')+'> Drive</label>'+
-      '<button class="abtn sm" data-a="dr-open" data-id="'+attr(r.id)+'" aria-expanded="'+o+'">الأعمدة ('+r.cols.length+') '+(o?'▴':'▾')+'</button><button class="abtn sm" data-a="dr-dup" data-i="'+i+'" title="نسخ">⧉</button><button class="abtn sm bad" data-a="dr-del" data-i="'+i+'" title="حذف">✕</button></div>'+
-      '<div class="sub" style="margin:2px 0 0">اسم الملف: <bdi dir="ltr">'+esc(fn)+'</bdi></div>';
-    if(o){
-      var all=drColsOf(r.src), on={}; r.cols.forEach(function(k){ on[k]=1; });
-      h+='<div class="dr-cols"><div class="sub" style="margin:6px 0 4px">اسحب ⠿ لترتيب الأعمدة. الترتيب هنا هو ترتيب الأعمدة في الملف.</div>'+
-        r.cols.map(function(k){ return '<div class="rbox dcol"><span class="dnd-grip" data-dnd-grip="list" data-p="dailyReports.'+i+'.cols" aria-label="اسحب">⠿</span><span style="flex:1">'+esc(drLbl(r.src,k))+'</span><button class="abtn sm" data-a="dr-colrm" data-i="'+i+'" data-k="'+attr(k)+'" aria-label="إزالة">×</button></div>'; }).join('')+
-        '<div class="sub" style="margin:8px 0 4px">أضف عمودًا: <button class="abtn sm" data-a="dr-preset" data-i="'+i+'" data-k="brief">مختصر</button> <button class="abtn sm" data-a="dr-preset" data-i="'+i+'" data-k="all">كل الأعمدة</button></div><div class="row" style="gap:5px">'+
-        all.filter(function(c){ return !on[c[0]]; }).map(function(c){ return '<button class="abtn sm" data-a="dr-coladd" data-i="'+i+'" data-k="'+attr(c[0])+'">+ '+esc(c[1])+'</button>'; }).join('')+'</div></div>';
-    }
-    return h+'</div>';
+      '<button class="btn sm" data-a="dr-edit" data-i="'+i+'">🎨 تعديل القالب والتنسيق</button><button class="abtn sm" data-a="dr-dup" data-i="'+i+'" title="نسخ">⧉</button><button class="abtn sm bad" data-a="dr-del" data-i="'+i+'" title="حذف">✕</button></div>'+
+      '<div class="sub" style="margin:2px 0 0">اسم الملف: <bdi dir="ltr">'+esc(drFile(r))+'</bdi></div></div>';
   }
   function rDaily(){
     var dm=drDM(), reps=drReps(), dx=Object.assign({enabled:false,folderId:'',everyMin:30},A.S.dailyExport||{}), h='';
     h+='<datalist id="drCt">'+dm.contacts.map(function(c){ return '<option value="'+attr(c.email)+'">'+esc(c.name)+'</option>'; }).join('')+'</datalist>';
-    h+='<div class="box"><h3>🗂 التقارير اليومية: النوع والصيغة والأعمدة</h3><p class="sub">كل بطاقة تقرير بتتولّد تلقائيًا كل يوم. اختار صيغة الملف (Excel / PDF / CSV / صفحة HTML)، والتجميع، وأي الأعمدة وبأي ترتيب، وتبعته بالإيميل و/أو تحفظه في Drive. اسحب ⠿ لترتيب التقارير. التقرير الفاضي (مفيش بيانات) بيتخطّى.</p>'+
+    var tpls=(window.TXAPI?TXAPI.templates():[]);
+    h+='<div class="box"><h3>🗂 التقارير التلقائية (نفس مركز التصدير والطباعة)</h3><p class="sub">كل تقرير هنا بيتبني بنفس القوالب والخيارات اللي في زر التصدير: المصدر (رحلات / جارية / طلبات النقل)، الفترة، الأعمدة والترتيب، التجميع، الشكل والألوان. اضغط «🎨 تعديل القالب والتنسيق» وظبّط كل حاجة من نفس المركز. اسحب ⠿ لترتيب التقارير. التقرير الفاضي بيتخطّى.</p>'+
       reps.map(function(r,i){ return drRepHtml(r,i,reps.length); }).join('')+
-      '<div class="row" style="margin-top:8px;gap:8px;align-items:center"><select id="drNewSrc" aria-label="نوع التقرير الجديد"><option value="done">رحلات مكتملة اليوم</option><option value="live">الرحلات الجارية</option><option value="req">طلبات النقل اليوم</option></select><button class="abtn" data-a="dr-addrep">＋ تقرير جديد</button></div></div>';
+      '<div class="row" style="margin-top:8px;gap:8px;align-items:center"><select id="drNewTpl" aria-label="قالب التقرير الجديد">'+tpls.map(function(t){ return '<option value="'+attr(t.key)+'">'+esc((t.ic?t.ic+' ':'')+t.n)+'</option>'; }).join('')+'</select><button class="abtn" data-a="dr-addrep">＋ تقرير تلقائي من القالب</button></div></div>';
     h+='<div class="box"><h3>✉ الإيميل اليومي</h3><p class="sub">بيتبعت من حساب Gmail اللي ناشر النظام، مرة واحدة يوميًا بعد الوقت المحدد، ومعاه التقارير المعلّمة «إيميل» (كل تقرير بفترته: اليوم أو أمس أو آخر 7 أيام أو الشهر…) + لينك الواجهة ولينك الشيت.</p>'+
       '<div class="row" style="align-items:flex-end;gap:12px"><label class="chk" style="align-self:center"><input type="checkbox" data-a="dr-dmchk" data-k="enabled"'+(dm.enabled?' checked':'')+'> تفعيل الإيميل اليومي</label><label class="fld" style="max-width:130px">الوقت<input type="time" data-a="dr-dm" data-k="time" value="'+attr(dm.time)+'"></label>'+
       '<label class="chk" style="align-self:center"><input type="checkbox" data-a="dr-dmchk" data-k="sheetLink"'+(dm.sheetLink!==false?' checked':'')+'> لينك الشيت</label><label class="chk" style="align-self:center"><input type="checkbox" data-a="dr-dmchk" data-k="skipEmpty"'+(dm.skipEmpty?' checked':'')+'> لا ترسل لو مفيش بيانات</label></div>'+
@@ -5209,13 +5203,10 @@ function askDescribe_(spec) {
     if(a==='dr-rm'){ drSetList(t.dataset.f,drList(t.dataset.f).filter(function(x){ return x.toLowerCase()!==t.dataset.e.toLowerCase(); })); touch(); aRender(); return true; }
     if(a==='dr-ct'){ var f=t.dataset.f, e=t.dataset.e; ['to','cc','bcc'].forEach(function(g){ if(g!==f) drSetList(g,drList(g).filter(function(x){ return x.toLowerCase()!==e.toLowerCase(); })); }); drSetList(f,drList(f).concat([e])); touch(); aRender(); return true; }
     if(a==='dr-ctdel'){ dm.contacts.splice(i,1); touch(); aRender(); return true; }
-    if(a==='dr-open'){ A.dr.open[t.dataset.id]=!A.dr.open[t.dataset.id]; aRender(); return true; }
     if(a==='dr-del'){ if(reps.length<=1){ A.dr.tmsg='لازم يفضل تقرير واحد على الأقل'; aRender(); return true; } reps.splice(i,1); touch(); aRender(); return true; }
-    if(a==='dr-dup'){ var c=clone(r); c.id=r.id+'c'+Date.now().toString(36).slice(-3); c.name=r.name+'-2'; reps.splice(i+1,0,c); touch(); aRender(); return true; }
-    if(a==='dr-colrm'){ if(r.cols.length>1){ r.cols=r.cols.filter(function(k){ return k!==t.dataset.k; }); touch(); aRender(); } return true; }
-    if(a==='dr-coladd'){ if(r.cols.indexOf(t.dataset.k)<0) r.cols.push(t.dataset.k); touch(); aRender(); return true; }
-    if(a==='dr-preset'){ var all=drColsOf(r.src).map(function(c){ return c[0]; }); r.cols=t.dataset.k==='all'?all:all.filter(function(k){ return (D.drBrief&&D.drBrief[r.src]||[]).indexOf(k)>=0; }).sort(function(x,y){ var b=D.drBrief[r.src]; return b.indexOf(x)-b.indexOf(y); }); if(!r.cols.length) r.cols=all.slice(0,8); touch(); aRender(); return true; }
-    if(a==='dr-addrep'){ var src=(document.getElementById('drNewSrc')||{}).value||'done', b=(D.drBrief&&D.drBrief[src])||drColsOf(src).slice(0,8).map(function(c){ return c[0]; }); var nid='r'+Date.now().toString(36).slice(-4); reps.push({id:nid,on:true,src:src,name:(DRSRC[src]||src).replace(/\s+/g,'-'),fmt:'xls',cols:b.slice(),group:'',period:'today',lastDays:7,mail:true,drive:false}); A.dr.open[nid]=true; touch(); aRender(); return true; }
+    if(a==='dr-dup'){ var c=clone(r); c.id=r.id+'c'+Date.now().toString(36).slice(-3); reps.splice(i+1,0,c); touch(); aRender(); return true; }
+    if(a==='dr-edit'){ if(!window.TXAPI||!r) return true; TXAPI.edit(r.o,drRName(r),function(no){ r.o=no; touch(); aRender(); }); return true; }
+    if(a==='dr-addrep'){ var key=(document.getElementById('drNewTpl')||{}).value; if(!key||!window.TXAPI||reps.length>=12) return true; var nid='r'+Date.now().toString(36).slice(-4); reps.push({id:nid,on:true,fmt:'xls',mail:true,drive:false,o:TXAPI.make(key)}); touch(); aRender(); return true; }
     if(a==='dr-test'){
       if(A.dirty){ A.dr.tmsg='احفظ الإعدادات أولًا ثم جرّب'; aRender(); return true; }
       A.dr.tmsg='جارٍ الإرسال…'; aRender();
@@ -5232,7 +5223,7 @@ function askDescribe_(spec) {
       if(ok.length){ ok.forEach(drRemember); drSetList(f,drList(f).concat(ok)); touch(); }
       A.dr.tmsg=bad>0?'⚠ '+bad+' عنوان مش صالح اتتجاهل':''; aRender(); var inp=document.querySelector('input[data-a="dr-add"][data-f="'+f+'"]'); if(inp) inp.focus(); return true;
     }
-    if(a==='dr-f'&&r){ var k=t.dataset.k; r[k]=k==='lastDays'?Math.max(1,Math.min(366,Math.round(+t.value)||7)):k==='name'?t.value.replace(/[\\\/:*?"<>|]+/g,' ').trim().replace(/\s+/g,'-')||r.name:t.value; touch(); aRender(); return true; }
+    if(a==='dr-f'&&r){ r[t.dataset.k]=t.value; touch(); aRender(); return true; }
     if(a==='dr-chk'&&r){ r[t.dataset.k]=t.checked; touch(); aRender(); return true; }
     if(a==='dr-dm'){ dm[t.dataset.k]=t.value.trim(); touch(); return true; }
     if(a==='dr-dmchk'){ dm[t.dataset.k]=t.checked; touch(); aRender(); return true; }
@@ -5427,39 +5418,29 @@ function askDescribe_(spec) {
       is.map(function(x){ return '<div class="sub" style="margin:3px 0 0">'+(x.sev==='err'?'⛔ ':'⚠ ')+esc(x.msg)+'</div>'; }).join('')+'</span><button class="abtn sm" data-a="nav" data-s="ladder">سلم القواعد</button></div>';
   }
 
-    /* ================= تصدير وطباعة الرحلات =================
-     نافذة تحكم كاملة بمعاينة حيّة: النطاق (أيام/مقاول/حالة/بحث) · الأعمدة (ترتيب وأسماء وعروض) · الشكل (جدول، مجمّع بإجماليات، كروت، قائمة، ملخص)
-     · التنسيق (ألوان وخطوط وحدود وزيبرا) · الصفحة (حجم واتجاه وهوامش وترويسة وتذييل وترقيم) · قوالب محفوظة. الصيغ: طباعة/PDF، HTML، Excel، CSV، JSON، نسخ للّصق. */
-  /* ---------- سحب وإفلات عام (ماوس + لمس): مقبض [data-dnd-grip] داخل صف [data-dnd-row]؛ عند الإفلات يُطلق الحدث dnd-drop {grip,from,to} ---------- */
-  (function(){
-    if(window.__dndInit) return; window.__dndInit=true;
-    var st=null;
-    function rowsOf(row){ return Array.prototype.filter.call(row.parentNode.children,function(x){ return x.hasAttribute('data-dnd-row'); }); }
-    function scroller(el){ while(el&&el!==document.body){ var cs=getComputedStyle(el); if(/(auto|scroll)/.test(cs.overflowY)&&el.scrollHeight>el.clientHeight) return el; el=el.parentNode; } return document.scrollingElement||document.documentElement; }
-    document.addEventListener('pointerdown',function(e){
-      var g=e.target.closest&&e.target.closest('[data-dnd-grip]'); if(!g||(e.button!==undefined&&e.button!==0)) return;
-      var row=g.closest('[data-dnd-row]');
-      if(!row&&g.dataset.dndGrip==='list'){ row=g.closest('.rbox'); if(row){ Array.prototype.forEach.call(row.parentNode.children,function(x){ var gg=x.querySelector&&x.querySelector('[data-dnd-grip="list"]'); if(gg&&gg.dataset.p===g.dataset.p) x.setAttribute('data-dnd-row','1'); }); } }
-      if(!row) return; e.preventDefault();
-      st={g:g,row:row,from:rowsOf(row).indexOf(row),sc:scroller(row),y:e.clientY,id:e.pointerId}; row.classList.add('dnd-drag'); document.body.classList.add('dnd-on');
-      try{ g.setPointerCapture(e.pointerId); }catch(x){}
-    });
-    document.addEventListener('pointermove',function(e){
-      if(!st) return; st.y=e.clientY;
-      var el=document.elementFromPoint(e.clientX,e.clientY), over=el&&el.closest&&el.closest('[data-dnd-row]');
-      if(over&&over!==st.row&&over.parentNode===st.row.parentNode){ var r=over.getBoundingClientRect(); if(e.clientY<r.top+r.height/2) over.parentNode.insertBefore(st.row,over); else over.parentNode.insertBefore(st.row,over.nextSibling); }
-    });
-    var tick=setInterval(function(){ if(!st) return; var r=st.sc.getBoundingClientRect?st.sc.getBoundingClientRect():{top:0,bottom:innerHeight}, top=st.sc===document.scrollingElement?0:r.top, bot=st.sc===document.scrollingElement?innerHeight:r.bottom; if(st.y<top+36) st.sc.scrollTop-=12; else if(st.y>bot-36) st.sc.scrollTop+=12; },30);
-    function end(e,cancel){
-      if(!st) return; var s=st; st=null; s.row.classList.remove('dnd-drag'); document.body.classList.remove('dnd-on');
-      var to=rowsOf(s.row).indexOf(s.row);
-      if(cancel||to===s.from) return;
-      document.dispatchEvent(new CustomEvent('dnd-drop',{detail:{grip:s.g,from:s.from,to:to}}));
-    }
-    document.addEventListener('pointerup',function(e){ end(e,false); });
-    document.addEventListener('pointercancel',function(e){ end(e,true); });
-    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&st){ end(e,true); } });
-  })();
+  /**
+ * ============================================================
+ * 35 · محرك التقارير المشترك (RC) — يعمل في المتصفح (مركز التصدير) وعلى السيرفر (الإيميل/Drive التلقائي) بنفس الكود
+ * المصدر الوحيد لـ: القوالب · الأعمدة · الثيمات · التخطيطات (جدول/مجمّع/كروت/قائمة/ملخص/مصفوفة) · الصفحة · أسماء الملفات.
+ * يعتمد على ENV فقط (التاريخ واللغة وتعديلات ما قبل التصدير والخطوط والمسافات) فيُضبط من المنادي.
+ * ============================================================
+ */
+var RC = (function () {
+  var ENV = {
+    today: '', lang: 'ar',
+    ed: function () { return ENV._ed || (ENV._ed = { cells: {}, excl: {}, glabel: {}, extra: [] }); },
+    tripKm: function () { return null },
+    fontCss: function () { return { stack: 'Tahoma,Arial,sans-serif', link: '' }; },
+    nz: function (s) { return String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ' ').trim(); },
+    isToday: function () { return false; }
+  };
+  var REVIEW = 'تحتاج مراجعة', DAILY = 'نقلة داخلية';
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function attr(s) { return esc(s).replace(/'/g, '&#39;'); }
+  function isNum(v) { return v !== '' && v != null && !isNaN(Number(v)); }
+  function f1(n) { return Number(n).toLocaleString('en-US', { maximumFractionDigits: 3 }); }
+  function signed(n) { var r = Math.round(n * 1000) / 1000; return (r > 0 ? '+' : r < 0 ? '−' : '') + f1(Math.abs(r)); }
+  function txEdited(t, k) { var c = ENV.ed().cells[t.card]; return !!(c && c[k] !== undefined && !t._x); }
   var TXW=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'], TXWE=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var TXM=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'], TXME=['January','February','March','April','May','June','July','August','September','October','November','December'];
   var TXK={'كاملة':['Complete','#1d7a4d'],'تحميل فقط':['Loading only','#b07a00'],'وارد فقط':['Inbound only','#1b6a82'],'تعارض':['Conflict','#7a4fc2'],'ملغاة':['Cancelled','#7c8782']};
@@ -5471,7 +5452,8 @@ function askDescribe_(spec) {
     ['price','السعر (ج.م)','Price (EGP)','num',9],['loadPlace','مكان التحميل','Loading place','txt',14],['unloadPlace','مكان التفريغ','Unloading place','txt',14],['route','المسار (من ← إلى)','Route (from → to)','txt',20],
     ['loadAt','تحميل (وقت)','Loaded at','dt',10],['unloadAt','تفريغ (وقت)','Unloaded at','dt',10],['hours','مدة الرحلة (ساعة)','Duration (h)','num',7],['notes','ملاحظات المحطة','Station notes','txt',18],['priceRule','قاعدة السعر','Price rule','txt',14],['manual','تعديل يدوي','Manual edit','txt',10],['stage','مرحلة الوزن','Weighing stage','txt',12],['waiting','منذ (ساعة)','Waiting (h)','num',7],
     ['cumW','تراكمي الوزن (طن)','Running weight (t)','num',9],['cumP','تراكمي القيمة (ج.م)','Running value (EGP)','num',10],
-    ['km','المسافة الجوية (كم)','Air distance (km)','num',8],['kmRoad','مسافة الطريق التقديرية (كم)','Est. road distance (km)','num',9]
+    ['km','المسافة الجوية (كم)','Air distance (km)','num',8],['kmRoad','مسافة الطريق التقديرية (كم)','Est. road distance (km)','num',9],
+  ['sector','القطاع','Sector','txt',12],['subject','الموضوع','Subject','txt',20],['requestedAt','الموعد المطلوب','Requested for','txt',12],['quantity','الكمية','Quantity','txt',8],['vehicle','السيارات','Vehicles','txt',10],['receiver','المستلم','Receiver','txt',12],['missing','بيانات ناقصة','Missing','txt',14],['emailClass','تصنيف الإيميل','Class','txt',12]
   ];
   var TXN={}; TXC.forEach(function(c){ TXN[c[0]]=c; });
   var TXTHEMES={
@@ -5482,7 +5464,7 @@ function askDescribe_(spec) {
     warm:{n:'دافئ',head:'#8a5a00',headFg:'#ffffff',zebra:'#fbf5e8',line:'#dcc9a0',accent:'#8a5a00',group:'#f3e6c4'},
     mono:{n:'أبيض وأسود (توفير حبر)',head:'#ffffff',headFg:'#000000',zebra:'#ffffff',line:'#000000',accent:'#000000',group:'#ffffff'}
   };
-  var TXGROUPS=[['none','بدون تجميع'],['day','باليوم'],['contractor','بالمقاول'],['loadPlace','بمكان التحميل'],['unloadPlace','بمكان التفريغ'],['crop','بالصنف'],['kind','بالحالة'],['route','بالمسار (من ← إلى)'],['stage','بمرحلة الوزن'],['vehicleType','بنوع السيارة'],['driver','بالسائق']];
+  var TXGROUPS=[['none','بدون تجميع'],['day','باليوم'],['contractor','بالمقاول'],['loadPlace','بمكان التحميل'],['unloadPlace','بمكان التفريغ'],['crop','بالصنف'],['kind','بالحالة'],['route','بالمسار (من ← إلى)'],['stage','بمرحلة الوزن'],['vehicleType','بنوع السيارة'],['driver','بالسائق'],['sector','بالقطاع (طلبات)'],['emailClass','بتصنيف الإيميل (طلبات)']];
   var TXPRESETS={
     daily:{ic:'📅',d:'رحلات اليوم مجمّعة بالمقاول مع الإجماليات',n:'تقرير اليوم',o:{source:'trips',range:'today',layout:'grouped',groupBy:'contractor',cols:['card','kind','contractor','driver','plate','crop','pack','weight','route','unloadAt','price'],subtotals:true,theme:'green',orient:'landscape',title:'تقرير رحلات اليوم'}},
     contractor:{ic:'👤',d:'كشف مبسّط لرحلات مقاول آخر 30 يومًا',n:'كشف مقاول',o:{source:'trips',range:'30',layout:'grouped',groupBy:'contractor',cols:['lastDay','card','driver','plate','vehicleType','crop','pack','weight','loadPlace','unloadPlace','price'],subtotals:true,theme:'blue',title:'كشف رحلات مقاول'}},
@@ -5499,9 +5481,14 @@ function askDescribe_(spec) {
     slips:{n:'كروت سائقين للأمن',ic:'🪪',d:'كروت صغيرة بالسائق والسيارة والوجهة لتسليمها عند البوابة',o:{source:'live',range:'all',layout:'cards',cardCols:3,groupBy:'none',cols:['card','driver','phone','plate','vehicleType','contractor','crop','pack','loadPlace','unloadPlace'],theme:'classic',orient:'portrait',fontSize:9,title:'تصريح دخول / تحميل',showKpis:false,showFilters:false}},
     place:{n:'تقرير حسب مكان التحميل',ic:'📍',d:'ملخص بكل مكان تحميل: عدد الرحلات والوزن والمتوسط',o:{source:'trips',range:'30',layout:'summary',groupBy:'loadPlace',theme:'blue',orient:'portrait',title:'ملخص مكان التحميل',subtitle:'{period}'}},
     vehicle:{n:'تقرير حسب نوع السيارة',ic:'🚚',d:'تجميع بنوع السيارة مع الأعداد والأوزان',o:{source:'trips',range:'30',layout:'summary',groupBy:'vehicleType',theme:'slate',orient:'portrait',title:'الرحلات حسب نوع السيارة',subtitle:'{period}'}},
+    requests:{ic:'📨',n:'طلبات النقل اليوم',d:'كل طلبات النقل الواردة اليوم من القطاعات بتفاصيلها والناقص منها',o:{source:'requests',range:'today',layout:'table',cols:['lastAt','sector','subject','requestedAt','loadPlace','unloadPlace','crop','pack','quantity','vehicle','contractor','missing'],sort:'lastAt-asc',theme:'blue',orient:'landscape',title:'طلبات النقل — {date}',showKpis:true}},
+    reqSector:{ic:'🏢',n:'طلبات النقل بالقطاع',d:'طلبات آخر 7 أيام مجمّعة بالقطاع مع العدد',o:{source:'requests',range:'7',layout:'grouped',groupBy:'sector',cols:['lastAt','subject','requestedAt','loadPlace','unloadPlace','crop','quantity','vehicle','missing'],subtotals:true,grandTotal:false,theme:'slate',orient:'landscape',title:'طلبات النقل بالقطاع',subtitle:'{period}'}},
+    dayclose:{ic:'🔒',n:'إقفال اليوم للمحاسبة',d:'رحلات اليوم بالمقاول مع الوزن والقيمة وإجماليات وتوقيعات',o:{source:'trips',range:'today',layout:'grouped',groupBy:'contractor',cols:['lastAt','card','paper','plate','crop','pack','weight','price','loadPlace','unloadPlace'],subtotals:true,grandTotal:true,theme:'blue',orient:'landscape',title:'إقفال يوم {date}',signs:'منسق النقل، المحاسب، مدير النقل',endNote:'الإجمالي: {count} رحلة · {weight} طن · {value} ج.م',hiNoPrice:true}},
+    weekly:{ic:'🗓',n:'التقرير الأسبوعي بالمقاول',d:'ملخص الأسبوع (من السبت) بالمقاول: العدد والوزن والمتوسط والقيمة',o:{source:'trips',range:'week',layout:'summary',groupBy:'contractor',theme:'blue',orient:'portrait',title:'التقرير الأسبوعي',subtitle:'{period}'}},
+    exec:{ic:'📊',n:'ملخص تنفيذي: المقاول × الأيام',d:'مصفوفة الأوزان لكل مقاول في آخر 7 أيام لعرضها على الإدارة',o:{source:'trips',range:'7',layout:'matrix',groupBy:'contractor',theme:'slate',orient:'landscape',title:'الأداء خلال آخر 7 أيام',subtitle:'{period}'}},
+    prevMonth:{ic:'📆',n:'الشهر الماضي: ملخص المقاولين',d:'إجمالي الشهر الماضي بالمقاول للمراجعة والإقفال',o:{source:'trips',range:'prevmonth',layout:'summary',groupBy:'contractor',theme:'green',orient:'portrait',title:'ملخص الشهر الماضي',subtitle:'{period}'}},
     full:{ic:'🗄',d:'كل الأعمدة لكل الفترة للأرشفة (A3 مضغوط)',n:'جدول كامل للأرشفة',o:{source:'trips',range:'all',layout:'table',cols:['lastAt','card','paper','kind','contractor','driverFull','phone','plate','vehicleType','crop','pack','weight','loadWeight','unloadWeight','diff','price','loadPlace','unloadPlace','notes'],theme:'classic',page:'A3',fontSize:8,density:'compact',title:'أرشيف الرحلات'}}
   };
-  function txCssInject(){ if(document.getElementById('txCss')) return; var st=document.createElement('style'); st.id='txCss'; st.textContent='.txpg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}.txpc{display:flex;flex-direction:column;gap:3px;text-align:start;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:9px 10px;cursor:pointer;font:inherit}.txpc:hover{border-color:var(--accent);background:var(--surface2)}.txpc small{color:var(--muted);font-size:.74rem;line-height:1.35}.txpi{font-size:1.3rem}'; document.head.appendChild(st); }
   function txDefaults(){
     return {source:'trips',range:'screen',from:'',to:'',contractors:[],kinds:[],text:'',sort:'lastAt-desc',limit:0,
       cols:['card','kind','contractor','driver','plate','crop','pack','weight','route','lastAt','price'],hdr:{},wid:{},
@@ -5510,17 +5497,7 @@ function askDescribe_(spec) {
       page:'A4',orient:'landscape',margin:10,fontSize:9.5,density:'normal',fontAr:'',fontEn:'',lang:'ui',
       title:'رحلات دالتكس',subtitle:'',footer:'',logo:'',showKpis:true,showFilters:true,showPrintDate:true,pageNumbers:true,repeatHead:true,format:'print',signs:'',endNote:'',watermark:'',logoImg:'',hiDiff:0,hiNoPrice:false,hiNoPlace:false,markEdits:false};
   }
-  var TX={open:false,tab:'scope',o:null,presets:{},pname:'',pt:null,msg:'',ed:{cells:{},excl:{},glabel:{},extra:[]}};
-  var TXEXF=[['card','كارتة'],['contractor','المقاول'],['driver','السائق'],['plate','السيارة'],['crop','الصنف'],['weight','الوزن (طن)'],['price','السعر'],['loadPlace','التحميل'],['unloadPlace','التفريغ'],['notes','ملاحظات']];
-  function txEdCount(){ var n=0,c; for(c in TX.ed.cells) n+=Object.keys(TX.ed.cells[c]).length; return n+Object.keys(TX.ed.excl).length+Object.keys(TX.ed.glabel).length+TX.ed.extra.length; }
-  function txEdited(t,k){ var c=TX.ed.cells[t.card]; return !!(c&&c[k]!==undefined&&!t._x); }
-  function txLoad(){
-    txCssInject(); if(TX.o) return;
-    TX.o=txDefaults();
-    try{ var s=JSON.parse(localStorage.getItem('daltexTripsExport')||'{}'); if(s.last) Object.keys(s.last).forEach(function(k){ TX.o[k]=s.last[k]; }); TX.presets=s.presets||{}; }catch(e){}
-  }
-  function txSave(){ try{ localStorage.setItem('daltexTripsExport',JSON.stringify({last:TX.o,presets:TX.presets})); }catch(e){} }
-  function txEn(o){ return o.lang==='en'||(o.lang==='ui'&&UI.lang==='en'); }
+  function txEn(o){ return o.lang==='en'||(o.lang==='ui'&&ENV.lang==='en'); }
   function txL(k,o){ var c=TXN[k]; if(!c) return k; var h=o.hdr&&o.hdr[k]; return h||(txEn(o)?c[2]:c[1]); }
   function txDay(iso,en){ if(!iso) return en?'No date':'بدون تاريخ'; var p=iso.split('-'), d=new Date(Date.UTC(+p[0],+p[1]-1,+p[2])); return en?TXWE[d.getUTCDay()]+' '+(+p[2])+' '+TXME[+p[1]-1]+' '+p[0]:TXW[d.getUTCDay()]+' '+(+p[2])+' '+TXM[+p[1]-1]+' '+p[0]; }
   function txTime(s,en){ var m=String(s||'').match(/(\d{1,2}):(\d{2})/); if(!m) return ''; var h=+m[1]; return ((h%12)||12)+':'+m[2]+' '+(en?(h>=12?'PM':'AM'):(h>=12?'م':'ص')); }
@@ -5530,7 +5507,7 @@ function askDescribe_(spec) {
   function txCropOf(t){ return String(t.cropVar||'').split(' · ')[0]; }
   /* قيمة نصية للخلية (للتصدير) */
   function txVal(t,k,o){
-    var ec=TX.ed.cells[t.card]; if(ec&&ec[k]!==undefined&&!t._x) return ec[k];
+    var ec=ENV.ed().cells[t.card]; if(ec&&ec[k]!==undefined&&!t._x) return ec[k];
     var en=txEn(o), v;
     switch(k){
       case 'kind': return txKind(t,en);
@@ -5544,38 +5521,26 @@ function askDescribe_(spec) {
       case 'waiting': return t.ageH==null?'':txNum(t.ageH,1);
       case 'cumW': return t._cw==null?'':txNum(t._cw,2);
       case 'cumP': return t._cp==null?'':txNum(t._cp,2);
-      case 'km': case 'kmRoad': v=tripKm(t,k==='kmRoad'); return v==null?'':txNum(v,1);
+      case 'km': case 'kmRoad': v=ENV.tripKm(t,k==='kmRoad'); return v==null?'':txNum(v,1);
       case 'loadPlace': return t.loadPlace===REVIEW?(en?'Needs review':REVIEW):(t.loadPlace||'');
       case 'route': return (t.loadPlace===REVIEW?(en?'Needs review':REVIEW):(t.loadPlace||'—'))+(en?' → ':' ← ')+(t.unloadPlace||'—');
       default: v=t[k]; return v==null?'':String(v);
     }
   }
-  function txRaw(t,k){ var ec=TX.ed.cells[t.card]; if(ec&&ec[k]!==undefined&&!t._x){ var q=Number(String(ec[k]).replace(/[,\s]/g,'')); return (ec[k]===''||isNaN(q))?null:q; } if(k==='km'||k==='kmRoad') return tripKm(t,k==='kmRoad'); if(k==='weight'||k==='loadWeight'||k==='unloadWeight'||k==='price'||k==='hours') return isNum(t[k])?Number(t[k]):null; if(k==='diff') return (isNum(t.loadWeight)&&isNum(t.unloadWeight))?Math.round((t.unloadWeight-t.loadWeight)*1000)/1000:null; if(k==='waiting') return t.ageH; return null; }
+  function txRaw(t,k){ var ec=ENV.ed().cells[t.card]; if(ec&&ec[k]!==undefined&&!t._x){ var q=Number(String(ec[k]).replace(/[,\s]/g,'')); return (ec[k]===''||isNaN(q))?null:q; } if(k==='km'||k==='kmRoad') return ENV.tripKm(t,k==='kmRoad'); if(k==='weight'||k==='loadWeight'||k==='unloadWeight'||k==='price'||k==='hours') return isNum(t[k])?Number(t[k]):null; if(k==='diff') return (isNum(t.loadWeight)&&isNum(t.unloadWeight))?Math.round((t.unloadWeight-t.loadWeight)*1000)/1000:null; if(k==='waiting') return t.ageH; return null; }
   /* ---------- اختيار الرحلات ---------- */
-  function txSource(o){
-    var a=[]; if(o.source!=='live') a=a.concat(D.trips); if(o.source==='live'||o.source==='both') a=a.concat(D.live); return a;
-  }
   function txRange(o){
-    var r=o.range, t=TODAY; if(!t) return ['',''];
+    var r=o.range, t=ENV.today; if(!t) return ['',''];
     if(r==='today') return [t,t]; if(r==='yesterday'){ var y=txAdd(t,-1); return [y,y]; }
     if(r==='7') return [txAdd(t,-6),t]; if(r==='30') return [txAdd(t,-29),t]; if(r==='month') return [t.slice(0,8)+'01',t];
+    if(r==='lastN') return [txAdd(t,-(Math.max(1,Math.min(366,Number(o.lastN)||7))-1)),t];
+    if(r==='week'){ var dw=new Date(Date.parse(t+'T00:00:00Z')).getUTCDay(); return [txAdd(t,-((dw+1)%7)),t]; }
+    if(r==='prevmonth'){ var lastPrev=txAdd(t.slice(0,8)+'01',-1); return [lastPrev.slice(0,8)+'01',lastPrev]; }
     if(r==='custom') return [o.from||'',o.to||'']; return ['',''];
   }
   function txAdd(iso,n){ var d=new Date(Date.parse(iso+'T00:00:00Z')+n*864e5); return d.toISOString().slice(0,10); }
-  function txRows(o,keepExcl){
-    var list=txSource(o), rg=txRange(o);
-    if(o.range==='screen'){ list=list.filter(function(t){ return t.live?matchesLive(t):matchesTrip(t); }); }
-    else list=list.filter(function(t){ return (!rg[0]||String(t.lastDate||'')>=rg[0])&&(!rg[1]||String(t.lastDate||'')<=rg[1]); });
-    if(o.contractors&&o.contractors.length) list=list.filter(function(t){ return o.contractors.indexOf(t.contractor)>=0; });
-    if(o.kinds&&o.kinds.length) list=list.filter(function(t){ return o.kinds.indexOf(t.kind)>=0; });
-    if(o.text){ var n=nz(o.text); if(n) list=list.filter(function(t){ return (t._toks||[]).join(' ').indexOf(n)>=0||nz([t.card,t.paper,t.plate,t.phone].join(' ')).indexOf(n)>=0; }); }
-    var s=String(o.sort||'lastAt-desc').split('-'), key=s[0], dir=s[1]==='asc'?1:-1;
-    list=list.slice().sort(function(a,b){ var x,y; if(key==='weight'||key==='price'){ x=Number(a[key])||0; y=Number(b[key])||0; return (x-y)*dir; } x=String(key==='contractor'?a.contractor:key==='card'?a.card:a.lastAt||''); y=String(key==='contractor'?b.contractor:key==='card'?b.card:b.lastAt||''); return (x<y?-1:x>y?1:0)*dir; });
-    if(o.limit>0) list=list.slice(0,o.limit);
-    if(!keepExcl){ list=list.filter(function(t){ return !TX.ed.excl[t.card]; }); TX.ed.extra.forEach(function(x){ var w=Number(String(x.weight||'').replace(/[,\s]/g,'')), pr=Number(String(x.price||'').replace(/[,\s]/g,'')); list.push({_x:true,card:x.card||'—',contractor:x.contractor||'',driver:x.driver||'',plate:x.plate||'',cropVar:x.crop||'',weight:x.weight===''||isNaN(w)||x.weight==null?null:w,price:x.price===''||isNaN(pr)||x.price==null?null:pr,loadPlace:x.loadPlace||'',unloadPlace:x.unloadPlace||'',stationNotes:x.notes||'',kind:'',lastDate:'',lastAt:''}); }); }
-    return list;
-  }
   function txGroupKey(t,g,en){
+    if(g==='sector') return t.sector||'—'; if(g==='emailClass') return t.emailClass||'—';
     if(g==='day') return t.lastDate||''; if(g==='contractor') return t.contractor||'—'; if(g==='loadPlace') return t.loadPlace===REVIEW?(en?'Needs review':REVIEW):(t.loadPlace||'—');
     if(g==='unloadPlace') return t.unloadPlace||'—'; if(g==='route') return (t.loadPlace===REVIEW?(en?'Needs review':REVIEW):(t.loadPlace||'—'))+(en?' → ':' ← ')+(t.unloadPlace||'—'); if(g==='stage') return t.stage||(en?'Completed':'مكتملة'); if(g==='vehicleType') return t.vehicleType||'—'; if(g==='driver') return t.driver||'—'; if(g==='crop') return txCropOf(t)||'—'; if(g==='kind') return txKind(t,en); return '';
   }
@@ -5586,11 +5551,10 @@ function askDescribe_(spec) {
     return order.map(function(k){ return map[k]; });
   }
   function txSum(rows,k){ var s=0,n=0; rows.forEach(function(t){ var v=txRaw(t,k); if(v!=null){ s+=v; n++; } }); return n?s:null; }
-  function txGroupLabel(g,o){ var en=txEn(o); if(TX.ed.glabel[g.key]) return TX.ed.glabel[g.key]; return o.groupBy==='day'?txDay(g.key,en):g.key; }
+  function txGroupLabel(g,o){ var en=txEn(o); if(ENV.ed().glabel[g.key]) return ENV.ed().glabel[g.key]; return o.groupBy==='day'?txDay(g.key,en):g.key; }
   /* ---------- بناء المستند ---------- */
   function txFontCss(o){
-    var a=fontPick(UIFONTS_AR,o.fontAr||UI.fontAr), e=fontPick(UIFONTS_EN,o.fontEn||UI.fontEn);
-    return {stack:e[2]+','+a[2]+',Tahoma,Arial,sans-serif',link:fontLinkFor([['ar',a[0]],['en',e[0]]])};
+    return ENV.fontCss(o);
   }
   function txTheme(o){ var t=Object.assign({},TXTHEMES[o.theme]||TXTHEMES.green); if(o.headBg) t.head=o.headBg; if(o.headFg) t.headFg=o.headFg; return t; }
   function txPageMm(o){ var p={A4:[210,297],A3:[297,420],A5:[148,210],Letter:[216,279]}[o.page]||[210,297]; return o.orient==='landscape'?[p[1],p[0]]:p; }
@@ -5619,9 +5583,10 @@ function askDescribe_(spec) {
     str=String(str||''); if(str.indexOf('{')<0) return str;
     var en=txEn(o), cs=o.contractors&&o.contractors.length?o.contractors.join(en?', ':'، '):''; if(!cs){ var u={}; rows.forEach(function(t){ u[t.contractor||'']=1; }); var ks=Object.keys(u); cs=ks.length===1?ks[0]:(en?'All contractors':'كل المقاولين'); }
     var dm={}; rows.forEach(function(t){ if(t.lastDate) dm[t.lastDate]=1; }); var dk=Object.keys(dm).sort(), per=dk.length?(dk.length>1?dk[0]+' → '+dk[dk.length-1]:dk[0]):'';
-    return str.replace(/\{contractor\}/g,cs).replace(/\{period\}/g,per).replace(/\{date\}/g,TODAY||'').replace(/\{count\}/g,rows.length).replace(/\{weight\}/g,txNum(txSum(rows,'weight')||0,2)).replace(/\{value\}/g,txNum(txSum(rows,'price')||0,2));
+    return str.replace(/\{contractor\}/g,cs).replace(/\{period\}/g,per).replace(/\{date\}/g,ENV.today||'').replace(/\{count\}/g,rows.length).replace(/\{weight\}/g,txNum(txSum(rows,'weight')||0,2)).replace(/\{value\}/g,txNum(txSum(rows,'price')||0,2));
   }
   function txKpis(rows,o){
+    if(o.source==='requests'){ var sc={}; rows.forEach(function(t){ sc[t.sector||'']=1; }); return '<div class="kp"><div><small>'+(txEn(o)?'Requests':'عدد الطلبات')+'</small><b>'+rows.length+'</b></div><div><small>'+(txEn(o)?'Sectors':'القطاعات')+'</small><b>'+Object.keys(sc).length+'</b></div></div>'; }
     var en=txEn(o), w=txSum(rows,'weight')||0, p=txSum(rows,'price'), cs={}; rows.forEach(function(t){ cs[t.contractor||'']=1; });
     var days={}; rows.forEach(function(t){ if(t.lastDate) days[t.lastDate]=1; }); var dk=Object.keys(days).sort();
     var k=[[en?'Trips':'عدد الرحلات',rows.length],[en?'Total weight (t)':'إجمالي الوزن (طن)',txNum(w,2)],[en?'Contractors':'المقاولون',Object.keys(cs).length]];
@@ -5713,7 +5678,7 @@ function askDescribe_(spec) {
   function txBuild(o,rows,full){
     var en=txEn(o), f=txFontCss(o), body='';
     o=Object.assign({},o,{title:txTpl(o.title,o,rows),subtitle:txTpl(o.subtitle,o,rows),footer:txTpl(o.footer,o,rows),endNote:txTpl(o.endNote,o,rows)});
-    var meta=[]; if(o.showPrintDate) meta.push((en?'Printed: ':'تاريخ الطباعة: ')+TODAY); meta.push(rows.length+(en?' trips':' رحلة'));
+    var meta=[]; if(o.showPrintDate) meta.push((en?'Printed: ':'تاريخ الطباعة: ')+ENV.today); meta.push(rows.length+(en?' trips':' رحلة'));
     body+='<div class="hd"><div><h1>'+esc(o.title)+'</h1>'+(o.subtitle?'<div class="sub">'+esc(o.subtitle)+'</div>':'')+'<div class="sub">'+esc(meta.join(' · '))+'</div></div>'+(o.logoImg?'<img class="lg" alt="" src="'+attr(o.logoImg)+'">':o.logo?'<div class="logo">'+esc(o.logo)+'</div>':'')+'</div>';
     if(o.showKpis) body+=txKpis(rows,o);
     if(o.showFilters) body+='<div class="fl">'+esc(txFilterLine(o))+'</div>';
@@ -5725,7 +5690,6 @@ function askDescribe_(spec) {
     return '<!doctype html><html lang="'+(en?'en':'ar')+'" dir="'+(en?'ltr':'rtl')+'"><head><meta charset="utf-8"><title>'+esc(o.docTitle||o.title)+'</title>'+(f.link?'<link rel="stylesheet" href="'+f.link+'">':'')+'<style>'+txCss(o,false)+'</style></head><body>'+body+'</body></html>';
   }
   /* ---------- مخرجات ---------- */
-  function txDownload(name,mime,text){ var b=new Blob(['\ufeff'+text],{type:mime+';charset=utf-8'}), a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },600); }
   function txCsv(rows,o){
     var cols=o.cols.filter(function(k){ return TXN[k]; });
     function q(v){ v=String(v==null?'':v); return /[",\n\r;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
@@ -5734,28 +5698,18 @@ function askDescribe_(spec) {
     return out.join('\r\n');
   }
   function txTsv(rows,o){ var cols=o.cols.filter(function(k){ return TXN[k]; }); return [cols.map(function(k){ return txL(k,o); }).join('\t')].concat(rows.map(function(t){ return cols.map(function(k){ return txVal(t,k,o).replace(/[\t\n\r]+/g,' '); }).join('\t'); })).join('\n'); }
-  function txCopy(text){
-    function fb(){ var ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} ta.remove(); }
-    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(fb); else fb();
-  }
-  function txPrintFrame(html){
-    var f=document.createElement('iframe'); f.setAttribute('aria-hidden','true'); f.style.cssText='position:fixed;width:0;height:0;border:0;right:0;bottom:0'; document.body.appendChild(f);
-    var d=f.contentWindow.document; d.open(); d.write(html); d.close();
-    var done=false; function go(){ if(done) return; done=true; setTimeout(function(){ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ TX.msg='تعذرت الطباعة من المتصفح — جرّب «معاينة في تبويب» ثم Ctrl+P'; txDlg(); } setTimeout(function(){ f.remove(); },60000); },250); } f.onload=go; setTimeout(go,1500);
-  }
-  /* ---------- أسماء الملفات: DALTEX_نوع-التقرير_الفترة[_المقاول][_الساعة للجارية] — أو قالبك بالرموز {type} {period} {date} {contractor} {count} {time} ---------- */
   function txClean(x){ return String(x==null?'':x).replace(/[\\\/:*?"<>|\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim().replace(/ /g,'-').slice(0,60); }
   function txTypeName(o){
     if(o.presetName) return o.presetName;
-    var src=o.source==='live'?'رحلات-جارية':o.source==='both'?'رحلات-كل':'رحلات';
+    var src=o.source==='requests'?'طلبات-النقل':o.source==='live'?'رحلات-جارية':o.source==='both'?'رحلات-كل':'رحلات';
     var lay={table:'',grouped:'',cards:'كروت',list:'قائمة',summary:'ملخص',matrix:'مصفوفة'}[o.layout]||'';
     return src+(lay?'-'+lay:'');
   }
   function txPeriodName(o,rows){
     var rg=txRange(o), a=rg[0], b=rg[1];
-    if(!a&&!b){ var ds=rows.map(function(t){ return String(t.lastDate||''); }).filter(Boolean).sort(); a=ds[0]||TODAY||''; b=ds[ds.length-1]||a; }
+    if(!a&&!b){ var ds=rows.map(function(t){ return String(t.lastDate||''); }).filter(Boolean).sort(); a=ds[0]||ENV.today||''; b=ds[ds.length-1]||a; }
     if(o.range==='today'||o.range==='yesterday') return a;
-    if(o.range==='screen'&&o.source==='live') return TODAY||a;
+    if(o.range==='screen'&&o.source==='live') return ENV.today||a;
     return !b||a===b?a:a+'_إلى_'+b;
   }
   function txFileBase(o,rows){
@@ -5763,8 +5717,8 @@ function askDescribe_(spec) {
     if(!cs){ var u={}; rows.forEach(function(t){ u[t.contractor||'']=1; }); var ks=Object.keys(u); if(ks.length===1&&ks[0]) cs=ks[0]; }
     var tm=''; try{ var n=new Date(); tm=('0'+n.getHours()).slice(-2)+('0'+n.getMinutes()).slice(-2); }catch(e){}
     var tpl=String(o.fileName||'').trim()||'DALTEX_{type}_{period}'+(cs?'_{contractor}':'')+(o.source==='live'?'_{time}':'');
-    var name=tpl.replace(/\{type\}/g,txClean(txTypeName(o))).replace(/\{period\}/g,txClean(txPeriodName(o,rows))).replace(/\{date\}/g,txClean(TODAY||'')).replace(/\{contractor\}/g,txClean(cs||'كل-المقاولين')).replace(/\{count\}/g,String(rows.length)).replace(/\{time\}/g,tm);
-    return txClean(name).replace(/-{2,}/g,'-')||('trips-'+(TODAY||'export'));
+    var name=tpl.replace(/\{type\}/g,txClean(txTypeName(o))).replace(/\{period\}/g,txClean(txPeriodName(o,rows))).replace(/\{date\}/g,txClean(ENV.today||'')).replace(/\{contractor\}/g,txClean(cs||'كل-المقاولين')).replace(/\{count\}/g,String(rows.length)).replace(/\{time\}/g,tm);
+    return txClean(name).replace(/-{2,}/g,'-')||('trips-'+(ENV.today||'export'));
   }
   function txXlsHtml(o,rows){
     var en=txEn(o), th=txTheme(o);
@@ -5779,6 +5733,128 @@ function askDescribe_(spec) {
     if(fmt==='json'){ var cols=o.cols.filter(function(k){ return TXN[k]; }); return {name:base+'.json',mime:'application/json',text:JSON.stringify(rows.map(function(t){ var x={}; cols.forEach(function(k){ var r=txRaw(t,k); x[txL(k,o)]=r!=null?r:txVal(t,k,o); }); return x; }),null,2)}; }
     return null;
   }
+  /* ---------- اختيار الصفوف (مشترك): ctx = {trips, live, emails, screen(t)→bool} ---------- */
+  function reqToRow(r) {
+    var at = String(r.receivedAt || '');
+    return { _req: true, card: String(r.requestId || ''), lastAt: at, lastDate: at.slice(0, 10), kind: r.emailClass || '', cls: 'عادية', contractor: r.contractor || '', loadPlace: r.loading || '', unloadPlace: r.unloading || '', cropVar: r.crop || '', pack: r.packaging || '', stationNotes: r.notes || '', driver: '', sector: r.sector || '', subject: r.subject || '', requestedAt: r.requestedAt || '', quantity: r.quantity || '', vehicle: r.vehicle || '', receiver: r.receiverName || '', missing: r.missing || '', emailClass: r.emailClass || '' };
+  }
+  function txRows(o, keepExcl, ctx) {
+    ctx = ctx || {};
+    var list;
+    if (o.source === 'requests') list = (ctx.emails || []).map(reqToRow);
+    else { list = []; if (o.source !== 'live') list = list.concat(ctx.trips || []); if (o.source === 'live' || o.source === 'both') list = list.concat(ctx.live || []); }
+    var rg = txRange(o);
+    if (o.range === 'screen' && ctx.screen) list = list.filter(function (t) { return ctx.screen(t); });
+    else list = list.filter(function (t) { return t.live && o.source !== 'requests' ? true : (!rg[0] || String(t.lastDate || '') >= rg[0]) && (!rg[1] || String(t.lastDate || '') <= rg[1]); });
+    if (o.contractors && o.contractors.length) list = list.filter(function (t) { return o.contractors.indexOf(t.contractor) >= 0; });
+    if (o.kinds && o.kinds.length) list = list.filter(function (t) { return o.kinds.indexOf(t.kind) >= 0; });
+    if (o.text) { var n = ENV.nz(o.text); if (n) list = list.filter(function (t) { return (t._toks || []).join(' ').indexOf(n) >= 0 || ENV.nz([t.card, t.paper, t.plate, t.phone, t.contractor, t.sector, t.subject].join(' ')).indexOf(n) >= 0; }); }
+    var s = String(o.sort || 'lastAt-desc').split('-'), key = s[0], dir = s[1] === 'asc' ? 1 : -1;
+    list = list.slice().sort(function (a, b) { var x, y; if (key === 'weight' || key === 'price') { x = Number(a[key]) || 0; y = Number(b[key]) || 0; return (x - y) * dir; } x = String(key === 'contractor' ? a.contractor : key === 'card' ? a.card : a.lastAt || ''); y = String(key === 'contractor' ? b.contractor : key === 'card' ? b.card : b.lastAt || ''); return (x < y ? -1 : x > y ? 1 : 0) * dir; });
+    if (o.limit > 0) list = list.slice(0, o.limit);
+    if (!keepExcl) {
+      var ed = ENV.ed(); list = list.filter(function (t) { return !ed.excl[t.card]; });
+      ed.extra.forEach(function (x) { var w = Number(String(x.weight || '').replace(/[,\s]/g, '')), pr = Number(String(x.price || '').replace(/[,\s]/g, '')); list.push({ _x: true, card: x.card || '—', contractor: x.contractor || '', driver: x.driver || '', plate: x.plate || '', cropVar: x.crop || '', weight: x.weight === '' || isNaN(w) || x.weight == null ? null : w, price: x.price === '' || isNaN(pr) || x.price == null ? null : pr, loadPlace: x.loadPlace || '', unloadPlace: x.unloadPlace || '', stationNotes: x.notes || '', kind: 'مضافة يدويًا', cls: 'عادية', lastAt: '', lastDate: '' }); });
+    }
+    return list;
+  }
+  /* تنقية خيارات قالب قادمة من الإعدادات: يُبقي المفاتيح المعروفة بنفس نوع القيمة الافتراضية (دالة نقية) */
+  function sanitizeOpts(raw) {
+    var d = txDefaults(), o = {}; raw = raw || {};
+    Object.keys(d).forEach(function (k) {
+      var v = raw[k], dv = d[k];
+      if (v === undefined || v === null) { o[k] = dv; return; }
+      if (Array.isArray(dv)) { o[k] = Array.isArray(v) ? v.slice(0, 60).map(function (x) { return String(x).slice(0, 80); }) : dv; return; }
+      if (typeof dv === 'object') { o[k] = (typeof v === 'object' && !Array.isArray(v) && JSON.stringify(v).length < 4000) ? JSON.parse(JSON.stringify(v)) : dv; return; }
+      if (typeof dv === 'number') { var n = Number(v); o[k] = isFinite(n) ? n : dv; return; }
+      if (typeof dv === 'boolean') { o[k] = v === true; return; }
+      o[k] = String(v).slice(0, k === 'logoImg' ? 0 : 400);
+    });
+    o.cols = o.cols.filter(function (k, i, a) { return TXN[k] && a.indexOf(k) === i; });
+    if (!o.cols.length) o.cols = d.cols.slice();
+    if (['table', 'grouped', 'cards', 'list', 'summary', 'matrix'].indexOf(o.layout) < 0) o.layout = 'table';
+    if (['trips', 'live', 'both', 'requests'].indexOf(o.source) < 0) o.source = 'trips';
+    if (!o.range || o.range === 'screen') o.range = 'today';
+    if (['today', 'yesterday', 'week', '7', '30', 'month', 'prevmonth', 'lastN', 'all', 'custom'].indexOf(o.range) < 0) o.range = 'today';
+    if (!TXTHEMES[o.theme]) o.theme = 'green';
+    if (['A4', 'A3', 'A5', 'Letter'].indexOf(o.page) < 0) o.page = 'A4';
+    if (['portrait', 'landscape'].indexOf(o.orient) < 0) o.orient = 'landscape';
+    o.logoImg = ''; o.fileName = String(raw.fileName || '').slice(0, 80); o.presetName = String(raw.presetName || '').replace(/[\\\/:*?"<>|\r\n]+/g, ' ').slice(0, 40); o.lastN = Math.max(1, Math.min(366, Math.round(Number(raw.lastN)) || 7));
+    o.from = /^\d{4}-\d{2}-\d{2}$/.test(raw.from || '') ? raw.from : ''; o.to = /^\d{4}-\d{2}-\d{2}$/.test(raw.to || '') ? raw.to : '';
+    o.contractors = (Array.isArray(raw.contractors) ? raw.contractors : []).slice(0, 40).map(function (x) { return String(x).slice(0, 80); });
+    o.kinds = (Array.isArray(raw.kinds) ? raw.kinds : []).slice(0, 10).map(function (x) { return String(x).slice(0, 30); });
+    return o;
+  }
+  return {
+    fn: {TXC: TXC, TXGROUPS: TXGROUPS, TXK: TXK, TXM: TXM, TXME: TXME, TXN: TXN, TXPRESETS: TXPRESETS, TXTHEMES: TXTHEMES, TXW: TXW, TXWE: TXWE, txAdd: txAdd, txBuild: txBuild, txCardsHtml: txCardsHtml, txCell: txCell, txClean: txClean, txCropOf: txCropOf, txCss: txCss, txCsv: txCsv, txDay: txDay, txDefaults: txDefaults, txDt: txDt, txEn: txEn, txFileBase: txFileBase, txFilterLine: txFilterLine, txFontCss: txFontCss, txGroupKey: txGroupKey, txGroupLabel: txGroupLabel, txGroups: txGroups, txKind: txKind, txKpis: txKpis, txL: txL, txListHtml: txListHtml, txMake: txMake, txMatrixHtml: txMatrixHtml, txNum: txNum, txPageMm: txPageMm, txPeriodName: txPeriodName, txRange: txRange, txRaw: txRaw, txRows: txRows, txSum: txSum, txSummaryHtml: txSummaryHtml, txTableHtml: txTableHtml, txTheme: txTheme, txTime: txTime, txTpl: txTpl, txTsv: txTsv, txTypeName: txTypeName, txVal: txVal, txWidthStyle: txWidthStyle, txXlsHtml: txXlsHtml},
+    ENV: ENV, TXC: TXC, TXN: TXN, TXTHEMES: TXTHEMES, TXPRESETS: TXPRESETS, TXGROUPS: TXGROUPS, TXK: TXK,
+    defaults: txDefaults, rows: txRows, range: txRange, build: txBuild, csv: txCsv, tsv: txTsv, xlsHtml: txXlsHtml, make: txMake, fileBase: txFileBase, clean: txClean,
+    val: txVal, raw: txRaw, theme: txTheme, pageMm: txPageMm, groups: txGroups, groupLabel: txGroupLabel, kind: txKind, label: txL, en: txEn, num: txNum, sum: txSum, tpl: txTpl, sanitizeOpts: sanitizeOpts, reqToRow: reqToRow, esc: esc, attr: attr
+  };
+})();
+
+    /* ================= تصدير وطباعة الرحلات =================
+     نافذة تحكم كاملة بمعاينة حيّة: النطاق (أيام/مقاول/حالة/بحث) · الأعمدة (ترتيب وأسماء وعروض) · الشكل (جدول، مجمّع بإجماليات، كروت، قائمة، ملخص)
+     · التنسيق (ألوان وخطوط وحدود وزيبرا) · الصفحة (حجم واتجاه وهوامش وترويسة وتذييل وترقيم) · قوالب محفوظة. الصيغ: طباعة/PDF، HTML، Excel، CSV، JSON، نسخ للّصق. */
+  /* ---------- سحب وإفلات عام (ماوس + لمس): مقبض [data-dnd-grip] داخل صف [data-dnd-row]؛ عند الإفلات يُطلق الحدث dnd-drop {grip,from,to} ---------- */
+  (function(){
+    if(window.__dndInit) return; window.__dndInit=true;
+    var st=null;
+    function rowsOf(row){ return Array.prototype.filter.call(row.parentNode.children,function(x){ return x.hasAttribute('data-dnd-row'); }); }
+    function scroller(el){ while(el&&el!==document.body){ var cs=getComputedStyle(el); if(/(auto|scroll)/.test(cs.overflowY)&&el.scrollHeight>el.clientHeight) return el; el=el.parentNode; } return document.scrollingElement||document.documentElement; }
+    document.addEventListener('pointerdown',function(e){
+      var g=e.target.closest&&e.target.closest('[data-dnd-grip]'); if(!g||(e.button!==undefined&&e.button!==0)) return;
+      var row=g.closest('[data-dnd-row]');
+      if(!row&&g.dataset.dndGrip==='list'){ row=g.closest('.rbox'); if(row){ Array.prototype.forEach.call(row.parentNode.children,function(x){ var gg=x.querySelector&&x.querySelector('[data-dnd-grip="list"]'); if(gg&&gg.dataset.p===g.dataset.p) x.setAttribute('data-dnd-row','1'); }); } }
+      if(!row) return; e.preventDefault();
+      st={g:g,row:row,from:rowsOf(row).indexOf(row),sc:scroller(row),y:e.clientY,id:e.pointerId}; row.classList.add('dnd-drag'); document.body.classList.add('dnd-on');
+      try{ g.setPointerCapture(e.pointerId); }catch(x){}
+    });
+    document.addEventListener('pointermove',function(e){
+      if(!st) return; st.y=e.clientY;
+      var el=document.elementFromPoint(e.clientX,e.clientY), over=el&&el.closest&&el.closest('[data-dnd-row]');
+      if(over&&over!==st.row&&over.parentNode===st.row.parentNode){ var r=over.getBoundingClientRect(); if(e.clientY<r.top+r.height/2) over.parentNode.insertBefore(st.row,over); else over.parentNode.insertBefore(st.row,over.nextSibling); }
+    });
+    var tick=setInterval(function(){ if(!st) return; var r=st.sc.getBoundingClientRect?st.sc.getBoundingClientRect():{top:0,bottom:innerHeight}, top=st.sc===document.scrollingElement?0:r.top, bot=st.sc===document.scrollingElement?innerHeight:r.bottom; if(st.y<top+36) st.sc.scrollTop-=12; else if(st.y>bot-36) st.sc.scrollTop+=12; },30);
+    function end(e,cancel){
+      if(!st) return; var s=st; st=null; s.row.classList.remove('dnd-drag'); document.body.classList.remove('dnd-on');
+      var to=rowsOf(s.row).indexOf(s.row);
+      if(cancel||to===s.from) return;
+      document.dispatchEvent(new CustomEvent('dnd-drop',{detail:{grip:s.g,from:s.from,to:to}}));
+    }
+    document.addEventListener('pointerup',function(e){ end(e,false); });
+    document.addEventListener('pointercancel',function(e){ end(e,true); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&st){ end(e,true); } });
+  })();
+  /* محرك العرض مشترك مع السيرفر: 35_ReportCore.gs (RC). هنا فقط ربط البيئة وواجهة المستخدم */
+  Object.defineProperty(RC.ENV,'today',{get:function(){ return TODAY; }}); Object.defineProperty(RC.ENV,'lang',{get:function(){ return UI.lang; }});
+  RC.ENV.ed=function(){ return TX.ed; }; RC.ENV.tripKm=function(t,road){ return tripKm(t,road); }; RC.ENV.nz=nz;
+  RC.ENV.fontCss=function(o){ var a=fontPick(UIFONTS_AR,o.fontAr||UI.fontAr), e=fontPick(UIFONTS_EN,o.fontEn||UI.fontEn); return {stack:e[2]+','+a[2]+',Tahoma,Arial,sans-serif',link:fontLinkFor([['ar',a[0]],['en',e[0]]])}; };
+  var TXC=RC.fn.TXC, TXGROUPS=RC.fn.TXGROUPS, TXK=RC.fn.TXK, TXM=RC.fn.TXM, TXME=RC.fn.TXME, TXN=RC.fn.TXN, TXPRESETS=RC.fn.TXPRESETS, TXTHEMES=RC.fn.TXTHEMES, TXW=RC.fn.TXW, TXWE=RC.fn.TXWE, txAdd=RC.fn.txAdd, txBuild=RC.fn.txBuild, txCardsHtml=RC.fn.txCardsHtml, txCell=RC.fn.txCell, txClean=RC.fn.txClean, txCropOf=RC.fn.txCropOf, txCss=RC.fn.txCss, txCsv=RC.fn.txCsv, txDay=RC.fn.txDay, txDefaults=RC.fn.txDefaults, txDt=RC.fn.txDt, txEn=RC.fn.txEn, txFileBase=RC.fn.txFileBase, txFilterLine=RC.fn.txFilterLine, txFontCss=RC.fn.txFontCss, txGroupKey=RC.fn.txGroupKey, txGroupLabel=RC.fn.txGroupLabel, txGroups=RC.fn.txGroups, txKind=RC.fn.txKind, txKpis=RC.fn.txKpis, txL=RC.fn.txL, txListHtml=RC.fn.txListHtml, txMake=RC.fn.txMake, txMatrixHtml=RC.fn.txMatrixHtml, txNum=RC.fn.txNum, txPageMm=RC.fn.txPageMm, txPeriodName=RC.fn.txPeriodName, txRange=RC.fn.txRange, txRaw=RC.fn.txRaw, txSum=RC.fn.txSum, txSummaryHtml=RC.fn.txSummaryHtml, txTableHtml=RC.fn.txTableHtml, txTheme=RC.fn.txTheme, txTime=RC.fn.txTime, txTpl=RC.fn.txTpl, txTsv=RC.fn.txTsv, txTypeName=RC.fn.txTypeName, txVal=RC.fn.txVal, txWidthStyle=RC.fn.txWidthStyle, txXlsHtml=RC.fn.txXlsHtml;
+  function txSource(o){ var a=[]; if(o.source==='requests') return (D.emails||[]).map(RC.reqToRow); if(o.source!=='live') a=a.concat(D.trips); if(o.source==='live'||o.source==='both') a=a.concat(D.live); return a; }
+  function txRows(o,keepExcl){ return RC.rows(o,keepExcl,{trips:D.trips,live:D.live,emails:D.emails,screen:function(t){ return t.live?matchesLive(t):matchesTrip(t); }}); }
+  function txCssInject(){ if(document.getElementById('txCss')) return; var st=document.createElement('style'); st.id='txCss'; st.textContent='.txpg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}.txpc{display:flex;flex-direction:column;gap:3px;text-align:start;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:9px 10px;cursor:pointer;font:inherit}.txpc:hover{border-color:var(--accent);background:var(--surface2)}.txpc small{color:var(--muted);font-size:.74rem;line-height:1.35}.txpi{font-size:1.3rem}'; document.head.appendChild(st); }
+  var TX={open:false,tab:'scope',o:null,presets:{},pname:'',pt:null,msg:'',ed:{cells:{},excl:{},glabel:{},extra:[]}};
+  var TXEXF=[['card','كارتة'],['contractor','المقاول'],['driver','السائق'],['plate','السيارة'],['crop','الصنف'],['weight','الوزن (طن)'],['price','السعر'],['loadPlace','التحميل'],['unloadPlace','التفريغ'],['notes','ملاحظات']];
+  function txEdCount(){ var n=0,c; for(c in TX.ed.cells) n+=Object.keys(TX.ed.cells[c]).length; return n+Object.keys(TX.ed.excl).length+Object.keys(TX.ed.glabel).length+TX.ed.extra.length; }
+  function txEdited(t,k){ var c=TX.ed.cells[t.card]; return !!(c&&c[k]!==undefined&&!t._x); }
+  function txLoad(){
+    txCssInject(); if(TX.o) return;
+    TX.o=txDefaults();
+    try{ var s=JSON.parse(localStorage.getItem('daltexTripsExport')||'{}'); if(s.last) Object.keys(s.last).forEach(function(k){ TX.o[k]=s.last[k]; }); TX.presets=s.presets||{}; }catch(e){}
+  }
+  function txSave(){ if(TX.auto) return; try{ localStorage.setItem('daltexTripsExport',JSON.stringify({last:TX.o,presets:TX.presets})); }catch(e){} }
+  function txDownload(name,mime,text){ var b=new Blob(['\ufeff'+text],{type:mime+';charset=utf-8'}), a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },600); }
+  function txCopy(text){
+    function fb(){ var ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} ta.remove(); }
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(fb); else fb();
+  }
+  function txPrintFrame(html){
+    var f=document.createElement('iframe'); f.setAttribute('aria-hidden','true'); f.style.cssText='position:fixed;width:0;height:0;border:0;right:0;bottom:0'; document.body.appendChild(f);
+    var d=f.contentWindow.document; d.open(); d.write(html); d.close();
+    var done=false; function go(){ if(done) return; done=true; setTimeout(function(){ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ TX.msg='تعذرت الطباعة من المتصفح — جرّب «معاينة في تبويب» ثم Ctrl+P'; txDlg(); } setTimeout(function(){ f.remove(); },60000); },250); } f.onload=go; setTimeout(go,1500);
+  }
+  /* ---------- أسماء الملفات: DALTEX_نوع-التقرير_الفترة[_المقاول][_الساعة للجارية] — أو قالبك بالرموز {type} {period} {date} {contractor} {count} {time} ---------- */
   function txRun(fmt){
     var o=TX.o, rows=txRows(o), en=txEn(o);
     if(!rows.length){ TX.msg=en?'No trips in the chosen scope':'لا توجد رحلات في النطاق المختار'; txDlg(); return; }
@@ -5809,27 +5885,14 @@ function askDescribe_(spec) {
     {id:'bycon',ic:'Σ',n:'ملخص اليوم بالمقاول',p:'summary',ov:{range:'today',title:'ملخص اليوم بالمقاول {date}'}},
     {id:'live',ic:'⏱',n:'الرحلات الجارية الآن',p:'follow',ov:{title:'الرحلات الجارية {date}'}},
     {id:'slips',ic:'🪪',n:'كروت سائقين للأمن (الجارية)',p:'slips',ov:{}},
-    {id:'req',ic:'📨',n:'طلبات النقل اليوم',req:true}
+    {id:'req',ic:'📨',n:'طلبات النقل اليوم',p:'requests',ov:{}}
   ];
-  var TXREQC=[['receivedAt','وقت الاستلام'],['sector','القطاع'],['subject','الموضوع'],['emailClass','التصنيف'],['requestedAt','الموعد المطلوب'],['loading','التحميل'],['unloading','التفريغ'],['crop','الصنف'],['packaging','العبوات'],['quantity','الكمية'],['vehicle','السيارات'],['contractor','المقاول'],['notes','ملاحظات'],['missing','ناقص'],['requestId','رقم الطلب']];
   function txQOpts(q){
     var d=txDefaults(), pr=TXPRESETS[q.p]; if(pr){ d=Object.assign(d,JSON.parse(JSON.stringify(pr.o))); if(pr.o.cols) d.cols=pr.o.cols.slice(); }
     Object.keys(q.ov||{}).forEach(function(k){ d[k]=q.ov[k]; }); d.presetName=txClean(q.n); return d;
   }
-  function txReqRows(day){ return (D.emails||[]).filter(function(r){ return String(r.receivedAt||'').slice(0,10)===day; }); }
-  function txReqHtml(rows,title,full){
-    var h='<table border="1" style="border-collapse:collapse"><thead><tr>'+TXREQC.map(function(c){ return '<th style="background:#1d7a4d;color:#fff">'+esc(c[1])+'</th>'; }).join('')+'</tr></thead><tbody>'+rows.map(function(r){ return '<tr>'+TXREQC.map(function(c){ return '<td>'+esc(r[c[0]]==null?'':r[c[0]])+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table>';
-    return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"><title>'+esc(title)+'</title></head><body dir="rtl"><h3>'+esc(title)+'</h3>'+h+'</body></html>';
-  }
-  function txReqCsv(rows){ function q(v){ v=String(v==null?'':v); return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; } return [TXREQC.map(function(c){ return q(c[1]); }).join(',')].concat(rows.map(function(r){ return TXREQC.map(function(c){ return q(r[c[0]]); }).join(','); })).join('\r\n'); }
   /* يبني ملف تقرير سريع: {name,mime,text,html,n} أو null لو مفيش بيانات */
   function txQuickFile(q,fmt){
-    if(q.req){
-      var rows=txReqRows(TODAY); if(!rows.length) return null; var base='DALTEX_طلبات-النقل_'+TODAY;
-      if(fmt==='csv') return {name:base+'.csv',mime:'text/csv',text:txReqCsv(rows),n:rows.length};
-      var title='طلبات النقل '+TODAY, html=txReqHtml(rows,base,true);
-      return {name:base+'.xls',mime:'application/vnd.ms-excel',text:txReqHtml(rows,title),html:html,n:rows.length};
-    }
     var o=txQOpts(q), rows2=txRows(o); if(!rows2.length) return null;
     if(fmt==='print'){ var nm=txFileBase(o,rows2); return {name:nm,html:txBuild(Object.assign({},o,{docTitle:nm}),rows2,true),n:rows2.length}; }
     var f=txMake(fmt==='csv'?'csv':'xls',o,rows2); f.n=rows2.length; return f;
@@ -5858,12 +5921,12 @@ function askDescribe_(spec) {
     if(open===false){ if(ov) ov.hidden=true; return; }
     if(!ov){ ov=document.createElement('div'); ov.id='txQuick'; ov.className='ov'; document.body.appendChild(ov); ov.addEventListener('click',txQuickClick); }
     ov.hidden=false;
-    var cnt=function(q){ try{ return q.req?txReqRows(TODAY).length:txRows(txQOpts(q)).length; }catch(e){ return 0; } };
+    var cnt=function(q){ try{ return txRows(txQOpts(q)).length; }catch(e){ return 0; } };
     var mine=Object.keys(TX.presets||{});
     ov.innerHTML='<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="txqT" style="max-width:640px"><div class="tx-top"><h2 id="txqT">⚡ تقارير اليوم — <bdi dir="ltr">'+esc(TODAY||'')+'</bdi></h2><button class="abtn sm" data-txq="close" aria-label="إغلاق">✕</button></div>'+
       '<p class="sub">نقرة واحدة = ملف جاهز باسم مناسب (DALTEX_نوع-التقرير_التاريخ). الإعدادات والأعمدة المحفوظة في «تصدير وطباعة» تُستخدم كما هي.</p>'+
-      '<div class="txq-list">'+TXQ.map(function(q){ var n=cnt(q); return '<div class="txq-row"><span class="txq-n"><b>'+q.ic+' '+esc(q.n)+'</b><small>'+n+(q.req?' طلب':' رحلة')+'</small></span><span class="txq-b">'+
-        '<button class="btn sm" data-txq="xls" data-id="'+q.id+'"'+(n?'':' disabled')+'>Excel</button>'+(q.req?'':'<button class="abtn sm" data-txq="print" data-id="'+q.id+'"'+(n?'':' disabled')+'>PDF / طباعة</button>')+'<button class="abtn sm" data-txq="csv" data-id="'+q.id+'"'+(n?'':' disabled')+'>CSV</button></span></div>'; }).join('')+
+      '<div class="txq-list">'+TXQ.map(function(q){ var n=cnt(q); return '<div class="txq-row"><span class="txq-n"><b>'+q.ic+' '+esc(q.n)+'</b><small>'+n+(q.p==='requests'?' طلب':' رحلة')+'</small></span><span class="txq-b">'+
+        '<button class="btn sm" data-txq="xls" data-id="'+q.id+'"'+(n?'':' disabled')+'>Excel</button>'+('<button class="abtn sm" data-txq="print" data-id="'+q.id+'"'+(n?'':' disabled')+'>PDF / طباعة</button>')+'<button class="abtn sm" data-txq="csv" data-id="'+q.id+'"'+(n?'':' disabled')+'>CSV</button></span></div>'; }).join('')+
       mine.map(function(k){ return '<div class="txq-row"><span class="txq-n"><b>⭐ '+esc(k)+'</b><small>قالب محفوظ</small></span><span class="txq-b"><button class="btn sm" data-txq="mine" data-fmt="xls" data-id="'+attr(k)+'">Excel</button><button class="abtn sm" data-txq="mine" data-fmt="print" data-id="'+attr(k)+'">PDF / طباعة</button></span></div>'; }).join('')+'</div>'+
       '<div class="tx-act"><button class="btn" data-txq="zip">📦 حزمة اليوم (ملف ZIP واحد بكل التقارير)</button><button class="abtn" data-txq="full">⚙ تصدير مخصّص</button><span id="txqMsg" class="sub" style="margin:0">'+esc(TXQM)+'</span></div></div>';
   }
@@ -5887,6 +5950,15 @@ function askDescribe_(spec) {
   document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-tx-quick]'); if(b){ TXQM=''; txQuickDlg(true); } });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ var ov=document.getElementById('txQuick'); if(ov&&!ov.hidden) ov.hidden=true; } });
   /* ---------- الواجهة ---------- */
+  function txAutoEnd(){ if(TX.auto){ if(TX.auto.prev) TX.o=TX.auto.prev; TX.auto=null; } }
+  function txTpls(){ var r=[]; Object.keys(TXPRESETS).forEach(function(k){ var p=TXPRESETS[k]; r.push({key:k,n:p.n,ic:p.ic||'',d:p.d||'',mine:false}); }); txLoad(); Object.keys(TX.presets||{}).forEach(function(k){ r.push({key:'mine:'+k,n:k,ic:'⭐',d:'قالب محفوظ بتاعي',mine:true}); }); return r; }
+  window.TXAPI={
+    templates:txTpls,
+    make:function(key){ var d=txDefaults(), s; if(key.indexOf('mine:')===0){ txLoad(); s=TX.presets[key.slice(5)]; if(s){ d=Object.assign(d,JSON.parse(JSON.stringify(s))); d.presetName=txClean(key.slice(5)); } } else { var pr=TXPRESETS[key]; if(pr){ d=Object.assign(d,JSON.parse(JSON.stringify(pr.o))); if(pr.o.cols) d.cols=pr.o.cols.slice(); d.presetName=txClean(pr.n); } } if(d.range==='screen') d.range='today'; return d; },
+    edit:function(o,title,onSave){ txLoad(); var prev=TX.o; TX.o=Object.assign(txDefaults(),JSON.parse(JSON.stringify(o||{}))); if(TX.o.range==='screen') TX.o.range='today'; TX.auto={title:title,onSave:onSave,prev:prev}; TX.tab='scope'; TX.open=true; TX.msg=''; txDlg(); },
+    periodLabel:function(o){ try{ return RC.fn.txPeriodName?RC.fn.txPeriodName(o):''; }catch(e){ return ''; } },
+    fileBase:function(o){ try{ return RC.fileBase(o,[]); }catch(e){ return ''; } }
+  };
   function txOpen(src){ txLoad(); if(src){ TX.o.source=src; } TX.open=true; TX.msg=''; txDlg(); }
   function txSel(k,label,opts,w){ var o=TX.o; return '<label class="fld em-f"'+(w?' style="min-width:'+w+'px"':'')+'><span>'+label+'</span><select data-tx="'+k+'">'+opts.map(function(x){ return '<option value="'+attr(x[0])+'"'+(String(o[k])===String(x[0])?' selected':'')+'>'+esc(x[1])+'</option>'; }).join('')+'</select></label>'; }
   function txNumIn(k,label,min,max,step,w){ return '<label class="fld em-f" style="width:'+(w||100)+'px"><span>'+label+'</span><input type="number" data-tx="'+k+'" min="'+min+'" max="'+max+'" step="'+(step||1)+'" value="'+TX.o[k]+'"></label>'; }
@@ -5894,16 +5966,22 @@ function askDescribe_(spec) {
   function txSw(k,label){ return '<label class="sw2"><input type="checkbox" data-tx="'+k+'"'+(TX.o[k]?' checked':'')+'><i></i><span>'+label+'</span></label>'; }
   function txTabScope(){
     var o=TX.o, cons=uniq(txSource(Object.assign({},o,{source:'both'})).map(function(t){ return t.contractor; })).sort(), kinds=['كاملة','تحميل فقط','وارد فقط','تعارض','ملغاة'];
-    var h='<div class="row" style="gap:10px;align-items:flex-end">'+txSel('source','المصدر',[['trips','الرحلات المكتملة الوزن'],['live','الرحلات الجارية'],['both','الاثنتان']],200)+
-      txSel('range','الفترة',[['screen','حسب التصفية المعروضة الآن'],['today','اليوم'],['yesterday','أمس'],['7','آخر 7 أيام'],['30','آخر 30 يومًا'],['month','هذا الشهر'],['all','كل الفترة'],['custom','فترة محددة']],220)+'</div>';
+    var h='<div class="row" style="gap:10px;align-items:flex-end">'+txSel('source','المصدر',[['trips','الرحلات المكتملة الوزن'],['live','الرحلات الجارية'],['both','الاثنتان'],['requests','طلبات النقل (الإيميل)']],210)+
+      txSel('range','الفترة',[['screen','حسب التصفية المعروضة الآن'],['today','اليوم'],['yesterday','أمس'],['week','هذا الأسبوع (من السبت)'],['7','آخر 7 أيام'],['30','آخر 30 يومًا'],['month','هذا الشهر'],['prevmonth','الشهر الماضي'],['lastN','آخر … يوم (تحدده)'],['all','كل الفترة'],['custom','فترة محددة']],220)+'</div>';
+    if(o.range==='lastN') h+='<div class="row" style="gap:10px;margin-top:8px">'+txNumIn('lastN','عدد الأيام (1–366)',1,366,1,140)+'</div>';
     if(o.range==='custom') h+='<div class="row" style="gap:10px;margin-top:8px"><label class="fld em-f"><span>من</span><input type="date" data-tx="from" value="'+attr(o.from)+'"></label><label class="fld em-f"><span>إلى</span><input type="date" data-tx="to" value="'+attr(o.to)+'"></label></div>';
     h+='<div class="fld" style="margin-top:10px"><span>المقاولون (فارغ = الكل)</span><select multiple size="6" data-tx="contractors" style="width:100%">'+cons.map(function(c){ return '<option value="'+attr(c)+'"'+(o.contractors.indexOf(c)>=0?' selected':'')+'>'+esc(c)+'</option>'; }).join('')+'</select></div>'+
       '<div class="fld" style="margin-top:8px"><span>الحالة (فارغ = الكل)</span><div class="row" style="gap:4px 14px">'+kinds.map(function(k){ return '<label class="sw2"><input type="checkbox" data-txk="'+attr(k)+'"'+(o.kinds.indexOf(k)>=0?' checked':'')+'><i></i><span>'+k+'</span></label>'; }).join('')+'</div></div>'+
       '<div class="row" style="gap:10px;margin-top:8px;align-items:flex-end">'+txTxt('text','بحث نصي إضافي','مكان، مقاول، سائق، كارتة…')+txSel('sort','الترتيب',[['lastAt-desc','الأحدث أولًا'],['lastAt-asc','الأقدم أولًا'],['contractor-asc','المقاول'],['card-asc','رقم الكارتة'],['weight-desc','الوزن الأعلى'],['price-desc','السعر الأعلى']],170)+txNumIn('limit','أقصى عدد (0 = بلا حد)',0,5000,10,120)+'</div>';
     return h;
   }
+  var TXREQONLY=['sector','subject','requestedAt','quantity','vehicle','receiver','missing','emailClass'], TXREQCOM=['lastAt','card','contractor','loadPlace','unloadPlace','crop','pack','notes','kind'];
+  var TXREQCOLS=['lastAt','sector','subject','requestedAt','loadPlace','unloadPlace','crop','pack','quantity','vehicle','contractor','missing'];
+  function txColsFor(o){ return TXC.map(function(c){ return c[0]; }).filter(function(k){ return o.source==='requests'?(TXREQONLY.indexOf(k)>=0||TXREQCOM.indexOf(k)>=0):TXREQONLY.indexOf(k)<0; }); }
+  /* عند تبديل المصدر: لو الأعمدة الحالية لا تناسبه نرجع لأعمدة افتراضية مناسبة */
+  function txFixCols(o){ var ok=txColsFor(o), keep=o.cols.filter(function(k){ return ok.indexOf(k)>=0; }); if(keep.length<2) keep=o.source==='requests'?TXREQCOLS.slice():txDefaults().cols; o.cols=keep; if(o.source==='requests'&&o.groupBy==='contractor') o.groupBy='sector'; if(o.source!=='requests'&&(o.groupBy==='sector'||o.groupBy==='emailClass')) o.groupBy='day'; }
   function txTabCols(){
-    var o=TX.o, on=o.cols.filter(function(k){ return TXN[k]; }), off=TXC.map(function(c){ return c[0]; }).filter(function(k){ return on.indexOf(k)<0; }), en=txEn(o);
+    var o=TX.o, on=o.cols.filter(function(k){ return TXN[k]; }), off=txColsFor(o).filter(function(k){ return on.indexOf(k)<0; }), en=txEn(o);
     var h='<p class="sub">اختر الأعمدة، <b>اسحب المقبض ⠿ بالماوس أو بإصبعك</b> لتغيير الترتيب (أو استخدم ↑ ↓)، وغيّر اسم العمود في التقرير أو عرضه (٪ من العرض).</p><div class="tx-cols">';
     on.forEach(function(k,i){ h+='<div class="tx-col" data-dnd-row="1"><span class="dnd-grip" data-dnd-grip="txcols" title="اسحب لتغيير الترتيب" aria-label="اسحب لتغيير الترتيب">⠿</span><label class="sw2"><input type="checkbox" data-txc="'+k+'" checked><i></i></label><span class="tx-cn">'+esc(TXN[k][en?2:1])+'</span><input data-txh="'+k+'" value="'+attr((o.hdr&&o.hdr[k])||'')+'" placeholder="'+attr(TXN[k][en?2:1])+'" aria-label="اسم العمود"><input type="number" data-txw="'+k+'" min="3" max="60" value="'+attr((o.wid&&o.wid[k])||'')+'" placeholder="%" aria-label="العرض" style="width:62px"><span class="tools2"><button class="abtn sm" data-tx-a="up" data-k="'+k+'"'+(i===0?' disabled':'')+' aria-label="أعلى">↑</button><button class="abtn sm" data-tx-a="down" data-k="'+k+'"'+(i===on.length-1?' disabled':'')+' aria-label="أسفل">↓</button></span></div>'; });
     h+='</div><div class="sub" style="margin:8px 0 4px">أعمدة متاحة:</div><div class="row" style="gap:6px">'+off.map(function(k){ return '<button class="abtn sm" data-tx-a="on" data-k="'+k+'">+ '+esc(TXN[k][en?2:1])+'</button>'; }).join('')+'</div>';
@@ -5966,23 +6044,24 @@ function askDescribe_(spec) {
     if(!ov){ ov=document.createElement('div'); ov.id='txDlg'; ov.className='ov'; document.body.appendChild(ov); ov.addEventListener('click',txClick); ov.addEventListener('change',txChange); ov.addEventListener('input',txInput); }
     ov.hidden=false;
     var ctl={scope:txTabScope,cols:txTabCols,edit:txTabEdit,layout:txTabLayout,style:txTabStyle,page:txTabPage,presets:txTabPresets}[TX.tab]();
-    ov.innerHTML='<div class="dlg tx-dlg" role="dialog" aria-modal="true" aria-labelledby="txT"><div class="tx-top"><h2 id="txT">تصدير وطباعة الرحلات</h2><span id="txCount" class="sub" style="margin:0"></span><button class="abtn sm" data-tx-a="close" aria-label="إغلاق">✕</button></div>'+
+    ov.innerHTML='<div class="dlg tx-dlg" role="dialog" aria-modal="true" aria-labelledby="txT"><div class="tx-top"><h2 id="txT">'+(TX.auto?'🎨 تحرير تقرير تلقائي — '+esc(TX.auto.title||''):'مركز التقارير والتصدير والطباعة')+'</h2><span id="txCount" class="sub" style="margin:0"></span><button class="abtn sm" data-tx-a="close" aria-label="إغلاق">✕</button></div>'+
       '<div class="tx-body"><div class="tx-ctl"><div class="seg tx-tabs">'+TXTABS.map(function(t){ return '<button data-tx-a="tab" data-k="'+t[0]+'" aria-pressed="'+(TX.tab===t[0])+'">'+t[1]+'</button>'; }).join('')+'</div><div class="tx-pane">'+ctl+'</div></div>'+
       '<div class="tx-prev"><div id="txPaper" class="tx-paper"><iframe id="txFrame" title="معاينة" sandbox="allow-same-origin"></iframe></div></div></div>'+
-      '<div class="tx-act"><button class="btn" data-tx-a="run" data-k="print">🖨 طباعة</button><button class="abtn" data-tx-a="run" data-k="pdf">PDF</button><button class="abtn" data-tx-a="run" data-k="xls">Excel</button><button class="abtn" data-tx-a="run" data-k="csv">CSV</button><button class="abtn" data-tx-a="run" data-k="html">HTML</button><button class="abtn" data-tx-a="run" data-k="json">JSON</button><button class="abtn" data-tx-a="run" data-k="copy">نسخ للصق</button><button class="abtn" data-tx-a="run" data-k="tab">معاينة في تبويب</button><span id="txMsg" class="sub" style="margin:0">'+esc(TX.msg||'')+'</span></div></div>';
+      (TX.auto?'<div class="tx-act"><button class="btn" data-tx-a="auto-save">💾 حفظ هذا التقرير في الإرسال التلقائي</button><button class="abtn" data-tx-a="auto-cancel">إلغاء</button><span class="sub" style="margin:0">القالب والفترة والمصدر والأعمدة والتنسيق كلها هنا، وبتتطبق على الملف اللي يتبعت تلقائيًا. الفترة «حسب التصفية الحالية» غير متاحة.</span></div></div>':'<div class="tx-act"><button class="btn" data-tx-a="run" data-k="print">🖨 طباعة</button><button class="abtn" data-tx-a="run" data-k="pdf">PDF</button><button class="abtn" data-tx-a="run" data-k="xls">Excel</button><button class="abtn" data-tx-a="run" data-k="csv">CSV</button><button class="abtn" data-tx-a="run" data-k="html">HTML</button><button class="abtn" data-tx-a="run" data-k="json">JSON</button><button class="abtn" data-tx-a="run" data-k="copy">نسخ للصق</button><button class="abtn" data-tx-a="run" data-k="tab">معاينة في تبويب</button><span id="txMsg" class="sub" style="margin:0">'+esc(TX.msg||'')+'</span></div></div>');
     txPreview();
   }
   function txClick(e){
-    var t=e.target; if(t.id==='txDlg'){ TX.open=false; txDlg(); return; }
+    var t=e.target; if(t.id==='txDlg'){ txAutoEnd(); TX.open=false; txDlg(); return; }
     var b=t.closest('[data-tx-a]'); if(!b) return; var a=b.dataset.txA, k=b.dataset.k, o=TX.o, i;
-    if(a==='close'){ TX.open=false; txDlg(); return; }
+    if(a==='close'||a==='auto-cancel'){ txAutoEnd(); TX.open=false; txDlg(); return; }
+    if(a==='auto-save'){ if(TX.auto&&TX.auto.onSave){ var fn=TX.auto.onSave, saved=JSON.parse(JSON.stringify(TX.o)); saved.range=saved.range==='screen'?'today':saved.range; txAutoEnd(); TX.open=false; txDlg(); fn(saved); } return; }
     if(a==='run'){ txRun(k); return; }
     if(a==='tab'){ TX.tab=k; txDlg(); return; }
     if(a==='on'){ if(o.cols.indexOf(k)<0) o.cols.push(k); }
     else if(a==='up'||a==='down'){ i=o.cols.indexOf(k); var j=i+(a==='up'?-1:1); if(i>=0&&j>=0&&j<o.cols.length){ var tmp=o.cols[i]; o.cols[i]=o.cols[j]; o.cols[j]=tmp; } }
     else if(a==='theme'){ o.theme=k; o.headBg=''; o.headFg=''; }
     else if(a==='resetcolors'){ o.headBg=''; o.headFg=''; }
-    else if(a==='preset'){ var d=txDefaults(), p=TXPRESETS[k].o; TX.o=Object.assign(d,JSON.parse(JSON.stringify(p))); if(p.cols) TX.o.cols=p.cols.slice(); TX.o.presetName=txClean(TXPRESETS[k].n); }
+    else if(a==='preset'){ var d=txDefaults(), p=TXPRESETS[k].o; TX.o=Object.assign(d,JSON.parse(JSON.stringify(p))); if(p.cols) TX.o.cols=p.cols.slice(); TX.o.presetName=txClean(TXPRESETS[k].n); txFixCols(TX.o); }
     else if(a==='mine'){ var s=TX.presets[k]; if(s){ TX.o=Object.assign(txDefaults(),JSON.parse(JSON.stringify(s))); TX.o.presetName=txClean(k); } }
     else if(a==='mine-del'){ delete TX.presets[k]; }
     else if(a==='ed-clear'){ TX.ed={cells:{},excl:{},glabel:{},extra:[]}; }
@@ -6010,6 +6089,7 @@ function askDescribe_(spec) {
     if(k==='cardCols') o[k]=+t.value;
     txSave();
     if(k==='source'||k==='layout') o.presetName='';
+    if(k==='source') txFixCols(o);
     if(k==='source'||k==='range'||k==='layout'||k==='lang') txDlg(); else txPreviewSoon();
   }
   document.addEventListener('dnd-drop',function(e){
@@ -6017,7 +6097,7 @@ function askDescribe_(spec) {
     var o=TX.o, on=o.cols.filter(function(k){ return TXN[k]; }), mv=on.splice(d.from,1)[0]; on.splice(d.to,0,mv); o.cols=on; txSave(); txPreviewSoon();
   });
   function txInput(e){ var t=e.target; if(t.type==='text'||t.type==='search'||t.type==='number'||t.type==='color'){ if(t.dataset.tx||t.dataset.txh!==undefined||t.dataset.txw!==undefined) txChange(e); } }
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&TX.open){ TX.open=false; txDlg(); } });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&TX.open){ txAutoEnd(); TX.open=false; txDlg(); } });
   document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-tx-open]'); if(b){ txOpen(b.dataset.txOpen); } });
 
     /* ================= اللغة والمظهر (لكل مستخدم، محفوظ في المتصفح) =================
