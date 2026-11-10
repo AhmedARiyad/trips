@@ -1411,6 +1411,38 @@ body.trk{background:var(--bg)} body.trk .wrap.app,body.trk .sr-only{display:none
 .wt-col i{display:block;width:100%;min-height:2px;border-radius:4px 4px 0 0;background:color-mix(in srgb,var(--accent) 55%,transparent)}
 .wt-col i.pk{background:var(--amber)}
 .wt-col span{font-size:.64rem;color:var(--muted);height:14px;line-height:14px}
+.cp-t{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:8px}.cp-t th,.cp-t td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}.cp-t th{color:var(--muted);font-weight:600}
+
+/* ===== الخريطة: تحسينات التصميم v3 ===== */
+.mp-tools{backdrop-filter:blur(6px)}
+.mp-tg{display:flex;gap:2px;padding:3px;background:color-mix(in srgb,var(--surface) 88%,transparent);border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.mp-tg .abtn{box-shadow:none;border-color:transparent;background:transparent;color:var(--fg)}.mp-tg .abtn:hover{background:var(--accent-soft)}.mp-tools .mp-tg .abtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg,#fff)}.mp-tools .mp-tg .abtn[aria-pressed="false"]{opacity:.85}
+.mp-tools>.abtn{background:var(--surface);border-radius:10px}
+.mp-sm{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0}
+.mp-sm div{background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:9px;padding:5px 6px;text-align:center}
+.mp-sm small{display:block;font-size:.64rem;color:var(--muted);white-space:nowrap}.mp-sm b{font-size:.95rem;font-variant-numeric:tabular-nums}
+.mp-ai{display:flex;flex-direction:column;gap:5px;margin-bottom:6px}
+.mp-ai-i{display:flex;gap:8px;align-items:flex-start;text-align:start;width:100%;font:inherit;font-size:.78rem;line-height:1.45;color:var(--fg);background:var(--surface2);border:1px solid var(--line);border-inline-start:4px solid var(--muted);border-radius:8px;padding:6px 8px}
+button.mp-ai-i{cursor:pointer}button.mp-ai-i:hover{background:var(--accent-soft)}
+.mp-ai-i i{font-style:normal;flex:none}.mp-ai-i.bad{border-inline-start-color:#dc2626}.mp-ai-i.warn{border-inline-start-color:#f59e0b}.mp-ai-i.info{border-inline-start-color:#2563eb}.mp-ai-i.ok{border-inline-start-color:#16a34a}
+.mp-drv{width:26px;height:26px;border-radius:50%;background:#16a34a;color:#fff;border:2px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:12px}
+.mp-drv.fresh{animation:mpRing 1.8s infinite}.mp-drv.warm{background:#f59e0b}.mp-drv.old{background:#6b7280;opacity:.8}
+@keyframes mpRing{0%{box-shadow:0 0 0 0 rgba(22,163,74,.6)}100%{box-shadow:0 0 0 14px rgba(22,163,74,0)}}
+.mp-help{position:absolute;top:58px;inset-inline-start:10px;z-index:700;width:min(340px,calc(100% - 20px))}
+.mp-hp{background:var(--surface);color:var(--fg);border:1px solid var(--accent);border-radius:12px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.mp-hh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.mp-hg{display:grid;grid-template-columns:1fr 1fr;gap:5px 10px;font-size:.78rem}.mp-hg div{display:flex;gap:6px;align-items:center}
+.mp-hg kbd{min-width:28px;text-align:center;font:700 .72rem ui-monospace,monospace;background:var(--surface2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 5px;direction:ltr}
+.mp-legend{border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.mp-kp .kpi{background:linear-gradient(160deg,var(--surface2),var(--surface));border-radius:10px}
+@media (prefers-reduced-motion:reduce){.mp-drv.fresh{animation:none}}
+@media (max-width:700px){.mp-sm{grid-template-columns:repeat(2,1fr)}.mp-help{top:98px}}
+
+.trk-ev{margin-top:14px}.trk-big{width:100%;font-size:1.25rem;padding:18px 14px;margin:12px 0 6px;border-radius:14px}
+.trk-sug{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--accent-soft);font-size:.92rem}
+.trk-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.trk-ph{cursor:pointer;flex:1;text-align:center}.trk-x{flex:none}
+.trk-warn{width:100%;background:var(--review-soft);color:var(--review);border:1px solid var(--line);margin-top:4px}
+.trk-reasons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.trk-rs{padding:14px 8px;font-size:1rem}.trk-rs.on{background:var(--accent);color:var(--accent-fg,#fff)}
 </style>
 
 <div class="wrap app" dir="rtl" lang="ar">
@@ -1483,9 +1515,9 @@ body.trk{background:var(--bg)} body.trk .wrap.app,body.trk .sr-only{display:none
       <div class="mp-stage">
         <div class="mp-mapwrap">
         <div id="mpMap" role="application" aria-label="خريطة الأماكن وحركة النقل"></div>
-        <div class="mp-tools"><button class="abtn sm" data-mp="fit" title="ملاءمة الخريطة للبيانات">⤢ ملاءمة</button><button class="abtn sm" data-mp="full" title="ملء الشاشة">شاشة كاملة</button><button class="abtn sm" data-mp="measure" aria-pressed="false" title="قياس المسافة بين مكانين">قياس</button><select class="mp-basesel" data-mp="export" aria-label="تصدير ومشاركة"><option value="">تصدير ومشاركة…</option><option value="wa">ملخص للواتساب (نسخ)</option><option value="csv">جدول المسارات CSV</option><option value="geojson">GeoJSON</option><option value="kml">KML (جوجل إيرث)</option><option value="print">طباعة الخريطة</option></select><select class="mp-basesel" data-mp="basesel" aria-label="نوع الخريطة"><option value="auto">خريطة: تلقائي</option><option value="osm">شوارع</option><option value="light">فاتحة</option><option value="dark">داكنة</option><option value="sat">قمر صناعي</option><option value="none">بدون صور</option></select></div>
+        <div class="mp-tools"><div class="mp-tg"><button class="abtn sm" data-mp="fit" title="ملاءمة الخريطة للبيانات (F)">⤢ ملاءمة</button><button class="abtn sm" data-mp="full" title="ملء الشاشة (G)">⛶ كاملة</button><button class="abtn sm" data-mp="measure" aria-pressed="false" title="قياس المسافة بين مكانين (M)">📏 قياس</button></div><div class="mp-tg"><button class="abtn sm" data-mp="qlay" data-k="live" aria-pressed="true" title="الرحلات الجارية (L)">🚛 جارية</button><button class="abtn sm" data-mp="qlay" data-k="drivers" aria-pressed="true" title="السواقين GPS (D)">🛰 سواقين</button><button class="abtn sm" data-mp="qlay" data-k="heat" aria-pressed="false" title="كثافة (H)">🔥 كثافة</button><button class="abtn sm" data-mp="qlay" data-k="labels" aria-pressed="false" title="أسماء (N)">🏷 أسماء</button></div><button class="abtn sm" data-mp="help" title="اختصارات الكيبورد (?)">⌨ ?</button><select class="mp-basesel" data-mp="export" aria-label="تصدير ومشاركة"><option value="">تصدير ومشاركة…</option><option value="wa">ملخص للواتساب (نسخ)</option><option value="csv">جدول المسارات CSV</option><option value="geojson">GeoJSON</option><option value="kml">KML (جوجل إيرث)</option><option value="print">طباعة الخريطة</option></select><select class="mp-basesel" data-mp="basesel" aria-label="نوع الخريطة"><option value="auto">خريطة: تلقائي</option><option value="osm">شوارع</option><option value="light">فاتحة</option><option value="dark">داكنة</option><option value="sat">قمر صناعي</option><option value="none">بدون صور</option></select></div>
         <div id="mpNote" class="mp-note" hidden>صور الخريطة مش بتتحمّل (النت أو الحجب). الأماكن والمسارات شغّالة؛ جرّب «بدون صور» أو نوع خريطة تاني.</div>
-        <div class="mp-meas" id="mpMeas" hidden></div><div class="mp-banner" id="mpBanner" hidden></div>
+        <div class="mp-help" id="mpHelp" hidden></div><div class="mp-meas" id="mpMeas" hidden></div><div class="mp-banner" id="mpBanner" hidden></div>
         <div class="mp-legend" id="mpLegend"></div>
         </div>
         <div class="mp-time" id="mpTime"></div>
@@ -2154,11 +2186,154 @@ function ecApplyPatch(q, patch, S) {
       '<button class="btn trk-rf" id="trkRf">تحديث</button><p class="trk-fine">الصفحة بتتحدّث تلقائيًا كل دقيقتين. الحالة بتتحدّث مع كل وزنة أو استيراد جديد.</p></div>';
     return h;
   }
+  var CPORT=(function(){ if(GAS_NATIVE||!API) return null; var c=hashParts().c||''; var i=c.lastIndexOf('.'); return i>0?{name:c.slice(0,i),token:c.slice(i+1),days:30}:null; })();
+  function cpRender(R){
+    var h='<div class="trk-top"><span class="trk-logo">DALTEX</span><span class="trk-sub">بوابة المقاول</span></div><div class="trk-card"><div class="trk-no">'+esc(R.name)+'</div><dl class="trk-kv"><dt>رحلات مكتملة ('+R.days+' يوم)</dt><dd>'+R.totals.trips+'</dd><dt>إجمالي الأطنان</dt><dd>'+R.totals.tons+'</dd><dt>جارية الآن</dt><dd>'+R.totals.live+'</dd></dl>'+
+      '<label class="fld"><span>الفترة</span><select id="cpDays">'+[7,30,60,90].map(function(d){ return '<option value="'+d+'"'+(d===R.days?' selected':'')+'>آخر '+d+' يوم</option>'; }).join('')+'</select></label><input id="cpQ" class="ph" placeholder="بحث بالكارتة أو السيارة" style="width:100%;margin-top:8px"></div>';
+    h+='<div class="trk-card"><b>الرحلات الجارية</b>'+(R.live.length?'<div style="overflow:auto"><table class="cp-t"><tr><th>كارتة</th><th>سيارة</th><th>المرحلة</th><th>من ← إلى</th><th>منذ (س)</th></tr>'+R.live.map(function(x){ return '<tr><td>'+esc(x.card)+'</td><td>'+esc(x.plate)+'</td><td>'+esc(x.stage)+'</td><td>'+esc(x.from+(x.to?' ← '+x.to:''))+'</td><td>'+(x.ageH==null?'—':Math.round(x.ageH*10)/10)+'</td></tr>'; }).join('')+'</table></div>':'<p class="trk-fine">مفيش رحلات جارية دلوقتي.</p>')+'</div>';
+    h+='<div class="trk-card"><b>الرحلات المكتملة</b><div style="overflow:auto"><table class="cp-t" id="cpTbl"><tr><th>كارتة</th><th>سيارة</th><th>المحصول</th><th>من ← إلى</th><th>التفريغ</th><th>الوزن (طن)</th><th>الساعات</th></tr>'+R.trips.map(function(x){ return '<tr data-q="'+attr((x.card+' '+x.plate).toLowerCase())+'"><td>'+esc(x.card)+'</td><td>'+esc(x.plate)+'</td><td>'+esc(x.crop)+'</td><td>'+esc(x.from+(x.to?' ← '+x.to:''))+'</td><td>'+esc(String(x.unloadAt||x.loadAt).slice(0,16))+'</td><td>'+(x.weight||'—')+'</td><td>'+(x.hours===''?'—':x.hours)+'</td></tr>'; }).join('')+'</table></div></div>'+
+      '<p class="trk-fine">للعرض فقط. الأسعار والمستخلصات مش معروضة هنا. آخر تحديث '+esc(R.now.slice(0,16))+'.</p>';
+    return h;
+  }
+  function portalBoot(){
+    document.body.classList.add('trk'); var box=document.createElement('main'); box.id='trackPage'; box.setAttribute('dir','rtl'); box.setAttribute('lang','ar'); document.body.appendChild(box);
+    function go(){
+      callServer('api_contractorPortal',[CPORT.name,CPORT.token,CPORT.days],function(R){ box.innerHTML=cpRender(R);
+        document.getElementById('cpDays').onchange=function(){ CPORT.days=Number(this.value); box.innerHTML='<div class="trk-card"><div class="trk-st road">جارٍ التحميل…</div></div>'; go(); };
+        document.getElementById('cpQ').oninput=function(){ var q=this.value.trim().toLowerCase(); [].forEach.call(document.querySelectorAll('#cpTbl tr[data-q]'),function(r){ r.style.display=!q||r.dataset.q.indexOf(q)>=0?'':'none'; }); };
+      },function(m){ box.innerHTML='<div class="trk-top"><span class="trk-logo">DALTEX</span></div><div class="trk-card"><div class="trk-st err">'+esc(m)+'</div></div>'; });
+    }
+    box.innerHTML='<div class="trk-card"><div class="trk-st road">جارٍ التحميل…</div></div>'; go();
+  }
+  var DRVLOGIN=!GAS_NATIVE&&!!API&&!TRK&&hashParts().d==='1';
+  /* ---- مشاركة الموقع (بموافقة السائق، والمتصفح يطلب إذن صريح) ---- */
+  var LOC={on:false,watch:null,timer:null,wake:null,pos:null,sentT:0,lastOk:'',msg:'',err:''};
+  function locHtml(){
+    if(!navigator.geolocation) return '<div class="trk-card"><b>مشاركة الموقع</b><p class="trk-fine">المتصفح ده مش بيدعم تحديد الموقع.</p></div>';
+    return '<div class="trk-card trk-loc"><b>مشاركة موقعي مع الإدارة</b>'+
+      (LOC.on?'<div class="trk-st road">المشاركة شغّالة'+(LOC.lastOk?' · آخر إرسال '+esc(LOC.lastOk):'')+'</div><button class="btn" id="locStop">إيقاف المشاركة</button><p class="trk-fine">سيب الصفحة مفتوحة والشاشة منوّرة (بنمنع انطفاء الشاشة تلقائيًا). لو قفلت الشاشة أو خرجت من الصفحة الموقع بيتوقف.</p>'
+        :'<p class="trk-fine">بتساعد الإدارة تعرف مكانك وتقدّر وصولك. بتتشارك آخر نقطة بس، وتقدر توقفها في أي وقت، وبتقفل تلقائيًا بعد 36 ساعة.</p><button class="btn" id="locStart">ابدأ مشاركة موقعي</button>')+
+      (LOC.err?'<p class="trk-fine" style="color:var(--err)">'+esc(LOC.err)+'</p>':'')+'</div>';
+  }
+  function locPaint(){ var h=document.getElementById('trkLoc'); if(!h) return; h.innerHTML=locHtml(); var a=document.getElementById('locStart'),b=document.getElementById('locStop'); if(a) a.onclick=locStart; if(b) b.onclick=function(){ locStop(false); }; }
+  function locSend(){
+    var p=LOC.pos; if(!LOC.on||!p||p.t<=LOC.sentT||!TRK) return; LOC.sentT=p.t;
+    callServer('api_driverPing',[TRK.card,TRK.token,p.lat,p.lng,p.acc,p.speed],function(r){
+      if(r&&r.stop){ locStop(true); LOC.err='انتهت مدة المشاركة (36 ساعة).'; locPaint(); return; }
+      if(r&&!r.skipped){ var d=new Date(); LOC.lastOk=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); LOC.err=''; locPaint(); }
+    },function(m){ LOC.err='تعذر الإرسال: '+m; locPaint(); });
+  }
+  function locWake(){ try{ if(navigator.wakeLock&&LOC.on){ navigator.wakeLock.request('screen').then(function(w){ LOC.wake=w; }).catch(function(){}); } }catch(e){} }
+  function locStart(){
+    LOC.err=''; if(!navigator.geolocation) return;
+    LOC.watch=navigator.geolocation.watchPosition(function(g){
+      LOC.pos={lat:g.coords.latitude,lng:g.coords.longitude,acc:g.coords.accuracy,speed:g.coords.speed==null?'':g.coords.speed,t:Date.now()};
+      if(!LOC.on){ LOC.on=true; locPaint(); locWake(); LOC.timer=setInterval(locSend,30000); }
+      if(Date.now()-LOC.sentT>=30000) locSend();
+    },function(e){ LOC.on=false; LOC.err=e&&e.code===1?'محتاج تسمح للمتصفح بالوصول للموقع (من إعدادات الموقع للصفحة) وجرّب تاني.':'مقدرتش أحدد موقعك. اتأكد إن الـ GPS شغّال.'; locStopWatch(); locPaint(); },{enableHighAccuracy:true,maximumAge:10000,timeout:30000});
+    LOC.msg='بدأ'; LOC.err='بنطلب إذن الموقع…'; locPaint(); LOC.err='';
+  }
+  function locStopWatch(){ try{ if(LOC.watch!=null) navigator.geolocation.clearWatch(LOC.watch); }catch(e){} LOC.watch=null; if(LOC.timer){ clearInterval(LOC.timer); LOC.timer=null; } try{ if(LOC.wake) LOC.wake.release(); }catch(e){} LOC.wake=null; }
+  function locStop(silent){
+    LOC.on=false; locStopWatch(); LOC.pos=null; LOC.sentT=0; locPaint();
+    if(!silent&&TRK) callServer('api_driverStop',[TRK.card,TRK.token],function(){},function(){});
+  }
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden&&LOC.on) locWake(); });
+  /* ---- أحداث الرحلة من السائق: مراحل بضغطة + تبليغ مشكلة + صورة (المرحلة 1) ---- */
+  var EV={types:{},events:[],next:null,suggest:null,near:null,reasons:[],busy:false,msg:'',err:'',photo:'',photoName:'',prob:false,reason:'',note:'',loaded:false,done:false};
+  var EVLBL={arrived_load:'وصلت لمكان التحميل',load_start:'بدأ التحميل',load_done:'خلّص التحميل',left_site:'خرجت من مكان التحميل',arrived_unload:'وصلت لمكان التفريغ',unload_done:'تم التفريغ'};
+  function evQ(){ try{ return JSON.parse(localStorage.getItem('daltexEvQ')||'[]')||[]; }catch(e){ return []; } }
+  function evQSave(q){ try{ localStorage.setItem('daltexEvQ',JSON.stringify(q.slice(-30))); }catch(e){} }
+  function evHtml(){
+    var h='<div class="trk-card trk-ev"><b>تقدّم الرحلة</b>';
+    if(EV.err) h+='<div class="trk-st err" style="font-size:.95rem">'+esc(EV.err)+'</div>';
+    if(EV.msg) h+='<div class="trk-st done" style="font-size:.95rem">'+esc(EV.msg)+'</div>';
+    var q=evQ().filter(function(x){ return TRK&&x.card===TRK.card; }); if(q.length) h+='<p class="trk-fine">في '+q.length+' حدث محفوظ على تليفونك لسه ما اتبعتش (النت ضعيف). هيتبعت تلقائيًا.</p>';
+    if(!EV.done&&EV.next){
+      if(EV.suggest&&EV.suggest.type===EV.next) h+='<div class="trk-sug">شكلك قريب من «'+esc(EV.suggest.place)+'» — اضغط لتأكيد: <b>'+esc(EVLBL[EV.suggest.type])+'</b></div>';
+      h+='<button class="btn trk-big" id="evNext"'+(EV.busy?' disabled':'')+'>'+(EV.busy?'جارٍ الإرسال…':esc(EVLBL[EV.next]))+'</button>';
+    } else if(!EV.done&&EV.loaded) h+='<div class="trk-st done" style="font-size:.95rem">كل المراحل اتسجّلت. شكرًا.</div>';
+    h+='<div class="trk-row"><label class="btn trk-ph">📷 '+(EV.photoName?'صورة جاهزة: '+esc(EV.photoName):'أضف صورة (اختياري)')+'<input type="file" accept="image/*" capture="environment" id="evPhoto" hidden></label>'+(EV.photo?'<button class="btn trk-x" id="evPhotoX">إلغاء الصورة</button>':'')+'</div>';
+    h+='<button class="btn trk-warn" id="evProb">'+(EV.prob?'إلغاء':'⚠ أبلّغ عن مشكلة')+'</button>';
+    if(EV.prob){
+      h+='<div class="trk-reasons">'+EV.reasons.map(function(r){ return '<button class="btn trk-rs'+(EV.reason===r.key?' on':'')+'" data-rs="'+attr(r.key)+'">'+esc(r.label)+'</button>'; }).join('')+'</div>'+
+        '<input class="ph" id="evNote" maxlength="300" placeholder="ملاحظة قصيرة (اختياري)" value="'+attr(EV.note)+'" style="width:100%;margin:8px 0">'+
+        '<button class="btn trk-big" id="evSendProb"'+(EV.reason&&!EV.busy?'':' disabled')+'>إرسال البلاغ</button>';
+    }
+    if(EV.events.length) h+='<ol class="trk-steps" style="margin-top:16px">'+EV.events.slice().reverse().map(function(e){ return '<li class="'+(e.type==='problem'?'now':'pass')+'"><span class="dot"></span><div><b>'+esc(e.label)+'</b><div class="t">'+esc(trkHm(e.at))+(e.place?' · '+esc(e.place):'')+(e.photo?' · 📷':'')+'</div>'+(e.note?'<div class="p">'+esc(e.note)+'</div>':'')+'</div></li>'; }).join('')+'</ol>';
+    return h+'<p class="trk-fine">كل ضغطة بتتسجّل بالوقت والموقع. دي إفادة منك للإدارة — أرقام الوزن الرسمية بتيجي من الميزان.</p></div>';
+  }
+  function evPaint(){
+    var el=document.getElementById('trkEv'); if(!el) return; el.innerHTML=evHtml();
+    var n=document.getElementById('evNext'), pr=document.getElementById('evProb'), ph=document.getElementById('evPhoto'), px=document.getElementById('evPhotoX'), sp=document.getElementById('evSendProb'), nt=document.getElementById('evNote');
+    if(n) n.onclick=function(){ evSend(EV.next); };
+    if(pr) pr.onclick=function(){ EV.prob=!EV.prob; EV.reason=''; evPaint(); };
+    if(ph) ph.onchange=function(){ evPick(this.files&&this.files[0]); };
+    if(px) px.onclick=function(){ EV.photo=''; EV.photoName=''; evPaint(); };
+    if(nt) nt.oninput=function(){ EV.note=this.value; };
+    if(sp) sp.onclick=function(){ evSend('problem'); };
+    [].forEach.call(el.querySelectorAll('[data-rs]'),function(b){ b.onclick=function(){ EV.reason=b.dataset.rs; evPaint(); }; });
+  }
+  function evPick(f){
+    if(!f) return; EV.err='';
+    var rd=new FileReader(); rd.onload=function(){ var im=new Image(); im.onload=function(){
+      var m=1280, w=im.width, h2=im.height, k=Math.min(1,m/Math.max(w,h2)), c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h2*k); c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      var q=.72, u=c.toDataURL('image/jpeg',q); while(u.length>1900000&&q>.3){ q-=.1; u=c.toDataURL('image/jpeg',q); }
+      if(u.length>2300000){ EV.err='الصورة كبيرة قوي. جرّب تصوّر من أبعد شوية.'; EV.photo=''; EV.photoName=''; } else { EV.photo=u; EV.photoName=(f.name||'صورة').slice(0,18); }
+      evPaint(); };
+      im.onerror=function(){ EV.err='مقدرتش أقرا الصورة دي.'; evPaint(); }; im.src=rd.result; };
+    rd.onerror=function(){ EV.err='مقدرتش أقرا الصورة دي.'; evPaint(); }; rd.readAsDataURL(f);
+  }
+  function evPos(cb){
+    if(LOC.pos&&Date.now()-LOC.pos.t<120000){ cb(LOC.pos.lat,LOC.pos.lng); return; }
+    if(!navigator.geolocation){ cb('',''); return; } var fin=false, to=setTimeout(function(){ if(!fin){ fin=true; cb('',''); } },7000);
+    navigator.geolocation.getCurrentPosition(function(g){ if(fin) return; fin=true; clearTimeout(to); cb(g.coords.latitude,g.coords.longitude); },function(){ if(fin) return; fin=true; clearTimeout(to); cb('',''); },{enableHighAccuracy:true,timeout:6000,maximumAge:60000});
+  }
+  function evApply(r){ if(r&&r.event){ var ex=EV.events.filter(function(e){ return e.eid===r.event.eid; }).length; if(!ex) EV.events.push(r.event); } }
+  function evSend(type){
+    if(EV.busy||!TRK) return; EV.busy=true; EV.err=''; EV.msg=''; evPaint();
+    var ph=EV.photo, rs=type==='problem'?EV.reason:'', note=type==='problem'?EV.note:'', cid=TRK.card+'-'+type+'-'+Date.now();
+    evPos(function(lat,lng){
+      callServer('api_driverEvent',[TRK.card,TRK.token,type,lat,lng,rs,note,ph,cid],function(r){
+        EV.busy=false; EV.photo=''; EV.photoName=''; EV.prob=false; EV.reason=''; EV.note=''; EV.msg='اتسجّل: '+(r.event?r.event.label:''); evApply(r); evLoad(true);
+      },function(m){
+        EV.busy=false;
+        if(/غير صالح|معروف|سبب|JPEG|الحد اليومي/.test(m)){ EV.err=m; evPaint(); return; }
+        var q=evQ(); q.push({card:TRK.card,type:type,lat:lat,lng:lng,reason:rs,note:note,cid:cid}); evQSave(q); EV.msg='النت ضعيف — حفظت الحدث على تليفونك وهيتبعت تلقائيًا.'; if(type!=='problem'&&EV.next===type) EV.next=null; evPaint();
+      });
+    });
+  }
+  function evFlush(){
+    var q=evQ(); if(!q.length||!TRK) return; var mine=q.filter(function(x){ return x.card===TRK.card; }); if(!mine.length) return;
+    var it=mine[0];
+    callServer('api_driverEvent',[it.card,TRK.token,it.type,it.lat,it.lng,it.reason||'',it.note||'','',it.cid],function(){ evQSave(evQ().filter(function(x){ return x.cid!==it.cid; })); evFlush(); evLoad(true); },function(m){ if(/غير صالح|معروف|سبب|الحد اليومي/.test(m)) evQSave(evQ().filter(function(x){ return x.cid!==it.cid; })); });
+  }
+  function evLoad(keepMsg){
+    if(!TRK) return; var p=LOC.pos||{};
+    callServer('api_driverEvents',[TRK.card,TRK.token,p.lat==null?'':p.lat,p.lng==null?'':p.lng],function(r){
+      EV.events=r.events||[]; EV.next=r.next; EV.suggest=r.suggest; EV.near=r.near; EV.reasons=r.reasons||[]; EV.loaded=true; if(!keepMsg) EV.msg=''; evPaint();
+    },function(m){ EV.loaded=true; EV.err=EV.events.length?'':'تعذر تحميل المراحل: '+m; evPaint(); });
+  }
+  window.addEventListener('online',function(){ evFlush(); });
+
+  /* ---- دخول السائق بالكارتة + آخر 6 أرقام من التليفون ---- */
+  function drvLoginHtml(msg){
+    return '<div class="trk-top"><span class="trk-logo">DALTEX</span><span class="trk-sub">دخول السائق</span></div><div class="trk-card"><div class="trk-no">ادخل برقم الكارتة وتليفونك</div>'+
+      '<label class="fld"><span>رقم الكارتة</span><input id="drvCard" inputmode="numeric" autocomplete="off"></label>'+
+      '<label class="fld"><span>آخر 6 أرقام من تليفونك (المسجّل في الرحلة)</span><input id="drvPhone" inputmode="numeric" autocomplete="tel" maxlength="14"></label>'+
+      (msg?'<p class="trk-fine" style="color:var(--err)">'+esc(msg)+'</p>':'')+'<button class="btn" id="drvGo">دخول</button></div>';
+  }
   function trackBoot(){
     document.body.classList.add('trk'); var box=document.createElement('main'); box.id='trackPage'; box.setAttribute('dir','rtl'); box.setAttribute('lang','ar'); document.body.appendChild(box);
     function go(){
-      callServer('api_track',[TRK.card,TRK.token],function(r){ box.innerHTML=trkRender(r.trip); var b=document.getElementById('trkRf'); if(b) b.onclick=function(){ b.textContent='جارٍ التحديث…'; go(); }; },function(m){ box.innerHTML='<div class="trk-top"><span class="trk-logo">DALTEX</span></div><div class="trk-card"><div class="trk-st err">'+esc(m)+'</div><button class="btn trk-rf" id="trkRf">حاول تاني</button></div>'; var b=document.getElementById('trkRf'); if(b) b.onclick=go; });
+      callServer('api_track',[TRK.card,TRK.token],function(r){ box.innerHTML=trkRender(r.trip)+'<div id="trkEv"></div><div id="trkLoc"></div>'; EV.done=r.trip.tone==='done'; evPaint(); evLoad(true); evFlush(); locPaint(); if(r.trip.tone==='done'&&LOC.on) locStop(); var b=document.getElementById('trkRf'); if(b) b.onclick=function(){ b.textContent='جارٍ التحديث…'; go(); }; },function(m){ box.innerHTML='<div class="trk-top"><span class="trk-logo">DALTEX</span></div><div class="trk-card"><div class="trk-st err">'+esc(m)+'</div></div>'; });
     }
+    function login(msg){
+      box.innerHTML=drvLoginHtml(msg); var b=document.getElementById('drvGo');
+      b.onclick=function(){ var c=document.getElementById('drvCard').value, p=document.getElementById('drvPhone').value; b.textContent='جارٍ الدخول…'; b.disabled=true;
+        callServer('api_driverLogin',[c,p],function(r){ TRK={card:r.card,token:r.token}; try{ history.replaceState(null,'',location.href.split('#')[0]+'#k='+encodeURIComponent(hashParts().k||'')+'&t='+encodeURIComponent(r.card)+'.'+r.token); }catch(e){} box.innerHTML='<div class="trk-card"><div class="trk-st road">جارٍ التحميل…</div></div>'; go(); setInterval(go,120000); },function(m){ login(m); }); };
+    }
+    if(!TRK){ login(''); return; }
     box.innerHTML='<div class="trk-top"><span class="trk-logo">DALTEX</span></div><div class="trk-card"><div class="trk-st road">جارٍ التحميل…</div></div>'; go(); setInterval(go,120000);
   }
   function trkLink(card,token){ var id=(API.match(/macros\/s\/([\w-]+)/)||[])[1]||''; return location.href.split('#')[0]+'#k='+id+'&t='+encodeURIComponent(card)+'.'+token; }
@@ -2518,7 +2693,7 @@ function ecApplyPatch(q, patch, S) {
 
   /* ================= لوحة التحكم ================= */
   var A={S:null,sec:'ladder',dirty:false,busy:false,msg:'',f:{co:'',pl:'',rej:'',rv:''},res:{},focus:null,sandbox:'',rv:{},rvMode:'review',pv:null,pvBusy:false,sch:null,schMsg:'',learn:true};
-  var SECGROUPS=[['نظرة عامة',[['ask','اسأل البيانات'],['alerts','مركز المتابعة'],['dq','جودة البيانات'],['lanes','مقارنة المسارات'],['wait','الانتظار والازدحام'],['insights','الرؤى والتنبيهات'],['ladder','سلم القواعد'],['rcenter','مركز القواعد'],['test','اختبار فوري'],['settle','مستخلص المقاول'],['invoice','مطابقة فاتورة المقاول'],['docs','قراءة صور المستندات'],['expenses','مصروفات وغرامات']]],['١ · البيانات والربط',[['extlink','ملفات الربط الخارجية'],['extset','إعدادات محرك الربط']]],['٢–٣ · الرفض والمقاولون',[['layers','طبقات الرفض'],['contractors','المقاولون']]],['٤ · الأماكن والتحميل',[['places','الأماكن'],['loading','قواعد مكان التحميل']]],['٦ · المراجعة اليدوية',[['review','مراجعة وتعديل يدوي']]],['٨–٩ · الجارية والأسعار',[['live','الرحلات الجارية'],['pricing','الأسعار'],['contract','قواعد العقد'],['book','دفتر الأسعار']]],['التشغيل',[['schedule','الجدولة'],['drivebk','نسخ احتياطي وأمان'],['general','السائق والعام']]],['الإيميل',[['emview','العرض والحسابات'],['emmsg','الرسالة المولدة'],['emreply','الردود الجاهزة'],['emact','الإجراءات'],['eminfer','الاستنتاج والاقتراح']]],['شخصي',[['ui','المظهر واللغة']]]];
+  var SECGROUPS=[['نظرة عامة',[['ask','اسأل البيانات'],['alerts','مركز المتابعة'],['dq','جودة البيانات'],['lanes','مقارنة المسارات'],['wait','الانتظار والازدحام'],['drvloc','مواقع السائقين'],['tevents','أحداث الرحلات'],['insights','الرؤى والتنبيهات'],['ladder','سلم القواعد'],['rcenter','مركز القواعد'],['test','اختبار فوري'],['settle','مستخلص المقاول'],['invoice','مطابقة فاتورة المقاول'],['docs','قراءة صور المستندات'],['expenses','مصروفات وغرامات']]],['١ · البيانات والربط',[['extlink','ملفات الربط الخارجية'],['extset','إعدادات محرك الربط']]],['٢–٣ · الرفض والمقاولون',[['layers','طبقات الرفض'],['contractors','المقاولون']]],['٤ · الأماكن والتحميل',[['places','الأماكن'],['loading','قواعد مكان التحميل']]],['٦ · المراجعة اليدوية',[['review','مراجعة وتعديل يدوي']]],['٨–٩ · الجارية والأسعار',[['live','الرحلات الجارية'],['pricing','الأسعار'],['contract','قواعد العقد'],['book','دفتر الأسعار']]],['التشغيل',[['schedule','الجدولة'],['drivebk','نسخ احتياطي وأمان'],['general','السائق والعام']]],['الإيميل',[['emview','العرض والحسابات'],['emmsg','الرسالة المولدة'],['emreply','الردود الجاهزة'],['emact','الإجراءات'],['eminfer','الاستنتاج والاقتراح']]],['شخصي',[['ui','المظهر واللغة']]]];
   var SECS=[]; SECGROUPS.forEach(function(g){ g[1].forEach(function(x){ SECS.push(x); }); });
   var LAYER_LABEL={cancelled:'ملغاة',blockedContractor:'مقاول خارج التشغيل',container:'حاوية/كونتينر'};
   function clone(o){return JSON.parse(JSON.stringify(o))}
@@ -2763,7 +2938,7 @@ function ecApplyPatch(q, patch, S) {
     var nq=nz(A.lad.navq);
     var nav='<input class="nvq" data-a="navq" value="'+attr(A.lad.navq)+'" placeholder="ابحث عن قسم…" aria-label="بحث في الأقسام">'+SECGROUPS.map(function(g){ var items=g[1].filter(function(x){ return !nq||nz(x[1]).indexOf(nq)>=0; }); return items.length?'<div class="ngrp">'+g[0]+'</div>'+items.map(navBtn).join(''):''; }).join('');
     document.getElementById('anav').innerHTML=nav;
-    fillLists(); var f={review:rReview,extlink:rExtLink,extset:rExtSet,layers:rLayers,contractors:rContractors,places:rPlaces,loading:rLoading,live:rLive,pricing:rPricing,schedule:rSchedule,general:rGeneral,test:rTest,emview:rEmView,emmsg:rEmMsg,emreply:rEmReply,emact:rEmAct,eminfer:rEmInfer,ui:rUiPanel,rcenter:rRulesCenter,ladder:rLadder,insights:rInsights,alerts:rAlerts,dq:rDq,lanes:rLanes,wait:rWait,drivebk:rDriveBk,book:rBook,settle:rSettle,invoice:rInvoice,ask:rAsk,contract:rContract,docs:rDocs,expenses:rExpenses}[A.sec];
+    fillLists(); var f={review:rReview,extlink:rExtLink,extset:rExtSet,layers:rLayers,contractors:rContractors,places:rPlaces,loading:rLoading,live:rLive,pricing:rPricing,schedule:rSchedule,general:rGeneral,test:rTest,emview:rEmView,emmsg:rEmMsg,emreply:rEmReply,emact:rEmAct,eminfer:rEmInfer,ui:rUiPanel,rcenter:rRulesCenter,ladder:rLadder,insights:rInsights,alerts:rAlerts,dq:rDq,lanes:rLanes,wait:rWait,drvloc:rDrvLoc,tevents:rTripEv,drivebk:rDriveBk,book:rBook,settle:rSettle,invoice:rInvoice,ask:rAsk,contract:rContract,docs:rDocs,expenses:rExpenses}[A.sec];
     document.getElementById('asec').innerHTML=(A.sec==='ladder'?'':ladBanner(A.sec))+f();
     sbRender();
     if(A.focus){ var el=document.querySelector(A.focus.sel); if(el){ el.focus(); try{ var v=el.value; el.setSelectionRange(v.length,v.length);}catch(e){} } A.focus=null; }
@@ -3216,7 +3391,7 @@ function ecApplyPatch(q, patch, S) {
     if(a==='ov-clear'){ if(confirm('إلغاء التعديل اليدوي على الكارتة '+t.dataset.c+'؟')) ovSend([{card:t.dataset.c,clear:true}],false); return; }
     if(a==='sch-day'){ var sc=A.sch, di=+t.dataset.i, k=sc.days.indexOf(di); if(k>=0) sc.days.splice(k,1); else { sc.days.push(di); sc.days.sort(); } aRender(); return; }
     if(a==='sch-save'){ schSave(); return; }
-    if(bkAct(a)||dqAct(a,t)||lnAct(a,t)||wtAct(a,t)) return;
+    if(bkAct(a)||dqAct(a,t)||lnAct(a,t)||wtAct(a,t)||dlAct(a,t)) return;
     if(a==='sch-pause'){ schPause(+t.dataset.m); return; }
     if(a==='dec-ok'){ S.contractors.approved.push(t.dataset.n); touch(); aRender(); return; }
     if(a==='dec-no'){ S.contractors.blocked.push(t.dataset.n); touch(); aRender(); return; }
@@ -5687,6 +5862,11 @@ function ctSummary_(trips, C, R) {
     if(emN) items.push(['warn',emN+' طلب إيميل ناقص بيانات (مثلًا مكان تحميل أو كمية)','','افتح الإيميل','al-email']);
     var unN=(D.unmatched||[]).filter(function(u){ return !decided(u.name); }).length;
     if(unN) items.push(['warn',unN+' اسم مقاول لسه ما اتقررش (معتمد أو خارج التشغيل)','contractors','المقاولون']);
+    // سائقون شاركوا موقعهم ثم سكتوا (الرحلة لسه جارية)
+    if(IN_GAS&&pinVal()) dlLoad();
+    var dl=(A.dl&&A.dl.locs)||[], liveSet={}; (D.live||[]).forEach(function(t){ liveSet[String(t.card)]=1; });
+    var silent=dl.filter(function(x){ return liveSet[x.card]&&x.ageMin>60; });
+    if(silent.length) items.push(['warn',silent.length+' سائق في رحلة جارية وقف يبعت موقعه من أكتر من ساعة (أقدمهم '+Math.max.apply(null,silent.map(function(x){ return x.ageMin; }))+' دقيقة) — ممكن الشاشة اتقفلت أو النت قطع','drvloc','مواقع السائقين']);
     var n={err:0,warn:0,info:0}; items.forEach(function(x){ n[x[0]]++; });
     var h='<h2>مركز المتابعة</h2><p class="lead">كل اللي محتاج تدخل منك في مكان واحد: أسعار ناقصة أو منتهية، رحلات للمراجعة، وبنود من العقد لسه ناقصة. قراءة فقط.</p>';
     h+='<div class="box"><div class="kvg"><div><small>عاجل</small><b>'+n.err+'</b></div><div><small>تحذير</small><b>'+n.warn+'</b></div><div><small>معلومة</small><b>'+n.info+'</b></div><div><small>مسعّر</small><b>'+CV.pricedPct+'٪</b></div></div></div>';
@@ -5766,11 +5946,24 @@ function ctSummary_(trips, C, R) {
     var tot=rows.length;
     return { total:tot, clean:clean, score:tot?Math.round(clean*1000/tot)/10:100, checks:res.map(function(r){ r.pct=tot?Math.round(r.n*1000/tot)/10:0; return r; }) };
   }
-  A.dq=A.dq||{sel:''};
+  A.dq=A.dq||{sel:'',hist:null,loading:false,sent:''};
+  function dqHist(Q){
+    if(!IN_GAS||!pinVal()||A.dq.loading||!Q.total) return;
+    var key=TODAY+'|'+Q.total+'|'+Q.clean; if(A.dq.sent===key) return;
+    A.dq.loading=true; A.dq.sent=key;
+    srv('api_dqSnap',[Q.total,Q.clean,pinVal()],function(r){ A.dq.loading=false; A.dq.hist=r.hist; if(A.sec==='dq') aRender(); },function(){ A.dq.loading=false; });
+  }
+  function dqTrend(){
+    var H=A.dq.hist; if(!H||!H.length) return '';
+    var L=H.slice(-30), mx=100, first=L[0].s, last=L[L.length-1].s, d=Math.round((last-first)*10)/10;
+    return '<div class="box"><h3>تطور الجودة (آخر '+L.length+' يوم)</h3><div class="wt-chart" style="grid-template-columns:repeat('+L.length+',1fr)" role="img" aria-label="تطور درجة الجودة">'+L.map(function(x){ return '<div class="wt-col" title="'+attr(x.d)+' — '+x.s+'٪"><i style="height:'+Math.max(2,Math.round(x.s*100/mx))+'%"></i><span></span></div>'; }).join('')+'</div><p class="sub">من '+first+'٪ ('+esc(L[0].d)+') إلى '+last+'٪ ('+esc(L[L.length-1].d)+') · '+(d>0?'تحسّن +':d<0?'تراجع ':'ثابت ')+(d?d+'٪':'')+'. بيتسجل مرة في اليوم لما تفتح القسم بالرقم السري.</p></div>';
+  }
   function rDq(){
     var Q=dqCompute_((D.trips||[]).concat(D.live||[])), h='<h2>جودة البيانات</h2><p class="lead">فحوصات على كل الرحلات (غير الملغاة). «سليمة» يعني رحلة عدّت كل الفحوصات. قراءة فقط.</p>';
     h+='<div class="box"><div class="kvg"><div><small>رحلات مفحوصة</small><b>'+insFmt(Q.total)+'</b></div><div><small>سليمة بالكامل</small><b>'+insFmt(Q.clean)+'</b></div><div><small>درجة الجودة</small><b>'+Q.score+'٪</b></div></div></div>';
     h+='<div class="box"><h3>الفحوصات</h3>'+insTbl(['الفحص','العدد','النسبة','الأهمية',''],Q.checks.map(function(c){ return '<tr><td>'+esc(c.label)+'</td><td><b>'+insFmt(c.n)+'</b></td><td>'+c.pct+'٪</td><td><span class="chip2 '+(c.level==='err'?'bad':c.level==='warn'?'warn':'info')+'">'+(c.level==='err'?'عاجل':c.level==='warn'?'تحذير':'معلومة')+'</span></td><td>'+(c.n?'<button class="abtn sm" data-a="dq-show" data-k="'+c.key+'">عرض الكروت</button> <button class="abtn sm" data-a="dq-csv" data-k="'+c.key+'">CSV</button>':'<span class="ok">✓</span>')+'</td></tr>'; }))+'</div>';
+    dqHist(Q); if(!A.dq.hist&&IN_GAS&&pinVal()&&!A.dq.loading){ A.dq.loading=true; srv('api_dqHist',[pinVal()],function(r){ A.dq.loading=false; A.dq.hist=r.hist; if(A.sec==='dq') aRender(); },function(){ A.dq.loading=false; }); }
+    h+=dqTrend();
     var sel=Q.checks.filter(function(c){ return c.key===A.dq.sel; })[0];
     if(sel) h+='<div class="box"><h3>'+esc(sel.label)+' ('+insFmt(sel.n)+')</h3><p class="sub">أول 100 كارتة:</p><div class="ph" style="line-height:2">'+sel.cards.slice(0,100).map(function(c){ return '<span class="rolechip">'+esc(c)+'</span>'; }).join('')+'</div></div>';
     return h;
@@ -5865,6 +6058,70 @@ function ctSummary_(trips, C, R) {
     if(a==='wt-warn'){ A.wt.warn=Number(t.value)||3; aRender(); return true; }
     if(a==='wt-place'){ A.wt.place=t.value; aRender(); return true; }
     if(a==='wt-days'){ A.wt.days=Number(t.value)||30; aRender(); return true; }
+    return false;
+  }
+
+    /* ================= مواقع السائقين (للإدارة): آخر موقع شاركه كل سائق + رابط دخول السائق ================= */
+  A.dl=A.dl||{locs:null,loading:false,msg:'',now:''};
+  function dlLoad(force){
+    if(A.dl.loading||(A.dl.locs&&!force)||!IN_GAS) return;
+    A.dl.loading=true;
+    srv('api_driverLocs',[pinVal()],function(r){ A.dl.loading=false; A.dl.locs=r.locs; A.dl.now=r.now; A.dl.msg=''; if(A.sec==='drvloc') aRender(); },function(m){ A.dl.loading=false; A.dl.msg=m; if(A.sec==='drvloc') aRender(); });
+  }
+  function dlAge(m){ return m<1?'الآن':m<60?m+' د':Math.floor(m/60)+' س '+(m%60)+' د'; }
+  function dlLink(){ var id=(String(API||'').match(/macros\/s\/([\w-]+)/)||[])[1]||''; return location.href.split('#')[0]+'#k='+id+'&d=1'; }
+  function rDrvLoc(){
+    var h='<h2>مواقع السائقين</h2><p class="lead">السائق بيشارك موقعه بنفسه من صفحته (بعد ما يوافق في المتصفح): بيدخل من رابط رحلته، أو من رابط الدخول العام بالكارتة وآخر 6 أرقام من تليفونه. بنحفظ آخر نقطة بس لكل كارتة، وبتختفي بعد 48 ساعة.</p>';
+    if(API){ var lk=dlLink(); h+='<div class="box"><h3>رابط دخول السائق</h3><p class="sub">ابعته للسائقين مرة واحدة (واتساب مثلًا). السائق يكتب الكارتة وآخر 6 أرقام من تليفونه، وبعد 5 محاولات غلط الكارتة بتتقفل 15 دقيقة.</p><div class="row"><input readonly class="ph" style="flex:1;min-width:220px" value="'+attr(lk)+'" onclick="this.select()"><button class="abtn" data-a="dl-copy" data-k="'+attr(lk)+'">نسخ الرابط</button><a class="abtn" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent('ادخل على الرابط ده وسجّل برقم الكارتة وآخر 6 أرقام من تليفونك عشان تشارك موقعك وتتابع رحلتك:\n'+lk)+'">واتساب</a></div></div>'; }
+    if(API){
+      var names={}; (D.trips||[]).concat(D.live||[]).forEach(function(t){ var n=String(t.contractor||'').trim(); if(n) names[n]=1; });
+      h+='<div class="box"><h3>رابط بوابة المقاول</h3><p class="sub">صفحة للعرض فقط لمقاول واحد: رحلاته الجارية والمكتملة والأطنان. من غير أسعار ولا بيانات مقاولين تانيين. تحتاج الرقم السري للإدارة (أعلى الصفحة).</p><div class="row"><select id="cpName" style="min-width:220px"><option value="">اختار المقاول</option>'+Object.keys(names).sort().map(function(n){ return '<option>'+esc(n)+'</option>'; }).join('')+'</select><button class="abtn" data-a="cp-copy">نسخ الرابط</button><button class="abtn" data-a="cp-wa">واتساب</button></div><p class="sub" id="cpMsg">'+esc(A.dl.cpMsg||'')+'</p></div>';
+    }
+    if(!IN_GAS) return h+'<div class="box"><p class="sub">عرض المواقع بيشتغل داخل النظام الفعلي فقط.</p></div>';
+    var L=A.dl.locs;
+    if(!L){ dlLoad(); return h+'<div class="box"><p class="sub">'+(A.dl.msg?esc(A.dl.msg):(pinVal()?'جارٍ التحميل…':'اكتب الرقم السري للإدارة في أعلى الصفحة ثم افتح القسم تاني.'))+'</p></div>'; }
+    var by={}; (D.live||[]).concat(D.trips||[]).forEach(function(t){ if(!by[String(t.card)]) by[String(t.card)]=t; });
+    h+='<div class="box"><div class="row"><h3 style="margin:0;flex:1">آخر المواقع ('+L.length+')</h3><button class="abtn" data-a="dl-refresh">تحديث</button></div>'+(L.length?insTbl(['الكارتة','السيارة','المقاول','من ← إلى','آخر تحديث','السرعة','الدقة',''],L.map(function(x){ var t=by[x.card]||{}, lvl=x.ageMin<=15?'info':x.ageMin<=60?'warn':'bad';
+      return '<tr><td>'+esc(x.card)+'</td><td>'+esc(t.plate||'')+'</td><td>'+esc(t.contractor||'')+'</td><td>'+esc((t.loadPlace||'')+(t.unloadPlace?' ← '+t.unloadPlace:''))+'</td><td><span class="chip2 '+lvl+'">'+dlAge(x.ageMin)+'</span></td><td>'+(x.speed==null?'—':x.speed+' كم/س')+'</td><td>'+(x.acc==null?'—':'±'+x.acc+' م')+'</td><td><a class="abtn sm" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+x.lat+','+x.lng+'">الخريطة</a></td></tr>'; })):'<p class="sub">مفيش سائق بيشارك موقعه دلوقتي.</p>')+'</div>';
+    return h;
+  }
+
+  /* ================= أحداث الرحلات (إفادات السائقين) + مقارنة بـ JDE ================= */
+  A.te=A.te||{data:null,loading:false,msg:'',days:7};
+  function teLoad(force){
+    if(A.te.loading||(A.te.data&&!force)||!IN_GAS) return;
+    if(!pinVal()){ A.te.msg='اكتب الرقم السري للإدارة في أعلى الصفحة ثم افتح القسم تاني.'; return; }
+    A.te.loading=true; A.te.msg='';
+    srv('api_tripEvents',[pinVal(),A.te.days],function(r){ A.te.loading=false; A.te.data=r; if(A.sec==='tevents') aRender(); },function(m){ A.te.loading=false; A.te.msg=m; if(A.sec==='tevents') aRender(); });
+  }
+  function rTripEv(){
+    var h='<h2>أحداث الرحلات</h2><p class="lead">اللي السائقين بيضغطوه من صفحتهم: وصول، بداية/نهاية تحميل، خروج، تفريغ، ومشاكل بصور. دي إفادات ميدانية بتتقارن بـ JDE — مش بتغيّر أي رقم رسمي.</p>';
+    if(!IN_GAS) return h+'<div class="box"><p class="sub">العرض بيشتغل داخل النظام الفعلي فقط.</p></div>';
+    var R=A.te.data;
+    if(!R){ teLoad(); return h+'<div class="box"><p class="sub">'+(A.te.msg?esc(A.te.msg):'جارٍ التحميل…')+'</p></div>'; }
+    h+='<div class="box"><div class="row"><label class="fld" style="margin:0"><span>الفترة</span><select data-a="te-days">'+[1,3,7,14,30].map(function(d){ return '<option value="'+d+'"'+(d===A.te.days?' selected':'')+'>آخر '+d+' يوم</option>'; }).join('')+'</select></label><button class="abtn" data-a="te-refresh">تحديث</button><span class="sub" style="margin:0">'+R.total+' حدث · '+R.cards.length+' كارتة</span></div></div>';
+    var fl=R.cards.filter(function(c){ return c.flags.length; });
+    if(fl.length) h+='<div class="box"><h3>محتاج متابعة ('+fl.length+')</h3>'+fl.map(function(c){ return '<div class="mp-ai-i warn" style="margin-bottom:6px"><i>⚠</i><span><b>كارتة '+esc(c.card)+'</b>'+(c.contractor?' · '+esc(c.contractor):'')+(c.from?' · '+esc(c.from+(c.to?' ← '+c.to:'')):'')+'<br>'+c.flags.map(esc).join('<br>')+'</span></div>'; }).join('')+'</div>';
+    h+='<div class="box"><h3>آخر حالة لكل كارتة</h3>'+(R.cards.length?insTbl(['الكارتة','المقاول','من ← إلى','آخر حدث','الوقت','المكان','أحداث','JDE'],R.cards.map(function(c){ return '<tr><td>'+esc(c.card)+'</td><td>'+esc(c.contractor)+'</td><td>'+esc(c.from+(c.to?' ← '+c.to:''))+'</td><td>'+esc(c.last.label)+'</td><td>'+esc(String(c.last.at).slice(5,16))+'</td><td>'+esc(c.last.place||'—')+'</td><td>'+c.n+'</td><td>'+(c.live?'جارية':'—')+'</td></tr>'; })):'<p class="sub">مفيش أحداث في الفترة دي. لما السائقين يستخدموا صفحتهم هتظهر هنا.</p>')+'</div>';
+    var ph=R.events.filter(function(e){ return e.photo; }).slice(0,12);
+    if(ph.length) h+='<div class="box"><h3>الصور الأخيرة</h3>'+ph.map(function(e){ return '<a class="abtn sm" target="_blank" rel="noopener" href="'+attr(e.photo)+'">📷 كارتة '+esc(e.card)+' · '+esc(e.label)+'</a> '; }).join('')+'<p class="sub">الصور في مجلد Drive خاص بحسابك (DALTEX_Trip_Photos).</p></div>';
+    return h;
+  }
+
+  function dlAct(a,t){
+    if(a==='te-days'){ A.te.days=+t.value||7; A.te.data=null; teLoad(true); aRender(); return true; }
+    if(a==='te-refresh'){ A.te.data=null; teLoad(true); aRender(); return true; }
+    if(a==='dl-refresh'){ A.dl.locs=null; dlLoad(true); aRender(); return true; }
+    if(a==='cp-copy'||a==='cp-wa'){
+      var sel=document.getElementById('cpName'), nm=sel&&sel.value; if(!nm){ A.dl.cpMsg='اختار المقاول الأول.'; aRender(); return true; }
+      if(needPin(function(m){ A.dl.cpMsg=m; aRender(); })) return true;
+      srv('api_contractorToken',[nm,pinVal()],function(r){
+        var id=(String(API||'').match(/macros\/s\/([\w-]+)/)||[])[1]||'', lk=location.href.split('#')[0]+'#k='+id+'&c='+encodeURIComponent(r.name)+'.'+r.token;
+        if(a==='cp-wa') window.open('https://wa.me/?text='+encodeURIComponent('بوابة '+r.name+' لمتابعة رحلاتكم:\n'+lk),'_blank','noopener'); else copyText(lk,t);
+        A.dl.cpMsg='✓ تم إنشاء رابط '+r.name; },function(m){ A.dl.cpMsg=m; aRender(); });
+      return true;
+    }
+    if(a==='dl-copy'){ copyText(t.dataset.k,t); return true; }
     return false;
   }
 
@@ -7054,12 +7311,12 @@ var RC = (function () {
     /* ================= الخريطة v2: أماكن + حركة نقل + جاري + تحليلات (Leaflet مضمّن داخل الملف) =================
      مزايا: تلوين المسارات (سعر/زمن/مقاول)، عرض بالمناطق، تشغيل زمني يوم بيوم، قياس مسافة، أقرب الأماكن،
      أماكن ساكنة، تحديد موقع مكان ناقص من الخريطة وحفظه، بحث عناوين، طريق فعلي (OSRM)، تصدير GeoJSON/KML/CSV، ملخص واتساب، طباعة */
-  var MP = window.MP = { map: null, layers: {}, base: null, baseKey: '', first: true, model: null, tile_err: 0, osrm: {}, geo: [], timer: null };
+  var MP = window.MP = { map: null, layers: {}, base: null, baseKey: '', first: true, model: null, tile_err: 0, osrm: {}, geo: [], timer: null, drv: { locs: null, at: 0, busy: false, msg: '' } };
   var MPKIND = { farm: ['مزرعة', '#4c9a2a'], factory: ['مصنع', '#6b5bd6'], cold: ['ثلاجة', '#1e88c9'], station: ['محطة', '#d99a00'], port: ['ميناء', '#0097a7'], client: ['عميل / جهة', '#d6336c'], market: ['سوق', '#8d6e63'], other: ['أخرى', '#607d8b'], '': ['غير مصنّف', '#7a8a84'] };
   var MPPER = [['today', 'اليوم'], ['yest', 'أمس'], ['7', 'آخر 7 أيام'], ['30', 'آخر 30 يومًا'], ['90', 'آخر 90 يومًا'], ['all', 'كل البيانات']];
   var MPSTAGE = { 0: 'وصلت · لم توزن', 1: 'تحت التحميل', 2: 'تحت التفريغ', 3: 'متجهة للتفريغ', 4: 'متجهة (خارجي)' };
   var MPPAL = ['#2563eb', '#dc2626', '#9333ea', '#ea580c', '#0d9488', '#ca8a04', '#db2777', '#4b5563'];
-  var MS = { period: '30', contractor: '', crop: '', metric: 'n', color: 'uni', group: 'place', kinds: {}, onlyDorm: false, q: '', tab: 'routes', sel: null, maxEdges: 80, base: 'auto', day: null, playing: false, measure: false, meas: [], pick: null, L: { places: true, idle: true, flows: true, live: true, labels: false, heat: false, anim: true, geo: false }, full: false };
+  var MS = { period: '30', contractor: '', crop: '', metric: 'n', color: 'uni', group: 'place', kinds: {}, onlyDorm: false, q: '', tab: 'routes', sel: null, maxEdges: 80, base: 'auto', day: null, playing: false, measure: false, meas: [], pick: null, L: { places: true, idle: true, flows: true, live: true, drivers: true, labels: false, heat: false, anim: true, geo: false }, full: false, help: false };
   try { var _s = JSON.parse(localStorage.getItem('daltexMap') || 'null'); if (_s) { ['period', 'metric', 'maxEdges', 'base', 'color', 'group'].forEach(function (k) { if (_s[k] != null) MS[k] = _s[k]; }); if (_s.L) Object.keys(_s.L).forEach(function (k) { MS.L[k] = !!_s.L[k]; }); } } catch (e) { }
   function mpSave() { try { localStorage.setItem('daltexMap', JSON.stringify({ period: MS.period, metric: MS.metric, maxEdges: MS.maxEdges, base: MS.base, color: MS.color, group: MS.group, L: MS.L })); } catch (e) { } }
   function mpFmt(n) { n = Math.round((+n || 0) * 10) / 10; return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
@@ -7244,6 +7501,16 @@ var RC = (function () {
       mk.bindTooltip('<b>' + esc(t.contractor || '—') + '</b><br>' + esc(x.a.name) + ' ← ' + esc(x.b.name) + '<br>' + esc(MPSTAGE[t.stageNo] || '') + (t.ageH != null ? ' · من ' + Math.round(t.ageH) + ' ساعة' : '') + '<br><i>الموقع على الطريق تقديري</i>', { direction: 'top', className: 'mp-tip' });
       mk.on('click', function (ev) { L.DomEvent.stopPropagation(ev); MS.sel = { t: 'r', k: x.a.name + '\u0001' + x.b.name }; mpRender(); });
     });
+    if (MS.L.drivers && MP.drv.locs) {
+      var liveBy = {}; (D.live || []).forEach(function (t) { if (t.card != null) liveBy[String(t.card)] = t; });
+      MP.drv.locs.forEach(function (d) {
+        if (!isFinite(d.lat) || !isFinite(d.lng)) return;
+        var cls = d.ageMin <= 10 ? 'fresh' : d.ageMin <= 60 ? 'warm' : 'old', lt = liveBy[String(d.card)], sp = d.speed != null && isFinite(d.speed) ? Math.round(d.speed) : null;
+        var mk = L.marker([d.lat, d.lng], { icon: L.divIcon({ className: 'mp-ic', html: '<div class="mp-drv ' + cls + '"><span>' + (sp != null && sp > 3 ? '➤' : '●') + '</span></div>', iconSize: [28, 28], iconAnchor: [14, 14] }), zIndexOffset: 1200 }).addTo(g.live);
+        if (d.acc && d.acc > 30 && d.acc < 5000) L.circle([d.lat, d.lng], { radius: d.acc, color: '#16a34a', weight: 1, fillOpacity: .06, interactive: false }).addTo(g.live);
+        mk.bindTooltip('<b>سائق · كارتة ' + esc(String(d.card)) + '</b>' + (lt ? '<br>' + esc(lt.contractor || '—') + ': ' + esc((lt.loadPlace || '') + ' ← ' + (lt.unloadPlace || '')) : '') + '<br>آخر موقع: ' + (d.ageMin < 1 ? 'الآن' : d.ageMin < 60 ? 'من ' + d.ageMin + ' د' : 'من ' + Math.floor(d.ageMin / 60) + ' س') + (sp != null ? ' · ' + sp + ' كم/س' : '') + '<br><i>GPS حقيقي من السائق</i>', { direction: 'top', className: 'mp-tip' });
+      });
+    }
     if (MS.meas.length === 2) { var a = M.byName[MS.meas[0]], b = M.byName[MS.meas[1]]; if (a && b && a.pt && b.pt) L.polyline([[a.pt.lat, a.pt.lng], [b.pt.lat, b.pt.lng]], { color: '#2563eb', weight: 3, dashArray: '6 6' }).addTo(g.meas); }
     return bounds;
   }
@@ -7327,6 +7594,81 @@ var RC = (function () {
     }).catch(function () { MP.osrm[k] = { err: true }; mpRender(); });
   }
 
+  /* ---------- سواقين GPS ---------- */
+  function mpDrvLoad(force) {
+    var d = MP.drv; if (!MS.L.drivers || d.busy || typeof IN_GAS === 'undefined' || !IN_GAS) return; var pin = typeof pinVal === 'function' ? pinVal() : ''; if (!pin) { d.msg = 'اكتب الرقم السري للإدارة عشان تظهر مواقع السواقين.'; return; }
+    if (!force && d.locs && Date.now() - d.at < 55000) return; d.busy = true;
+    srv('api_driverLocs', [pin], function (r) { d.busy = false; d.locs = r.locs || []; d.at = Date.now(); d.msg = ''; var pm = document.getElementById('p-map'); if (pm && !pm.hidden) { MP.refit = false; mpRender(); } }, function (m) { d.busy = false; d.at = Date.now(); d.msg = m || 'تعذّر تحميل مواقع السواقين'; });
+  }
+  /* ---------- تحليلات ذكية وحسابات ---------- */
+  function mpMedian(a) { if (!a.length) return null; var b = a.slice().sort(function (x, y) { return x - y; }); return b[b.length >> 1]; }
+  function mpStats(M) {
+    var tk = 0, kt = 0, kn = 0, pc = 0, ptk = 0, one = 0, tot = 0, es = M.edges.filter(function (e) { return e.a !== e.b; });
+    es.forEach(function (e) {
+      tot += e.n; var rev = es.some(function (x) { return x.a === e.b && x.b === e.a; }); if (!rev) one += e.n;
+      if (e.km) { tk += e.tons * e.km; kt += e.n * e.km; kn += e.n; if (e.price > 0) { pc += e.price; ptk += e.tons * e.km; } }
+    });
+    var top3 = es.slice().sort(function (a, b) { return b.n - a.n; }).slice(0, 3).reduce(function (x, e) { return x + e.n; }, 0);
+    return { tonKm: tk, avgKm: kn ? kt / kn : null, perTonKm: ptk > 0 ? pc / ptk : null, oneWay: tot ? one / tot : null, top3: tot ? top3 / tot : null, tot: tot, kmCover: tot ? kn / tot : 0 };
+  }
+  function mpInsights(M) {
+    var out = [], st = M.stats = mpStats(M), es = M.edges.filter(function (e) { return e.a !== e.b; });
+    if (M.liveLate) out.push({ ic: '🔴', c: 'bad', t: M.liveLate + ' رحلة جارية متأخرة (12 ساعة+) — راجعها الأول', tab: 'live' });
+    var hot = M.nodes.filter(function (n) { return n.liveN >= 3; }).sort(function (a, b) { return b.liveN - a.liveN; })[0];
+    if (hot) out.push({ ic: '🟠', c: 'warn', t: 'ازدحام: ' + hot.liveN + ' عربية جارية عند «' + hot.name + '»', pick: hot.name });
+    var pe = es.filter(function (e) { return e.ppt && e.km >= 10 && e.n >= 3; }), ppk = pe.map(function (e) { return e.ppt / e.km; }), mp = mpMedian(ppk);
+    if (mp) { var bad = pe.filter(function (e) { return e.ppt / e.km > mp * 1.4; }).sort(function (a, b) { return b.n * (b.ppt / b.km) - a.n * (a.ppt / a.km); })[0]; if (bad) out.push({ ic: '💰', c: 'warn', t: 'سعر مرتفع: ' + bad.a.name + ' ← ' + bad.b.name + ' (' + Math.round(bad.ppt / bad.km * 10) / 10 + ' ج/طن·كم مقابل وسيط ' + Math.round(mp * 10) / 10 + ')', route: bad.k }); }
+    var he = es.filter(function (e) { return e.avgH != null && e.n >= 3; }), mh = mpMedian(he.map(function (e) { return e.avgH; }));
+    if (mh) { var slow = he.filter(function (e) { return e.avgH > mh * 1.6 && e.avgH - mh > 2; }).sort(function (a, b) { return b.avgH * b.n - a.avgH * a.n; })[0]; if (slow) out.push({ ic: '⏱', c: 'warn', t: 'مسار بطيء: ' + slow.a.name + ' ← ' + slow.b.name + ' متوسطه ' + (Math.round(slow.avgH * 10) / 10) + ' ساعة (الوسيط ' + (Math.round(mh * 10) / 10) + ')', route: slow.k }); }
+    if (st.oneWay != null && st.tot >= 10 && st.oneWay > .6) out.push({ ic: '↩', c: 'info', t: 'رجوع فاضي تقريبًا: ' + Math.round(st.oneWay * 100) + '% من الرحلات على مسارات بلا اتجاه عكسي — فرصة تحميل رجوع', tab: 'routes' });
+    if (st.top3 != null && st.tot >= 10 && st.top3 > .5) out.push({ ic: '🎯', c: 'info', t: 'تركّز: أقوى 3 مسارات = ' + Math.round(st.top3 * 100) + '% من الحركة' });
+    var cs = {}; es.forEach(function (e) { Object.keys(e.con).forEach(function (c) { cs[c] = (cs[c] || 0) + e.con[c]; }); }); var ct = mpTop(cs, 1)[0], csum = Object.keys(cs).reduce(function (x, k) { return x + cs[k]; }, 0);
+    if (ct && csum >= 10 && ct[1] / csum > .4) out.push({ ic: '🚛', c: 'info', t: 'اعتماد على مقاول: «' + ct[0] + '» = ' + Math.round(100 * ct[1] / csum) + '% من الرحلات' });
+    if (M.dormN) out.push({ ic: '💤', c: 'info', t: M.dormN + ' مكان ساكن (30+ يوم بلا حركة)' });
+    if (M.unm.length) out.push({ ic: '📍', c: 'warn', t: M.unm.length + ' مكان له رحلات بلا إحداثيات — اتحسب خارج الخريطة', tab: 'unm' });
+    var dl = MP.drv.locs; if (MS.L.drivers && dl) { var fr = dl.filter(function (d) { return d.ageMin <= 10; }).length; out.push({ ic: '🛰', c: 'ok', t: fr + ' سائق بيشارك موقعه دلوقتي من ' + dl.length + ' خلال 48 ساعة' }); }
+    return out;
+  }
+  function mpInsHtml(M) {
+    var st = M.stats || mpStats(M), ins = mpInsights(M);
+    var h = '<div class="mp-sm">' +
+      '<div><small>متوسط المشوار</small><b>' + (st.avgKm ? Math.round(st.avgKm) + ' كم' : '—') + '</b></div>' +
+      '<div><small>طن·كم</small><b>' + (st.tonKm ? mpFmt(st.tonKm / 1000) + 'ك' : '—') + '</b></div>' +
+      '<div><small>تكلفة/طن·كم</small><b>' + (st.perTonKm ? (Math.round(st.perTonKm * 100) / 100) : '—') + '</b></div>' +
+      '<div><small>رجوع فاضي</small><b>' + (st.oneWay != null ? Math.round(st.oneWay * 100) + '%' : '—') + '</b></div></div>';
+    if (st.kmCover != null && st.kmCover < .8 && st.tot) h += '<div class="sub" style="margin:2px 0 6px;font-size:.72rem">* المسافات محسوبة لـ ' + Math.round(st.kmCover * 100) + '% من الرحلات (اللي لها إحداثيات)، تقديرية بمعامل طريق ' + (M.factor || 1.3) + '.</div>';
+    h += ins.length ? '<div class="mp-ai">' + ins.map(function (x) {
+      var at = x.pick ? 'data-mp="pick" data-k="' + attr(x.pick) + '"' : x.route ? 'data-mp="route" data-k="' + attr(x.route) + '"' : x.tab ? 'data-mp="tab" data-k="' + x.tab + '"' : '';
+      return (at ? '<button class="mp-ai-i ' + x.c + '" ' + at + '>' : '<div class="mp-ai-i ' + x.c + '">') + '<i>' + x.ic + '</i><span>' + esc(x.t) + '</span>' + (at ? '</button>' : '</div>');
+    }).join('') + '</div>' : '<div class="sub">مفيش ملاحظات ذكية للفترة دي.</div>';
+    if (MS.L.drivers && MP.drv.msg) h += '<div class="sub" style="font-size:.72rem">' + esc(MP.drv.msg) + '</div>';
+    return h;
+  }
+  /* ---------- اختصارات الكيبورد ---------- */
+  var MPKEYS = [['F', 'ملاءمة الخريطة للبيانات'], ['G', 'شاشة كاملة'], ['M', 'قياس المسافة'], ['L', 'الرحلات الجارية'], ['D', 'السواقين (GPS)'], ['H', 'كثافة'], ['N', 'أسماء الأماكن'], ['A', 'تحريك الخطوط'], ['R', 'تحديث مواقع السواقين'], ['/', 'بحث'], ['Space', 'تشغيل/إيقاف الزمني'], ['[ ]', 'اليوم السابق / التالي'], ['1–4', 'تبويبات القوائم'], ['Esc', 'إلغاء الاختيار / خروج'], ['?', 'المساعدة']];
+  function mpHelpHtml() { return MS.help ? '<div class="mp-hp"><div class="mp-hh"><b>⌨ اختصارات الكيبورد</b><button class="abtn sm" data-mp="help" aria-label="إغلاق">✕</button></div><div class="mp-hg">' + MPKEYS.map(function (k) { return '<div><kbd>' + k[0] + '</kbd><span>' + k[1] + '</span></div>'; }).join('') + '</div><div class="sub" style="margin:6px 0 0;font-size:.72rem">شغّالة بأي لغة كيبورد.</div></div>' : ''; }
+  function mpKey(e) {
+    var p = document.getElementById('p-map'); if (!p || p.hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+    var tg = e.target, tn = tg && tg.tagName; if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || (tg && tg.isContentEditable)) return;
+    var c = e.code, did = true;
+    if (c === 'KeyF') { MP.refit = true; mpRender(); }
+    else if (c === 'KeyG') mpClick({ target: document.querySelector('[data-mp="full"]') });
+    else if (c === 'KeyM') { MS.measure = !MS.measure; MS.meas = []; mpRender(); }
+    else if (c === 'KeyL') { MS.L.live = !MS.L.live; mpSave(); mpRender(); }
+    else if (c === 'KeyD') { MS.L.drivers = !MS.L.drivers; mpSave(); if (MS.L.drivers) mpDrvLoad(true); mpRender(); }
+    else if (c === 'KeyH') { MS.L.heat = !MS.L.heat; mpSave(); mpRender(); }
+    else if (c === 'KeyN') { MS.L.labels = !MS.L.labels; mpSave(); mpRender(); }
+    else if (c === 'KeyA') { MS.L.anim = !MS.L.anim; mpSave(); mpRender(); }
+    else if (c === 'KeyR') { mpDrvLoad(true); }
+    else if (c === 'Slash' && !e.shiftKey) { var q = document.querySelector('[data-mp="q"]'); if (q) q.focus(); }
+    else if (c === 'Slash' && e.shiftKey || e.key === '?' || e.key === '؟') { MS.help = !MS.help; mpRender(); }
+    else if (c === 'Space') { mpPlay(); }
+    else if (c === 'BracketLeft' || c === 'BracketRight') { var ds = MP.model.days; if (ds.length < 2) return; mpStop(); var i = MS.day ? ds.map(function (x) { return x.d; }).indexOf(MS.day) : -1; i += c === 'BracketRight' ? 1 : -1; if (i < 0) i = ds.length - 1; if (i >= ds.length) i = 0; MS.day = ds[i].d; mpRender(); }
+    else if (/^Digit[1-4]$/.test(c)) { MS.tab = ['routes', 'places', 'live', 'unm'][+c.slice(5) - 1]; mpRender(); }
+    else did = false;
+    if (did) e.preventDefault();
+  }
+
   /* ---------- اللوحة الجانبية ---------- */
   function mpSel(id, opts, val, a) { return '<select data-mp="' + a + '" aria-label="' + id + '">' + opts.map(function (o) { return '<option value="' + attr(o[0]) + '"' + (String(o[0]) === String(val) ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select>'; }
   function mpBar(v, max) { return '<i class="mp-bar"><u style="width:' + Math.max(3, Math.round(100 * v / (max || 1))) + '%"></u></i>'; }
@@ -7391,9 +7733,10 @@ var RC = (function () {
       '<label class="fld"><span>العرض</span>' + mpSel('العرض', [['place', 'أماكن'], ['region', 'مناطق (تجميع)']], MS.group, 'group') + '</label></div>';
     if (MS.color !== 'uni') h += '<div class="mp-key">' + (MS.color === 'con' ? Object.keys(M.conColors).map(function (c) { return '<span><i class="mp-dot" style="background:' + M.conColors[c] + '"></i>' + esc(c) + '</span>'; }).join('') : (function () { var r = MS.color === 'price' ? M.rng.price : M.rng.hours; return r ? '<span>' + (MS.color === 'price' ? 'سعر الطن' : 'متوسط الساعات') + ':</span><span>' + mpFmt(r[0]) + '</span><i class="mp-grad"></i><span>' + mpFmt(r[1]) + '</span>' : '<span class="sub" style="margin:0">مفيش بيانات كفاية للتلوين ده.</span>'; })()) + '</div>';
     h += '<div class="mp-chips">' + Object.keys(kinds).sort(function (a, b) { return kinds[b] - kinds[a]; }).map(function (k) { var on = !!MS.kinds[k]; return '<button class="chip" data-mp="kind" data-k="' + attr(k) + '" aria-pressed="' + on + '"><i class="mp-dot" style="background:' + (MPKIND[k] || MPKIND.other)[1] + '"></i>' + esc((MPKIND[k] || MPKIND.other)[0]) + ' <b>' + kinds[k] + '</b></button>'; }).join('') + (M.dormN ? '<button class="chip" data-mp="dorm" aria-pressed="' + MS.onlyDorm + '">ساكنة 30+ يوم <b>' + M.dormN + '</b></button>' : '') + '</div>';
-    h += '<div class="mp-lay">' + [['places', 'الأماكن'], ['idle', 'أماكن بلا حركة'], ['flows', 'خطوط الحركة'], ['live', 'الجارية'], ['labels', 'الأسماء'], ['heat', 'كثافة'], ['geo', 'نطاق الأماكن'], ['anim', 'تحريك']].map(function (x) { return '<label class="chk"><input type="checkbox" data-mp="lay" data-k="' + x[0] + '"' + (MS.L[x[0]] ? ' checked' : '') + '> ' + x[1] + '</label>'; }).join('') + '</div>';
+    h += '<div class="mp-lay">' + [['places', 'الأماكن'], ['idle', 'أماكن بلا حركة'], ['flows', 'خطوط الحركة'], ['live', 'الجارية'], ['drivers', 'سواقين (GPS)'], ['labels', 'الأسماء'], ['heat', 'كثافة'], ['geo', 'نطاق الأماكن'], ['anim', 'تحريك']].map(function (x) { return '<label class="chk"><input type="checkbox" data-mp="lay" data-k="' + x[0] + '"' + (MS.L[x[0]] ? ' checked' : '') + '> ' + x[1] + '</label>'; }).join('') + '</div>';
     h += '<label class="fld" style="margin-top:6px"><span>أقوى ' + MS.maxEdges + ' مسار معروض</span><input type="range" min="10" max="250" step="10" value="' + MS.maxEdges + '" data-mp="maxe"></label>';
     if (top) h += '<div class="mp-ins">أقوى مسار: <b>' + esc(top.a.name) + ' ← ' + esc(top.b.name) + '</b> (' + top.n + ' رحلة · ' + mpFmt(top.tons) + ' طن).' + (M.unm.length ? ' ⚠ ' + M.unm.length + ' مكان بلا إحداثيات.' : '') + '</div>';
+    h += '<div class="mp-sec" style="margin-top:10px">🧠 تحليلات ذكية</div>' + mpInsHtml(M);
     h += '<div id="mpDet">' + mpDetail() + '</div>';
     h += '<input type="search" class="mp-q" data-mp="q" value="' + attr(MS.q) + '" placeholder="ابحث عن مكان على الخريطة…" aria-label="بحث">';
     h += '<div class="row" style="gap:6px;margin:0 0 6px"><input type="search" class="mp-q" style="margin:0;flex:1" data-mp="geoq" placeholder="ابحث عن عنوان/قرية (يحتاج نت) ثم Enter" aria-label="بحث عنوان"></div><div id="mpGeo"></div>';
@@ -7408,7 +7751,7 @@ var RC = (function () {
       '<input type="range" min="0" max="' + ds.length + '" step="1" value="' + idx + '" data-mp="dayr" aria-label="اليوم"></div>' +
       '<span class="mp-dl">' + (MS.day ? '<b>' + esc(MS.day) + '</b> ' + wd + ' · ' + (ds[idx - 1] ? ds[idx - 1].n : 0) + ' رحلة' : 'كل الفترة') + '</span>' + (MS.day ? '<button class="abtn sm" data-mp="dayx">كل الفترة</button>' : '');
   }
-  function mpLegend() { var ks = {}; MP.model.nodes.forEach(function (n) { if (n.pt) ks[n.kind] = 1; }); return '<b>الدليل</b>' + Object.keys(ks).map(function (k) { return '<span><i class="mp-dot" style="background:' + (MPKIND[k] || MPKIND.other)[1] + '"></i>' + (MPKIND[k] || MPKIND.other)[0] + '</span>'; }).join('') + '<span>◯ حجم الدائرة = حجم الحركة</span><span>- - - تقريبي</span><span>🟠 رحلات جارية · 🚛 في الطريق (تقديري)</span><span>ساكن</span>'; }
+  function mpLegend() { var ks = {}; MP.model.nodes.forEach(function (n) { if (n.pt) ks[n.kind] = 1; }); return '<b>الدليل</b>' + Object.keys(ks).map(function (k) { return '<span><i class="mp-dot" style="background:' + (MPKIND[k] || MPKIND.other)[1] + '"></i>' + (MPKIND[k] || MPKIND.other)[0] + '</span>'; }).join('') + '<span>◯ حجم الدائرة = حجم الحركة</span><span>- - - تقريبي</span><span>🟠 رحلات جارية · 🚛 في الطريق (تقديري)</span><span>ساكن</span>' + (MS.L.drivers && MP.drv.locs && MP.drv.locs.length ? '<span><i class="mp-dot" style="background:#16a34a"></i>سائق GPS (أخضر = حديث)</span>' : ''); }
   function mpRender() {
     var pm = document.getElementById('p-map'); if (!pm || pm.hidden) return;
     if (!window.L) { document.getElementById('mpMap').innerHTML = '<div class="sub" style="padding:20px">تعذّر تحميل مكتبة الخريطة.</div>'; return; }
@@ -7419,6 +7762,9 @@ var RC = (function () {
     if (side && !keep) { var st = side.scrollTop; var gq = side.querySelector('[data-mp="geoq"]'), gv = gq ? gq.value : '', gh = (document.getElementById('mpGeo') || {}).innerHTML; side.innerHTML = mpSide(); side.scrollTop = st; var g2 = side.querySelector('[data-mp="geoq"]'); if (g2 && gv) g2.value = gv; var gb = document.getElementById('mpGeo'); if (gb && gh) gb.innerHTML = gh; }
     document.getElementById('mpTime').innerHTML = mpTimeHtml(); var me = document.getElementById('mpMeas'); me.innerHTML = mpMeasHtml(); me.hidden = !me.innerHTML;
     mpBanner(); var mb = document.querySelector('[data-mp="measure"]'); if (mb) mb.setAttribute('aria-pressed', MS.measure);
+    var hp = document.getElementById('mpHelp'); if (hp) { hp.innerHTML = mpHelpHtml(); hp.hidden = !MS.help; }
+    [].forEach.call(document.querySelectorAll('[data-mp="qlay"]'), function (b2) { b2.setAttribute('aria-pressed', !!MS.L[b2.dataset.k]); });
+    mpDrvLoad(false);
     var b = mpDraw(); document.getElementById('mpLegend').innerHTML = mpLegend(); mpLabelsByZoom();
     if (MP.first || MP.refit) { MP.first = false; MP.refit = false; MP.map.invalidateSize(); mpFit(b); }
   }
@@ -7443,6 +7789,8 @@ var RC = (function () {
     if (a === 'route') { MS.sel = { t: 'r', k: k }; mpRender(); var ed = MP.model.edges.filter(function (x) { return x.k === k; })[0]; if (ed && ed.a.pt && ed.b.pt) MP.map.flyToBounds(L.latLngBounds([[ed.a.pt.lat, ed.a.pt.lng], [ed.b.pt.lat, ed.b.pt.lng]]).pad(.4), { duration: .6, maxZoom: 9 }); return; }
     if (a === 'zoom') { mpFocus(k); return; }
     if (a === 'zoomr') { var e2 = MP.model.edges.filter(function (x) { return x.k === k; })[0]; if (e2 && e2.a.pt && e2.b.pt) MP.map.flyToBounds(L.latLngBounds([[e2.a.pt.lat, e2.a.pt.lng], [e2.b.pt.lat, e2.b.pt.lng]]).pad(.4), { duration: .6, maxZoom: 9 }); return; }
+    if (a === 'help') { MS.help = !MS.help; mpRender(); return; }
+    if (a === 'qlay') { MS.L[k] = !MS.L[k]; mpSave(); if (k === 'drivers' && MS.L.drivers) mpDrvLoad(true); mpRender(); return; }
     if (a === 'clear') { MS.sel = null; mpRender(); return; }
     if (a === 'fit') { MP.refit = true; mpRender(); return; }
     if (a === 'full') { MS.full = !MS.full; document.getElementById('p-map').classList.toggle('mp-full', MS.full); document.body.classList.toggle('mp-nofs', MS.full); setTimeout(function () { MP.map && MP.map.invalidateSize(); }, 60); return; }
@@ -7490,6 +7838,8 @@ var RC = (function () {
       if (MS.pick) { MS.pick = null; MP.map.getContainer().style.cursor = ''; mpRender(); return; }
       if (MS.full) { MS.full = false; p.classList.remove('mp-full'); document.body.classList.remove('mp-nofs'); setTimeout(function () { MP.map && MP.map.invalidateSize(); }, 60); }
     });
+    document.addEventListener('keydown', mpKey);
+    setInterval(function () { if (!p.hidden && MS.L.drivers) mpDrvLoad(false); }, 60000);
     window.addEventListener('resize', function () { if (MP.map && !p.hidden) MP.map.invalidateSize(); });
   })();
 
@@ -7995,7 +8345,7 @@ var RC = (function () {
 
   function reload(){ load(function(data){ if(data){ NOW=ts(data.nowIso)||NOW; D.trips=data.trips||[]; D.live=data.live||[]; D.status=data.status||D.status; D.counts=data.counts||D.counts; D.rejected=data.rejected||[]; D.unmatched=data.unmatched||[]; if(data.overrides){ D.overrides=data.overrides; buildOvm(); } D.changeLog=data.changeLog||D.changeLog||[]; if(data.schedule){ D.schedule=data.schedule; if(!A.sch||!A.busy) A.sch=clone(data.schedule.schedule); } if(data.settings&&!A.dirty){ D.settings=clone(data.settings); A.S=clone(D.settings); } D.trips.forEach(prep); D.live.forEach(prep); buildIndex(); renderAll(); renderStatus(); renderMeta(); renderRules(); if(curTab==='admin') aRender(); } }); }
   uiStyle();
-  if(TRK){ trackBoot(); } else
+  if(CPORT){ portalBoot(); } else if(TRK||DRVLOGIN){ trackBoot(); } else
   load(function(data){
     D=data||D; D.trips=D.trips||[]; D.live=D.live||[];
     var isDemo = !IN_GAS;
